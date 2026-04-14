@@ -598,6 +598,14 @@ body {
       <div id="heatmapWrap"><div style="text-align:center;padding:3rem;color:var(--text3)"><div class="spinner"></div></div></div>
     </div>
 
+  
+<div class="panel" id="panel-pins">
+  <div class="section-hd">
+    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
+    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
+  </div>
+  <div id="pinTableWrap"></div>
+
   </div>
 </div>
 
@@ -629,13 +637,6 @@ body {
   </div>
 </div>
 
-
-<div class="panel" id="panel-pins">
-  <div class="section-hd">
-    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
-    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
-  </div>
-  <div id="pinTableWrap"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -645,7 +646,7 @@ body {
 const ADMIN_USER = 'admin';
 let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
 
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
@@ -653,7 +654,7 @@ function doLogin() {
     err.style.display = 'none';
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminApp').style.display = 'flex';
-    try { init(); } catch(e) { console.error('Init error:', e); }
+    init().catch(e => console.error('Init error:', e));
   } else {
     err.style.display = 'block';
     err.textContent = 'Incorrect username or password.';
@@ -668,7 +669,7 @@ function doLogout() {
 // ── DEFAULT DATA ────────────────────────────────────────────────────────
 const DEFAULT_STAFF = ['Ambreen Afzal','Anila Naz','Hadiya Tariq','Joanna Payne','Kiran Riaz','Kubir Hussain','Lawaiza Firdous','Momina Khatun','Muniba Zaman','Sadiyah Begum','Saira Nisa','Sidra Begum','Sunella Anjam','Taslim Yaqub','Taz Khan','Zahraa Rashid'];
 const DEFAULT_POLICIES = [
-  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Safeguarding_Policy_-_Part_A_and_B_v4.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
+  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Safeguarding_Policy_Feb2026.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
   {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',desc:'Procedures for staff to report concerns, including qualifying disclosures, sexual harassment provisions, DSL-first escalation route.',adopted:'March 2026'},
   {id:'llc',tier:1,title:'Low-Level Concerns Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concerns_Policy_Mar2026.docx',desc:'How to record and report low-level concerns about staff behaviour that do not meet the threshold for referral.',adopted:'March 2026'},
   {id:'scc',tier:1,title:'Staff Code of Conduct',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Code_of_Conduct_Mar2026.docx',desc:'Professional standards expected of all staff, including conduct with children, families, colleagues and on social media.',adopted:'March 2026'},
@@ -683,9 +684,12 @@ const DEFAULT_POLICIES = [
   {id:'mc',tier:1,title:'Missing Child from Nursery Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for on nursery premises, including search protocol, police notification.',adopted:'March 2026'},
   {id:'el',tier:1,title:'Emergency Lockdown Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Emergency_Lockdown_Policy_Mar2026.docx',desc:'Procedure for full or partial lockdown. Drills held at least annually using non-alarming scenarios.',adopted:'March 2026'},
   {id:'sc',tier:1,title:'Supervision of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Children_Policy_Mar2026.docx',desc:'Staffing arrangements, ratios and supervision expectations to ensure children\'s safety at all times on nursery premises.',adopted:'March 2026'},
+  {id:'cwb',tier:1,title:"Children's Wellbeing Policy",cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:"Policy covering promotion of children's emotional and physical wellbeing, resilience, positive relationships and practitioner responsibilities.",adopted:'March 2026'},
   {id:'ie',tier:1,title:'Inclusion and Equality Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Inclusion_Equality_Policy_Mar2026.docx',desc:'Commitment to inclusive practice under the Equality Act 2010. Training at induction and through CPD.',adopted:'March 2026'},
   {id:'sg_summ',tier:2,title:'Safeguarding Staff Summary Sheet',cat:'Safeguarding',sites:['all'],file:'Greencoat_Safeguarding_Staff_Summary_Feb2026.docx',desc:'Quick-reference visual guide: DSL contacts at all 3 sites, types of abuse, 5-step reporting procedure, Summary of Interaction process.',adopted:'February 2026'},
   {id:'ict',tier:1,title:'Intimate Care and Toileting Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Intimate_Care_Toileting_Policy_Mar2026.docx',desc:'Merged policy covering nappy changing procedure, respectful intimate care principles, toilet training in line with DfE guidance (18-30 month window), room transition expectations, SEND adjustments, and safeguarding across all intimate care routines.',adopted:'March 2026'},
+  {id:'nappy',tier:2,title:'Nappy Changing Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Nappy_Changing_Policy_Mar2026.docx',desc:'Procedures for safe, dignified and hygienic nappy changing, including consent, recording and safeguarding considerations.',adopted:'March 2026'},
+  {id:'ric',tier:2,title:'Respectful Intimate Care Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Respectful_Intimate_Care_Policy_Mar2026.docx',desc:'Policy for delivering intimate care with dignity, consent and safeguarding awareness, including parental communication and record keeping.',adopted:'March 2026'},
     {id:'sleep',tier:2,title:'Sleep Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sleep_Policy_Mar2026.docx',desc:'Safe sleep arrangements, monitoring procedures, positional preferences, risk reduction for SIDS.',adopted:'March 2026'},
   {id:'infect',tier:2,title:'Infection Control Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Infection_Control_Policy_Mar2026.docx',desc:'Hygiene standards, handwashing procedures, oral health, management of infectious illnesses, and exclusion periods.',adopted:'March 2026'},
   {id:'sick',tier:2,title:'Sickness and Illness Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sickness_Illness_Policy_Mar2026.docx',desc:'Recognition and management of children\'s illness on-site, exclusion guidance, record-keeping.',adopted:'March 2026'},
@@ -697,6 +701,7 @@ const DEFAULT_POLICIES = [
   {id:'packed',tier:2,title:'Packed Lunch Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Packed_Lunch_Policy_Mar2026.docx',desc:'Standards and guidance for packed lunches, prohibited items (nuts), storage, and parental communication.',adopted:'March 2026'},
   {id:'out',tier:2,title:'Outdoor Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Outdoor_Play_Policy_Mar2026.docx',desc:'Daily outdoor play commitment, risk-benefit approach to outdoor learning, weather considerations.',adopted:'March 2026'},
   {id:'set',tier:2,title:'Settling In Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Settling_In_Policy_Mar2026.docx',desc:'Graduated settling-in process, key person role, working with parents during transition.',adopted:'March 2026'},
+  {id:'kp',tier:1,title:'Key Person Policy',cat:'Children & Families',sites:['all'],file:'Greencoat_Key_Person_Policy_Mar2026.docx',desc:'Statutory EYFS key person requirements covering assignment, caseload, buddy system, transitions, safeguarding responsibilities and SEND integration.',adopted:'March 2026'},
   {id:'trans',tier:2,title:'Transitions Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Transitions_Policy_Mar2026.docx',desc:'Supporting children through planned and unplanned transitions including room moves, change of key person.',adopted:'March 2026'},
   {id:'pap',tier:2,title:'Parents as Partners Policy',cat:'Families',sites:['all'],file:'Greencoat_Parents_as_Partners_Policy_Mar2026.docx',desc:'Partnership approach with families, two-way information sharing, involving parents in learning.',adopted:'March 2026'},
   {id:'comp',tier:2,title:'Complaints and Compliments Policy',cat:'Governance',sites:['all'],file:'Greencoat_Complaints_Compliments_Policy_Mar2026.docx',desc:'How to raise, record and resolve complaints. Timescales for response, escalation to Ofsted.',adopted:'March 2026'},
@@ -728,7 +733,6 @@ const DEFAULT_POLICIES = [
   {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',desc:'Bribery Act 2010 compliance, what constitutes bribery, gifts and hospitality guidelines.',adopted:'March 2026'},
   {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',desc:'Supporting children and families experiencing bereavement, staff guidance on language and response.',adopted:'March 2026'},
   {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',desc:'Log template for recording CCTV system checks, access events, and Subject Access Requests.',adopted:'March 2026'},
-  {id:'cwb',tier:3,title:"Children's Well-being in the Nursery Policy",cat:'Child Development',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:'Promoting children\'s emotional health and wellbeing, attachment-based practice.',adopted:'March 2026'},
   {id:'crp',tier:3,title:'Conflict Resolution with Parents and Aggressive Behaviour Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',desc:'De-escalation of parental conflict, zero tolerance of aggressive behaviour.',adopted:'March 2026'},
   {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',desc:'Response to serious incidents including staff death, major injury, outbreak of disease.',adopted:'March 2026'},
   {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',desc:'Protecting nursery systems and data from cyber threats, staff training, suspicious email reporting.',adopted:'March 2026'},
@@ -778,7 +782,8 @@ const DEFAULT_POLICIES = [
   {id:'volp',tier:3,title:'Volunteers Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteers_Policy_Mar2026.docx',desc:'Framework for welcoming volunteers. Designated officer: Taz Khan (Director). DBS, induction, supervision.',adopted:'March 2026'},
   {id:'dse',tier:3,title:'Working with Display Screen Equipment Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Working_with_Display_Screen_Equipment_Policy_Mar2026.docx',desc:'DSE assessment requirements, eye test entitlements, workstation adjustments, and reporting symptoms.',adopted:'March 2026'},
   {id:'yw',tier:3,title:'Young Worker Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Young_Worker_Policy_Mar2026.docx',desc:'Legal requirements and additional safeguards for staff under 18 or apprentices, including working hours, supervision.',adopted:'March 2026'},
-  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',desc:'Planning template for nursery outings including risk assessment, staffing ratios, parental consent, emergency contacts.',adopted:'March 2026'}
+  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',desc:'Planning template for nursery outings including risk assessment, staffing ratios, parental consent, emergency contacts.',adopted:'March 2026'},
+  {id:'preg_guide',tier:1,title:'Pregnancy & Family Leave — Staff Guide',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Staff_Guide_Mar2026.docx',desc:'Step-by-step guide for staff covering maternity, paternity, adoption, shared parental leave, neonatal care and key deadlines.',adopted:'March 2026'}
 ];
 
 let STAFF = [...DEFAULT_STAFF];
@@ -792,11 +797,18 @@ async function saveGlobalConfig() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
       body: JSON.stringify({ policies: POLICIES, staff: STAFF, config: CONFIG })
     });
-    if (res.status === 401) throw new Error('Unauthorised: Check your Netlify Environment Variable password');
-    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    if (res.status === 401) throw new Error('Unauthorised — check ADMIN_PASSWORD env var matches your password');
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    // Also save locally as backup
+    localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
     showToast('Live portal updated ✓', 'success');
-  } catch(e) { showToast('Failed to sync: ' + e.message, 'error'); }
+  } catch(e) {
+    // Fallback to localStorage only
+    localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
+    showToast('Saved locally (server sync failed: ' + e.message + ')', 'info');
+  }
 }
+
 
 async function loadGlobalConfig() {
   try {
@@ -804,14 +816,21 @@ async function loadGlobalConfig() {
     const json = await res.json();
     if (json.ok && json.data) {
       if (Array.isArray(json.data.policies) && json.data.policies.length > 0) POLICIES = json.data.policies;
-      if (Array.isArray(json.data.staff) && json.data.staff.length > 0) STAFF = json.data.staff;
+      if (Array.isArray(json.data.staff)    && json.data.staff.length > 0)    STAFF    = json.data.staff;
       if (json.data.config) Object.assign(CONFIG, json.data.config);
     }
-  } catch(e) { console.log("Using offline defaults"); }
+  } catch(e) {
+    // Offline fallback — read from localStorage
+    try {
+      const savedStaff = JSON.parse(localStorage.getItem('gc_admin_staff') || 'null');
+      if (Array.isArray(savedStaff) && savedStaff.length > 0) STAFF = savedStaff;
+    } catch(e2) {}
+  }
 }
 
+
 function restoreDefaults() {
-  if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 111 Greencoat policies and staff list.")) return;
+  if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 118 Greencoat policies and default staff list.")) return;
   POLICIES = [...DEFAULT_POLICIES];
   STAFF = [...DEFAULT_STAFF];
   saveGlobalConfig();
@@ -838,6 +857,8 @@ function switchTab(id, el) {
   if (id === 'compliance') loadCompliance();
   if (id === 'heatmap') loadHeatmap();
   if (id === 'aiquestions') loadAiQuestions();
+
+  if (id === 'pins') renderPinTable();
 }
 
 function buildCatFilter() {
@@ -890,7 +911,11 @@ function closeModal() { document.getElementById('policyModal').classList.remove(
 function savePolicy() {
   const id = document.getElementById('editId').value; const sites = [];
   if (document.getElementById('siteAll').checked) sites.push('all'); if (document.getElementById('siteSh').checked) sites.push('sparkhill'); if (document.getElementById('siteBw').checked) sites.push('bearwood'); if (document.getElementById('siteBa').checked) sites.push('billesley');
-  const data = { id: id || 'p_' + Date.now(), tier: parseInt(document.getElementById('editTier').value), title: document.getElementById('editTitle').value, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], file: document.getElementById('editFile').value.trim(), adopted: document.getElementById('editAdopted').value, desc: document.getElementById('editDesc').value };
+  const title = document.getElementById('editTitle').value.trim();
+  const file  = document.getElementById('editFile').value.trim();
+  if (!title) { showToast('Policy title is required', 'error'); return; }
+  if (!file)  { showToast('File name is required', 'error'); return; }
+  const data = { id: id || 'p_' + Date.now(), tier: parseInt(document.getElementById('editTier').value), title, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], file, adopted: document.getElementById('editAdopted').value, desc: document.getElementById('editDesc').value };
   if (id) { const i = POLICIES.findIndex(p=>p.id===id); if (i>=0) POLICIES[i] = data; } else { POLICIES.push(data); }
   closeModal(); renderPolicyTable(); buildCatFilter(); saveGlobalConfig();
 }
@@ -921,156 +946,197 @@ function removeStaff(n) { if(!confirm(`Remove ${n} from active staff?`)) return;
 
 function loadSettingsUI() { document.getElementById('setOrgName').value = CONFIG.orgName || ''; document.getElementById('setReviewDate').value = CONFIG.reviewDate || ''; document.getElementById('setAdoptedDate').value = CONFIG.adoptedDate || ''; }
 function saveSettings() { CONFIG.orgName = document.getElementById('setOrgName').value; CONFIG.adoptedDate = document.getElementById('setAdoptedDate').value; CONFIG.reviewDate = document.getElementById('setReviewDate').value; saveGlobalConfig(); }
-function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
+function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
 
 // ── COMPLIANCE ─────────────────────────────────────────────────────────────
 async function loadCompliance() {
   try {
     const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised: Password does not match Netlify');
+    if (res.status === 401) throw new Error('Unauthorised');
     if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json(); renderCompliance(data.staff || []);
-  } catch(e) { document.getElementById('compCard').innerHTML = `<p style="color:var(--t1);font-size:.85rem;padding:2rem;text-align:center">Cannot load data. <br>${e.message}</p>`; }
+    const data = await res.json();
+    const staff = (data.staff || []).map(s => ({
+      name: s.name,
+      acknowledged: s.acknowledged || [],
+      activity: s.activity || []
+    }));
+    if (staff.length > 0) { renderCompliance(staff); return; }
+    // Server returned empty — fall back to localStorage
+    // localStorage fallback
+    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
+    const compData = fallbackStaff.map(name => {
+      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      let acks = [];
+      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      let activity = [];
+      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
+      return { name, acknowledged: acks, activity };
+    });
+    renderCompliance(compData);
+  } catch(e) {
+    // localStorage fallback
+    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
+    const compData = fallbackStaff.map(name => {
+      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      let acks = [];
+      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      let activity = [];
+      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
+      return { name, acknowledged: acks, activity };
+    });
+    renderCompliance(compData);
+  }
 }
 
-function renderCompliance(staffData) {
-  const t1 = POLICIES.filter(p=>p.tier===1); const t2 = POLICIES.filter(p=>p.tier===2); const t3 = POLICIES.filter(p=>p.tier===3);
-  const totalReads = staffData.reduce((s,x)=>s+(x.readCount||0),0); const totalQuizzes = staffData.reduce((s,x)=>s+(x.quizCount||0),0); const activeStaff = staffData.filter(x=>(x.readCount||0)>0).length; const redoCount = staffData.filter(s => (s.recentQuizzes||[])[0]?.needsRedo).length;
-  document.getElementById('compStats').innerHTML = `<div class="stat-card"><div class="stat-num">${staffData.length}</div><div class="stat-label">Staff tracked</div></div><div class="stat-card"><div class="stat-num">${totalReads}</div><div class="stat-label">Policies read</div></div><div class="stat-card"><div class="stat-num">${totalQuizzes}</div><div class="stat-label">Quizzes taken</div></div><div class="stat-card" style="${redoCount>0?'border-color:var(--t1)':''}"><div class="stat-num" style="${redoCount>0?'color:var(--t1)':''}">${redoCount}</div><div class="stat-label">⚠️ Redo required</div></div>`;
-  document.getElementById('compSummary').textContent = `${totalReads} policy reads across ${activeStaff} of ${staffData.length} staff.`;
-  if (!staffData.length) { document.getElementById('compCard').innerHTML = '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:2rem">No data yet — staff need to open the portal and read a policy.</p>'; return; }
-
-  const rows = staffData.map(entry => {
-    const name = entry.name || entry.staffName || '—'; const acks = new Set(entry.acknowledgedPolicyIds||entry.readPolicyIds||[]);
-    const pct1 = t1.length ? Math.round(t1.filter(p=>acks.has(p.id)).length/t1.length*100) : 0; const pct2 = t2.length ? Math.round(t2.filter(p=>acks.has(p.id)).length/t2.length*100) : 0; const pct3 = t3.length ? Math.round(t3.filter(p=>acks.has(p.id)).length/t3.length*100) : 0; const overall = POLICIES.length ? Math.round(acks.size/POLICIES.length*100) : 0;
-    const col = overall >= 80 ? 'var(--t3)' : overall >= 40 ? 'var(--t2)' : 'var(--t1)'; const lastRead = entry.lastRead ? new Date(entry.lastRead).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
-    const latestQuiz = (entry.recentQuizzes||[])[0]; const needsRedo = latestQuiz && latestQuiz.needsRedo;
-    const quizBadge = entry.quizCount > 0 ? needsRedo ? `<span style="background:rgba(239,68,68,.15);color:var(--t1);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem" title="${latestQuiz.pct}% — needs redo">⚠️ Redo Required</span>` : `<span style="background:rgba(20,184,166,.15);color:var(--teal);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">🧠 ${latestQuiz?.pct||'?'}% pass</span>` : '';
-    const aiBadge = entry.aiChatCount > 0 ? `<span style="background:rgba(139,92,246,.15);color:#8b5cf6;border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">🤖 ${entry.aiChatCount}</span>` : '';
-    const summaryBadge = entry.summaryCount > 0 ? `<span style="background:rgba(245,158,11,.12);color:var(--gold);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">⚡ ${entry.summaryCount}</span>` : '';
-    return `<div class="staff-comp-row" style="cursor:pointer" onclick="loadStaffDetail('${entry.staffKey}','${name.replace(/'/g,"\\'")}')"><div class="staff-name-col">${name}${quizBadge}${summaryBadge}${aiBadge}<div style="font-size:.68rem;color:var(--text3);margin-top:.15rem">Last read: ${lastRead}</div></div><div class="tier-bars"><div class="tier-bar-group"><div class="tier-bar-label">Tier 1</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct1}%;background:var(--t1)"></div></div><span class="pct-label" style="color:var(--t1)">${pct1}%</span></div></div><div class="tier-bar-group"><div class="tier-bar-label">Tier 2</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct2}%;background:var(--t2)"></div></div><span class="pct-label" style="color:var(--t2)">${pct2}%</span></div></div><div class="tier-bar-group"><div class="tier-bar-label">Tier 3</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct3}%;background:var(--t3)"></div></div><span class="pct-label" style="color:var(--t3)">${pct3}%</span></div></div></div><div class="overall-pct" style="color:${col}">${overall}%</div></div>`;
-  });
-  document.getElementById('compCard').innerHTML = `<div class="card-title">📊 Staff reading progress <span style="font-size:.75rem;font-weight:400;color:var(--text3)">(click a row for detail)</span></div>${rows.join('')}`;
-}
 
 async function loadStaffDetail(staffKey, name) {
   try {
-    const res = await fetch(`/api/admin-data?action=staff-detail&staff=${encodeURIComponent(staffKey)}`, { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised: Check password');
-    const data = await res.json();
-    const recentReads = (data.reads||[]).slice(0,10).map(r => `<li style="margin-bottom:.3rem">${r.policyId} <span style="color:var(--text3);font-size:.72rem">${new Date(r.readAt).toLocaleDateString('en-GB')}</span></li>`).join('');
-    const quizItems = (data.quizzes||[]).slice(0,8).map(q => {
-      const pass = q.passed; const badge = (q.pct === null || q.pct === undefined) ? '' : pass ? `<span style="background:rgba(16,185,129,.15);color:var(--t3);border-radius:4px;padding:.1rem .35rem;font-size:.68rem;margin-left:.3rem">✅ ${q.pct}% PASS</span>` : `<span style="background:rgba(239,68,68,.15);color:var(--t1);border-radius:4px;padding:.1rem .35rem;font-size:.68rem;margin-left:.3rem">❌ ${q.pct}% REDO</span>`;
-      return `<li style="margin-bottom:.4rem;font-size:.78rem">${q.policy||q.key}${badge} <span style="color:var(--text3);font-size:.7rem">${q.date?new Date(q.date).toLocaleDateString('en-GB'):''}</span></li>`;
+    const actKey = 'gc_activity_' + staffKey;
+    let activity = [];
+    try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
+    const reads = activity.filter(e => e.action === 'read').slice(-10).reverse();
+    const quizzes = activity.filter(e => e.action === 'quiz');
+    const recentReads = reads.map(r => `<li style="margin-bottom:.3rem">${r.key} <span style="color:var(--text3);font-size:.72rem">${new Date(r.timestamp||r.date).toLocaleDateString('en-GB')}</span></li>`).join('');
+    const quizItems = quizzes.slice(-5).reverse().map(q => {
+      let score = ''; try { const v = JSON.parse(q.value); score = ` — ${v.score}/${v.total}`; } catch(e) {}
+      return `<li style="margin-bottom:.3rem">${q.key}${score}</li>`;
     }).join('');
-    
-    const existing = document.getElementById('staffDetailPanel'); if (existing) existing.remove();
-    const panel = document.createElement('div'); panel.id = 'staffDetailPanel';
-    panel.style.cssText = 'position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--card);border-left:1px solid var(--border2);z-index:500;overflow-y:auto;padding:1.5rem;box-shadow:-8px 0 32px rgba(0,0,0,.4)';
-    panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem"><h3 style="font-family:inherit;font-size:1.1rem">👤 ${name}</h3><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem"><div style="background:var(--card2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--teal)">${data.reads?.length||0}</div><div style="font-size:.72rem;color:var(--text3)">Policies Read</div></div><div style="background:var(--card2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--gold)">${data.quizzes?.length||0}</div><div style="font-size:.72rem;color:var(--text3)">Quizzes Taken</div></div></div>${recentReads ? `<div style="margin-bottom:1rem"><div style="font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Recent Reads</div><ul style="list-style:none;font-size:.8rem">${recentReads}</ul></div>` : ''}${quizItems ? `<div><div style="font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Quiz Activity</div><ul style="list-style:none;font-size:.8rem">${quizItems}</ul></div>` : ''}`;
-    document.body.appendChild(panel);
-  } catch(e) { showToast('Could not load detail: ' + e.message, 'error'); }
+    const el = document.getElementById('detail_' + staffKey);
+    if (el) el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;font-size:.82rem">
+        <div><strong>Recent reads</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${recentReads||'<li>None yet</li>'}</ul></div>
+        <div><strong>Recent quizzes</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizItems||'<li>None yet</li>'}</ul></div>
+      </div>`;
+  } catch(e) { console.error(e); }
 }
 
-// ── AI QUESTIONS ──────────────────────────────────────────────────────────
-let allAiQuestions = [];
+
 async function loadAiQuestions() {
-  document.getElementById('aiQList').innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
+  const listEl = document.getElementById('aiQList');
+  const statsEl = document.getElementById('aiQStats');
+  listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised: Password does not match Netlify');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    allAiQuestions = []; const staffNames = new Set(); const policyNames = new Set();
-    for (const staff of (data.staff || [])) {
-      const det = await fetch(`/api/admin-data?action=staff-detail&staff=${encodeURIComponent(staff.staffKey)}`, { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } }).then(r=>r.json()).catch(()=>({aiChats:[]}));
-      for (const chat of (det.aiChats || [])) {
-        allAiQuestions.push({ staffName: staff.name, ...chat });
-        staffNames.add(staff.name); if (chat.policy) policyNames.add(chat.policy);
+    let allChats = [];
+
+    // Try server first
+    try {
+      const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+      if (res.ok) {
+        const data = await res.json();
+        for (const s of (data.staff || [])) {
+          for (const c of (s.recentAiChats || s.activity?.filter(a => a.type==='aichat') || [])) {
+            allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
+          }
+        }
+      }
+    } catch(e) {}
+
+    // If server returned nothing, fall back to localStorage
+    if (allChats.length === 0) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith('gc_activity_')) continue;
+        const staffName = k.replace('gc_activity_', '').replace(/_/g, ' ');
+        try {
+          const entries = JSON.parse(localStorage.getItem(k) || '[]');
+          for (const e of entries) {
+            if (e.action === 'aichat') {
+              allChats.push({ staff: staffName, question: e.key, policy: e.value, date: e.timestamp || e.date || '' });
+            }
+          }
+        } catch(e) {}
       }
     }
-    allAiQuestions.sort((a,b) => new Date(b.date) - new Date(a.date));
-    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + [...staffNames].sort().map(n=>`<option value="${n}">${n}</option>`).join('');
-    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + [...policyNames].sort().map(p=>`<option value="${p}">${p}</option>`).join('');
-    renderAiQuestions(allAiQuestions);
-  } catch(e) { document.getElementById('aiQList').innerHTML = `<p style="color:var(--t1);font-size:.85rem;padding:2rem;text-align:center">Could not load: ${e.message}</p>`; }
+
+    allChats.sort((a,b) => b.date.localeCompare(a.date));
+    window._allChats = allChats;
+
+    const staffNames = [...new Set(allChats.map(c => c.staff))].sort();
+    const policyNames = [...new Set(allChats.map(c => c.policy).filter(Boolean))].sort();
+    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${s}">${s}</option>`).join('');
+    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${p}">${p}</option>`).join('');
+
+    statsEl.innerHTML = `
+      <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
+        <span style="font-size:1.1rem;font-weight:700;color:var(--text)">${allChats.length}</span> total questions
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
+        <span style="font-size:1.1rem;font-weight:700;color:var(--text)">${staffNames.length}</span> staff members
+      </div>`;
+
+    renderAiQuestions(allChats);
+  } catch(e) {
+    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${e.message}</p>`;
+  }
 }
 
-function filterAiQuestions() {
-  const search = document.getElementById('aiQSearch').value.toLowerCase(); const staff = document.getElementById('aiQStaffFilter').value; const policy = document.getElementById('aiQPolicyFilter').value;
-  const filtered = allAiQuestions.filter(q => {
-    if (staff && q.staffName !== staff) return false; if (policy && q.policy !== policy) return false;
-    if (search && !q.question?.toLowerCase().includes(search) && !q.answer?.toLowerCase().includes(search) && !q.staffName?.toLowerCase().includes(search)) return false;
-    return true;
-  });
-  renderAiQuestions(filtered);
-}
 
-function renderAiQuestions(questions) {
-  const stats = document.getElementById('aiQStats'); const list = document.getElementById('aiQList');
-  const uniqueStaff = new Set(questions.map(q=>q.staffName)).size; const uniquePolicies = new Set(questions.map(q=>q.policy)).size;
-  stats.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--teal);font-weight:700">${questions.length}</span> <span style="color:var(--text2)">questions</span></div><div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--gold);font-weight:700">${uniqueStaff}</span> <span style="color:var(--text2)">staff members</span></div><div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--t3);font-weight:700">${uniquePolicies}</span> <span style="color:var(--text2)">policies asked about</span></div>`;
-  if (!questions.length) { list.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">No questions match your filters.</p>'; return; }
-  list.innerHTML = questions.map(q => `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem;gap:.5rem;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="background:rgba(20,184,166,.15);color:var(--teal);border-radius:6px;padding:.2rem .6rem;font-size:.72rem;font-weight:700">👤 ${q.staffName||'Unknown'}</span><span style="background:rgba(245,158,11,.1);color:var(--gold);border-radius:6px;padding:.2rem .6rem;font-size:.72rem">📄 ${q.policy||'Unknown policy'}</span></div><span style="font-size:.7rem;color:var(--text3);flex-shrink:0">${q.date ? new Date(q.date).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'}</span></div><div style="font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.5rem">❓ ${q.question||'—'}</div><div style="font-size:.78rem;color:var(--text2);line-height:1.55;background:var(--card2);border-radius:7px;padding:.6rem .85rem;border-left:3px solid var(--teal)">${(q.answer||'—').replace(/\n/g, '<br>')}</div></div>`).join('');
-}
-
-// ── HEATMAP & OFSTED ──────────────────────────────────────────────────────
 async function loadHeatmap() {
-  let compData = [];
   try {
     const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised: Check password');
-    if (res.ok) { const d = await res.json(); compData = d.staff || []; }
-  } catch(e) { document.getElementById('heatmapWrap').innerHTML = `<p style="color:var(--t1);padding:2rem;text-align:center">${e.message}</p>`; return; }
-  renderHeatmap(compData); renderOfstedScore(compData);
+    if (res.status === 401) throw new Error('Unauthorised');
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    const staff = (data.staff || []).map(s => ({
+      name: s.name,
+      acknowledged: s.acknowledged || [],
+      activity: s.activity || []
+    }));
+    if (staff.length > 0) { renderHeatmap(staff); renderOfstedScore(staff); return; }
+    // Server returned empty — fall back to localStorage
+    // localStorage fallback
+    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
+    const compData = fallbackStaff.map(name => {
+      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      let acks = [];
+      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      let activity = [];
+      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
+      return { name, acknowledged: acks, activity };
+    });
+    renderHeatmap(compData);
+  } catch(e) {
+    // localStorage fallback
+    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
+    const compData = fallbackStaff.map(name => {
+      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      let acks = [];
+      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      let activity = [];
+      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
+      return { name, acknowledged: acks, activity };
+    });
+    renderHeatmap(compData);
+  }
 }
 
-function renderOfstedScore(compData) {
-  const t1 = POLICIES.filter(p => p.tier === 1);
-  const t1WithAllAcks = t1.filter(p => compData.length > 0 && compData.every(s => (s.acknowledgedPolicyIds || []).includes(p.id)));
-  const pct = t1.length ? Math.round(t1WithAllAcks.length / t1.length * 100) : 0;
-  const cls = pct === 100 ? 'green' : pct >= 60 ? 'amber' : 'red'; const icon = pct === 100 ? '🟢' : pct >= 60 ? '🟡' : '🔴'; const label = pct === 100 ? 'Inspection Ready' : pct >= 60 ? 'Progressing' : 'Action Required';
-  const el = document.getElementById('ofstedScore'); el.className = 'ofsted-score-card ' + cls; el.classList.remove('hidden');
-  el.innerHTML = `<div style="font-size:2.5rem">${icon}</div><div class="ofs-num">${pct}%</div><div class="ofs-text"><h3>Ofsted Readiness — ${label}</h3><p>${t1WithAllAcks.length} of ${t1.length} Tier 1 policies acknowledged by all ${compData.length} staff members tracked.</p><p style="margin-top:.3rem;font-size:.72rem;color:var(--text3)">For full inspection readiness, all Tier 1 policies must be read by every member of staff.</p></div>`;
-}
-
-function renderHeatmap(compData) {
-  if (!compData.length) { document.getElementById('heatmapWrap').innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No acknowledgement data yet.</p>'; return; }
-  const tiers = [{ tier:1, label:'Tier 1', cls:'t1b' }, { tier:2, label:'Tier 2', cls:'t2b' }, { tier:3, label:'Tier 3', cls:'t3b' }];
-  let tableHTML = `<div class="heatmap-scroll"><table class="heatmap-table"><thead><tr><th style="text-align:left">Staff</th>`;
-  tiers.forEach(({ tier, label, cls }) => { const ps = POLICIES.filter(p => p.tier === tier); tableHTML += `<th colspan="${ps.length}"><span class="tier-badge ${cls}">${label}</span></th>`; });
-  tableHTML += `<th>Overall</th></tr><tr><th></th>`;
-  tiers.forEach(({ tier }) => { POLICIES.filter(p => p.tier === tier).forEach(p => { tableHTML += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);height:90px;font-size:.58rem;padding:.25rem">${(p.title||'').length > 20 ? (p.title||'').slice(0,18)+'…' : (p.title||'')}</th>`; }); });
-  tableHTML += `<th></th></tr></thead><tbody>`;
-  compData.forEach(entry => {
-    const acks = new Set(entry.acknowledgedPolicyIds || []);
-    const pct = Math.round((POLICIES.filter(p => acks.has(p.id)).length / POLICIES.length) * 100);
-    tableHTML += `<tr><td class="staff-name">${entry.name || entry.staffName}</td>`;
-    tiers.forEach(({ tier }) => { POLICIES.filter(p => p.tier === tier).forEach(p => { const yes = acks.has(p.id); tableHTML += `<td title="${p.title} — ${yes ? 'Read ✓' : 'Outstanding'}" style="padding:2px"><div class="hm-cell${yes ? ' done' : ' miss'}${tier === 1 ? ' t1' : ''}"></div></td>`; }); });
-    tableHTML += `<td style="padding:.3rem .65rem;font-weight:700;color:${pct >= 80 ? 'var(--t3)' : pct >= 40 ? 'var(--t2)' : 'var(--t1)'};font-size:.78rem">${pct}%</td></tr>`;
-  });
-  tableHTML += `</tbody></table></div>`; document.getElementById('heatmapWrap').innerHTML = tableHTML;
-}
 
 async function exportCSV() {
-  showToast('Fetching data…', 'info');
-  let compData = [];
+  showToast('Building export…', 'info');
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.ok) { const d = await res.json(); compData = d.staff || []; }
-  } catch(e) { showToast('Export failed: ' + e.message, 'error'); return; }
-  const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
-  compData.forEach(entry => {
-    const acks = new Set(entry.acknowledgedPolicyIds || []);
-    POLICIES.forEach(p => rows.push([entry.name, p.id, `"${(p.title||'').replace(/"/g,'""')}"`, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
-  });
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type:'text/csv' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `greencoat_compliance_${new Date().toISOString().slice(0,10)}.csv`; a.click();
-  showToast('CSV exported ✓', 'success');
+    const staff = STAFF.length ? STAFF : DEFAULT_STAFF;
+    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
+    staff.forEach(name => {
+      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
+      let acks = new Set();
+      try { acks = new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch(e) {}
+      const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+      policies.forEach(p => rows.push([name, p.id, p.title, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'greencoat_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    showToast('CSV exported ✓', 'success');
+  } catch(e) { showToast('Export failed: ' + e.message, 'error'); }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────
-let toastTimer;
+
 function showToast(msg, type='info') {
   const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`;
   clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className='toast',3000);
@@ -1078,6 +1144,139 @@ function showToast(msg, type='info') {
 
 document.addEventListener('keydown', e => { if (e.key==='Enter' && document.getElementById('loginScreen').style.display!=='none') doLogin(); });
 
+
+function renderCompliance(compData) {
+  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+  const total = policies.length;
+  const compCard = document.getElementById('compCard');
+  const compStats = document.getElementById('compStats');
+
+  // Summary stats
+  const staffWithAcks = compData.filter(s => s.acknowledged.length > 0);
+  const avgPct = compData.length ? Math.round(compData.reduce((sum, s) => sum + (s.acknowledged.length / total * 100), 0) / compData.length) : 0;
+  const fullComp = compData.filter(s => s.acknowledged.length === total);
+
+  compStats.innerHTML = `
+    <div class="comp-stat"><div class="comp-stat-num">${avgPct}%</div><div class="comp-stat-label">Avg compliance</div></div>
+    <div class="comp-stat"><div class="comp-stat-num">${staffWithAcks.length}/${compData.length}</div><div class="comp-stat-label">Staff started</div></div>
+    <div class="comp-stat"><div class="comp-stat-num">${fullComp.length}</div><div class="comp-stat-label">Fully compliant</div></div>
+    <div class="comp-stat"><div class="comp-stat-num">${total}</div><div class="comp-stat-label">Total policies</div></div>`;
+
+  if (!compData.length) { compCard.innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No staff data found.</p>'; return; }
+
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
+  html += '<thead><tr style="border-bottom:2px solid var(--border2)">';
+  html += '<th style="text-align:left;padding:.5rem .75rem;color:var(--text2)">Staff member</th>';
+  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Acknowledged</th>';
+  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Tier 1</th>';
+  html += '<th style="padding:.5rem .75rem;color:var(--text2)">Progress</th>';
+  html += '</tr></thead><tbody>';
+
+  compData.forEach((s, i) => {
+    const acks = new Set(s.acknowledged);
+    const pct = Math.round(acks.size / total * 100);
+    const t1 = policies.filter(p => p.tier === 1);
+    const t1done = t1.filter(p => acks.has(p.id)).length;
+    const barCol = pct >= 80 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
+    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=\"detail_${s.name.replace(/\s+/g,'_')}\"><div style=\"padding:.5rem .75rem;color:var(--text3);font-size:.8rem\">Loading…</div></td></tr>')">
+      <td style="padding:.5rem .75rem;font-weight:500">${s.name}</td>
+      <td style="text-align:center;padding:.5rem .75rem">${acks.size}/${total}</td>
+      <td style="text-align:center;padding:.5rem .75rem">${t1done}/${t1.length}</td>
+      <td style="padding:.5rem .75rem">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <div style="flex:1;height:6px;background:var(--border2);border-radius:3px">
+            <div style="width:${pct}%;height:6px;background:${barCol};border-radius:3px"></div>
+          </div>
+          <span style="font-size:.75rem;color:var(--text2);min-width:2.5rem">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  compCard.innerHTML = html;
+  document.getElementById('compSummary').textContent = `${compData.length} staff · ${avgPct}% average compliance`;
+}
+
+function renderAiQuestions(chats) {
+  const listEl = document.getElementById('aiQList');
+  if (!chats || !chats.length) {
+    listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">No AI questions recorded yet. Questions staff ask the AI will appear here.</p>';
+    return;
+  }
+  listEl.innerHTML = chats.map(c => {
+    const dateStr = c.date ? new Date(c.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<div style="background:var(--card2);border-radius:10px;padding:.75rem 1rem;border-left:3px solid var(--accent)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+        <span style="font-weight:600;font-size:.82rem">${c.staff}</span>
+        <span style="font-size:.72rem;color:var(--text3)">${dateStr}</span>
+      </div>
+      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${c.question || '(no text recorded)'}</div>
+      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${c.policy}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function filterAiQuestions() {
+  const search = (document.getElementById('aiQSearch')?.value || '').toLowerCase();
+  const staff = document.getElementById('aiQStaffFilter')?.value || '';
+  const policy = document.getElementById('aiQPolicyFilter')?.value || '';
+  const all = window._allChats || [];
+  const filtered = all.filter(c =>
+    (!staff || c.staff === staff) &&
+    (!policy || c.policy === policy) &&
+    (!search || (c.question||'').toLowerCase().includes(search) || (c.staff||'').toLowerCase().includes(search))
+  );
+  renderAiQuestions(filtered);
+}
+
+function renderHeatmap(compData) {
+  const wrap = document.getElementById('heatmapWrap');
+  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+  const t1 = policies.filter(p => p.tier === 1);
+
+  if (!compData.length) { wrap.innerHTML = '<p style="color:var(--text3);padding:3rem;text-align:center">No compliance data yet.</p>'; return; }
+
+  let html = '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.72rem;min-width:600px">';
+  html += '<thead><tr><th style="text-align:left;padding:.3rem .5rem;position:sticky;left:0;background:var(--bg);z-index:2;min-width:130px;border-bottom:2px solid var(--border2)">Staff</th>';
+  t1.forEach(p => {
+    html += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${p.title.slice(0,20)}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  compData.forEach((s, i) => {
+    const acks = new Set(s.acknowledged);
+    const rowBg = i % 2 === 0 ? 'var(--bg)' : 'var(--card2)';
+    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${s.name}</td>`;
+    t1.forEach(p => {
+      const done = acks.has(p.id);
+      html += `<td style="text-align:center;padding:.2rem;background:${done ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.1)'}">
+        <span style="font-size:.65rem">${done ? '✓' : '·'}</span></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+}
+
+function renderOfstedScore(compData) {
+  const el = document.getElementById('ofstedScore');
+  if (!el) return;
+  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+  const t1 = policies.filter(p => p.tier === 1);
+  const staffCount = compData.length || 1;
+  const totalPossible = t1.length * staffCount;
+  const totalDone = compData.reduce((sum, s) => {
+    const acks = new Set(s.acknowledged);
+    return sum + t1.filter(p => acks.has(p.id)).length;
+  }, 0);
+  const pct = totalPossible ? Math.round(totalDone / totalPossible * 100) : 0;
+  const colour = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--card2);border-radius:12px;border:1px solid var(--border2);margin-bottom:1rem">
+    <div style="font-size:2rem;font-weight:700;color:${colour}">${pct}%</div>
+    <div><div style="font-weight:600;font-size:.9rem">Ofsted Readiness Score</div>
+    <div style="font-size:.75rem;color:var(--text2)">Tier 1 policy acknowledgement across all staff (${totalDone}/${totalPossible})</div></div></div>`;
+  el.classList.remove('hidden');
+}
 
 // ── PIN MANAGEMENT (admin) ──────────────────────────────────────────
 function getAdminPins() {
@@ -1157,12 +1356,7 @@ function resetAllPins() {
   renderPinTable();
 }
 
-// Render PIN table when the tab is activated
-const _origSwitchTab = switchTab;
-function switchTab(id, el) {
-  _origSwitchTab(id, el);
-  if (id === 'pins') renderPinTable();
-}
 </script>
 </body>
-</html>
+</html
+>

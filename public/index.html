@@ -1235,7 +1235,7 @@ body {
       </div>
       <div class="ai-input-row">
         <textarea class="ai-textarea" id="aiInput" placeholder="Ask about any policy…" rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
-        <button class="ai-send-btn" onclick="sendAI()">➤</button>
+        <button class="ai-send-btn" onclick="sendAI().catch(e=>{showToast('AI error — please try again','err');console.error(e)})">➤</button>
       </div>
       <div class="ai-disclaimer">AI responses are for guidance only. Always verify with your DSL.</div>
     </div>
@@ -1281,7 +1281,7 @@ body {
         <button onclick="adjustReaderFont(0)">A</button>
         <button onclick="adjustReaderFont(1)">A+</button>
       </div>
-      <button class="ack-btn" id="ackBtn" onclick="ackCurrent()">☐ Acknowledge</button>
+      <button class="ack-btn" id="ackBtn" onclick="ackCurrent().catch(e=>{showToast('Error processing acknowledgement','err');console.error(e)})">☐ Acknowledge</button>
     </div>
     <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
       <div class="settings-group-label">Account</div>
@@ -1342,6 +1342,390 @@ body {
 let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
 const DEFAULT_STAFF = ['Ambreen Afzal','Anila Naz','Hadiya Tariq','Joanna Payne','Kiran Riaz','Kubir Hussain','Lawaiza Firdous','Momina Khatun','Muniba Zaman','Sadiyah Begum','Saira Nisa','Sidra Begum','Sunella Anjam','Taslim Yaqub','Taz Khan','Zahraa Rashid'];
 let STAFF = [...DEFAULT_STAFF];
+// ── FALLBACK QUIZ DATA ────────────────────────────────────────────────────
+// Used when AI quiz generation fails. Tier 1 = tailored questions per policy.
+// Tier 2/3 = category-based questions. Each entry: { q, options, answer (0-indexed) }
+
+const FALLBACK_QUIZZES = {
+
+  // ════════════════════════════════════════════════════════════════════
+  // TIER 1 — TAILORED (one set per policy, 3 questions each)
+  // ════════════════════════════════════════════════════════════════════
+
+  sg: [
+    { q: "A child tells you something concerning during a nappy change. What must you do first?",
+      options: ["Finish the nappy change, then write it down at the end of the day", "Stop and immediately report to the DSL — do not delay or wait for more evidence", "Speak to the child's parents at collection to get their side first", "Discuss it with a colleague to decide if it's serious enough to report"],
+      answer: 1 },
+    { q: "You notice unexplained bruising on a child's arm. The child says nothing. What do you do?",
+      options: ["Monitor for a few days to see if more signs appear before escalating", "Record it accurately and report to the DSL the same day", "Ask the child directly who hurt them and record their answer", "Contact Birmingham Children's Trust yourself without telling your DSL"],
+      answer: 1 },
+    { q: "A parent asks you to keep a conversation about their family situation confidential. What is the correct response?",
+      options: ["Agree — parents have a right to confidentiality under GDPR", "Explain that confidentiality cannot be guaranteed if a child's safety is at risk", "Make a note in the child's file but do not tell anyone else", "Agree for now and only break confidence if you see a physical injury"],
+      answer: 1 }
+  ],
+
+  wb: [
+    { q: "You are worried that a manager is handling a safeguarding concern improperly. What is Step 1?",
+      options: ["Contact Ofsted directly — managers cannot be trusted with this", "Speak to your site manager — if they are involved, go to a Director", "Wait and gather more evidence before raising anything formally", "Speak to the child's parents so they can take action themselves"],
+      answer: 1 },
+    { q: "A colleague tells you they saw something concerning but is too scared to report it in their own name. What can they do?",
+      options: ["Nothing — anonymous reports cannot be acted on without a name", "Contact the NSPCC Whistleblowing Advice Line (0800 028 0285) anonymously", "Post about it on social media so it becomes a public matter", "Write an anonymous note and leave it on the manager's desk"],
+      answer: 1 },
+    { q: "Which law protects employees who make a genuine whistleblowing disclosure from being treated unfairly?",
+      options: ["The Children Act 1989", "The Equality Act 2010", "The Public Interest Disclosure Act 1998", "The Health and Safety at Work Act 1974"],
+      answer: 2 }
+  ],
+
+  llc: [
+    { q: "What is a 'low-level concern' about a member of staff?",
+      options: ["Only concerns serious enough to warrant a police referral", "Any concern — however small — that an adult's behaviour was inconsistent with the staff code of conduct", "Concerns about a staff member's professional qualifications or training", "Only concerns raised by parents, not by other staff"],
+      answer: 1 },
+    { q: "A member of staff repeatedly gives a particular child extra unsupervised one-to-one time. This hasn't caused harm. What should you do?",
+      options: ["Nothing — no harm has been caused so it does not need reporting", "Report it to the DSL as a low-level concern the same day", "Mention it to the staff member informally and ask them to stop", "Wait to see if the pattern continues before saying anything"],
+      answer: 1 },
+    { q: "Low-level concern records must be reviewed to identify what?",
+      options: ["Whether the staff member needs a pay review", "Patterns of behaviour that together may reach the threshold for LADO referral", "Whether the concern should be shared with the child's parents", "Which training courses the staff member should attend"],
+      answer: 1 }
+  ],
+
+  scc: [
+    { q: "You are on your lunch break and a parent sends you a friend request on Instagram. What must you do?",
+      options: ["Accept — social contact outside work is personal and not covered by the code of conduct", "Decline — staff must not befriend parents on personal social media", "Accept only if you also work with their child directly", "Ask your manager for permission before deciding"],
+      answer: 1 },
+    { q: "You disagree with a decision made by a site manager. What is the correct way to handle this?",
+      options: ["Raise it with parents at pick-up so they are aware of the issue", "Post about it on a staff WhatsApp group to get others' opinions", "Raise it privately with your manager or through the grievance procedure", "Ignore the decision and continue with your own approach"],
+      answer: 2 },
+    { q: "Your personal mobile phone is in your pocket during a session. A parent calls you. What should you do?",
+      options: ["Answer quietly so children do not notice", "Step outside to take the call since it is personal", "Not answer — personal devices must not be used during sessions. Report any parental contact to your manager.", "Take the call briefly and then put the phone away"],
+      answer: 2 }
+  ],
+
+  os: [
+    { q: "You find that a child has been accessing an age-inappropriate video on a nursery tablet. What do you do first?",
+      options: ["Delete the browsing history and monitor more carefully going forward", "Do not touch the device — report to the DSL immediately and preserve the evidence", "Show the child why the content is inappropriate and move on", "Report it to the child's parents at collection"],
+      answer: 1 },
+    { q: "A parent asks for your personal mobile number so they can send you updates about their child. What is correct?",
+      options: ["Share it — it makes communication easier and more personal", "Decline — all communication between staff and parents must go through official nursery channels", "Share it only if your manager agrees", "Give them your personal email address as a compromise"],
+      answer: 1 },
+    { q: "You suspect a colleague has been taking photos of children on their personal phone. What must you do?",
+      options: ["Confront the colleague privately and ask them to delete the photos", "Report to the site manager and DSL immediately — do not confront the colleague yourself", "Check whether the photos have been shared online before deciding what to do", "Mention it at the next team meeting so it can be discussed openly"],
+      answer: 1 }
+  ],
+
+  ppb: [
+    { q: "A two-year-old bites another child during play. What is the correct immediate response?",
+      options: ["Isolate the child who bit and explain firmly that biting is wrong", "Attend first to the child who was hurt — in full view of the child who bit", "Send a note home to the biting child's parents before doing anything else", "Remove the biting child from the room for the rest of the session"],
+      answer: 1 },
+    { q: "When is physical intervention permitted at Greencoat?",
+      options: ["Whenever a child is displaying behaviour that challenges other children", "Only as a last resort to prevent injury — never as punishment — and must be recorded immediately", "Only with written parental consent obtained in advance", "Whenever a senior staff member instructs you to intervene physically"],
+      answer: 1 },
+    { q: "A child's behaviour is escalating over several sessions. Who should you involve after your own attempts to support the child?",
+      options: ["The child's GP, contacted directly by the key person", "Sidra Begum (Lead SENCo / named behaviour lead) within 24 hours", "The site manager, but only after a full written incident log is compiled", "The child's parents — they are solely responsible for managing behaviour"],
+      answer: 1 }
+  ],
+
+  rec: [
+    { q: "An applicant declares a previous caution on their DBS application. What must happen before they can start work?",
+      options: ["They can start immediately — a caution is not a conviction", "A risk assessment must be completed and a Director must make the suitability decision before any start date", "They must wait six months and reapply", "The caution must be reported to Ofsted before any decision is made"],
+      answer: 1 },
+    { q: "Which document at Greencoat records the DBS status of every person working with children?",
+      options: ["The staff personnel file", "The Single Central Record (SCR)", "The nursery risk assessment log", "The EYFS self-evaluation form"],
+      answer: 1 },
+    { q: "A candidate for a practitioner role gives a referee who was their previous line manager. The reference comes back unusually brief and vague. What should you do?",
+      options: ["Accept it — the reference has been received and the process is complete", "Probe further — contact the referee by phone to ask specific questions about the candidate's conduct with children", "Disregard the reference and rely on the DBS check instead", "Ask the candidate to supply an alternative referee"],
+      answer: 1 }
+  ],
+
+  acc: [
+    { q: "A child falls in the garden and has a visible bump on their head. What must happen before the child goes home?",
+      options: ["Record it in the accident book and tell parents verbally at collection", "Complete the accident form, have it countersigned by a witness, and ensure a paediatric first aider assesses the child. A head injury note must go home with the parent who must sign to confirm receipt.", "Contact the child's GP for advice before deciding on any further action", "Apply ice, monitor for 20 minutes, and record it in the daily diary"],
+      answer: 1 },
+    { q: "How many paediatric first aiders must be on the premises at all times during a session?",
+      options: ["One per site, available on call", "At least one at all times — more during mealtimes and outings", "One per room at all times", "Only required if children under two are present"],
+      answer: 1 },
+    { q: "A child has a severe allergic reaction. They have an EpiPen. What is the order of actions?",
+      options: ["Call parents first, administer EpiPen if they give consent, then call 999", "Administer the EpiPen, call 999 immediately, then inform parents — do not wait for consent", "Call 999 first and wait for paramedic instruction before administering the EpiPen", "Administer antihistamine first, monitor for five minutes, then decide whether to use EpiPen"],
+      answer: 1 }
+  ],
+
+  med: [
+    { q: "A parent hands you their child's prescription medication at drop-off with no written instructions. Can you administer it?",
+      options: ["Yes — the parent gave verbal consent at handover", "No — a completed medication consent form must be in place before any medication is given", "Yes, but only if a first aider is present", "Only if the medication has the child's name on the packaging"],
+      answer: 1 },
+    { q: "After administering medication, what must you do?",
+      options: ["Store the remaining medication in the child's bag for parents to take home", "Complete the medication record, have it witnessed and signed, and inform parents at collection", "Inform the site manager verbally — no written record is needed for prescribed medication", "Record it in the accident book as this is the official medication log"],
+      answer: 1 },
+    { q: "A child's prescription has recently changed. Their existing consent form still shows the old dosage. What must happen?",
+      options: ["You can administer the new dosage — the prescription label is sufficient authority", "A new consent form must be completed and signed before the new dosage is given", "Contact the prescribing GP for written confirmation before proceeding", "The site manager can update the existing form without a parent signature"],
+      answer: 1 }
+  ],
+
+  alg: [
+    { q: "A child with a known nut allergy is at the lunch table. Another child has a packed lunch containing a nut product. What must you do?",
+      options: ["Ask the child with the allergy to move seats", "Remove the nut product from the setting in line with the individual health care plan — do not allow it near the allergic child", "Monitor closely but allow both children to eat — cross-contamination is only a risk if food is shared", "Call the allergic child's parents to ask how serious the allergy is before acting"],
+      answer: 1 },
+    { q: "Where must a child's individual allergy action plan and emergency medication be kept?",
+      options: ["In the child's personal bag brought from home each day", "In a clearly labelled, accessible location known to all staff — never locked away", "Locked in the office for safekeeping", "In the site manager's office, to be retrieved only in an emergency"],
+      answer: 1 },
+    { q: "A child with anaphylaxis has their EpiPen expire while in your care. What should you do?",
+      options: ["Continue to use the expired EpiPen — it is better than nothing", "Notify parents immediately and arrange for a replacement before the child next attends. The child should not be admitted without current unexpired medication in place.", "Contact the prescribing pharmacy directly to request an emergency replacement", "Record the expiry and monitor the child more closely until parents replace it"],
+      answer: 1 }
+  ],
+
+  arr: [
+    { q: "A child is being collected by someone you have never seen before who claims to be the child's uncle. What must you do?",
+      options: ["Release the child — family members are trusted by default", "Check the collection password or verify against the authorised collection list before releasing the child. If in doubt, contact the parent.", "Ask the child if they recognise the person", "Release the child but make a note in the register for parents to confirm later"],
+      answer: 1 },
+    { q: "At morning drop-off a parent seems intoxicated. Their child is with them. What should you do?",
+      options: ["Accept the child as normal — it is not your place to comment on a parent's state", "Accept the child, record your observations, and report to the DSL. If the parent's behaviour poses immediate risk, the child must not leave with them.", "Ask the parent to come back when they are sober and refuse to accept the child", "Contact the other parent or carer immediately and ask them to collect"],
+      answer: 1 },
+    { q: "A child is not collected at closing time and parents cannot be reached. After how long should you consider contacting children's social care?",
+      options: ["After 30 minutes with no contact from any emergency contact", "After all emergency contacts have been tried without success — if still unresolved and you have welfare concerns, contact children's social care", "After 2 hours — parents may simply be delayed in traffic", "Only after a Director has given specific authorisation to make that call"],
+      answer: 1 }
+  ],
+
+  lc: [
+    { q: "A child has not been collected 30 minutes after closing. You have tried both parents. No emergency contact is answering. What must you do next?",
+      options: ["Stay with the child and keep trying every 10 minutes until someone answers", "Follow the late collection procedure — attempt all emergency contacts, and if no success within the agreed timeframe, contact children's social care for guidance", "Take the child home with you so they are safe", "Contact your site manager and wait for their instruction before doing anything else"],
+      answer: 1 },
+    { q: "Late collection fees apply when a child is not collected on time. A parent refuses to pay and threatens to complain to Ofsted. What is the correct response?",
+      options: ["Waive the fee to avoid conflict — the parent relationship is more important", "Explain the policy calmly, apply the fee as stated in the parent contract, and follow the complaints procedure if they wish to escalate", "Escalate immediately to the Director to decide whether to waive the fee", "Agree not to charge this time but issue a formal warning that it will be charged next time"],
+      answer: 1 },
+    { q: "A parent is regularly 15-20 minutes late collecting their child. You have spoken to them twice. What is the next step?",
+      options: ["Apply the late fee each time and record it — no further action is needed", "Escalate to the site manager for a formal conversation. Persistent late collection is recorded and may trigger a welfare check if there is concern about the child's home circumstances.", "Contact children's social care after the third late collection", "Inform the child that their parent is often late so they are not anxious"],
+      answer: 1 }
+  ],
+
+  mc: [
+    { q: "A member of staff realises a child cannot be found anywhere in the building or garden. What is the very first action?",
+      options: ["Begin an immediate search of the building before telling anyone — it may be a false alarm", "Raise the alarm immediately with the site manager — do not search alone. Implement the missing child procedure and call 999 if not found within minutes.", "Check the register to confirm the child should definitely be in", "Call the child's parents before alerting the manager"],
+      answer: 1 },
+    { q: "While a thorough search is underway for a missing child, who must be notified?",
+      options: ["Only the site manager until the child is found — to avoid unnecessary panic", "Site manager, a Director, and the police if not found within a short time — parents must also be informed promptly", "Parents only — involving police too quickly could cause distress", "Ofsted must be called first as they are the regulatory authority"],
+      answer: 1 },
+    { q: "After a missing child incident, even if the child is found quickly and safely, what must happen?",
+      options: ["A verbal debrief at the next team meeting is sufficient", "A full written incident report must be completed, the incident reviewed, and Ofsted notified if required by the RIDDOR and Ofsted notification thresholds", "No further action — if the child was found safe, there is nothing to report", "The member of staff responsible for the child's room must complete a personal incident statement"],
+      answer: 1 }
+  ],
+
+  el: [
+    { q: "The lockdown alarm sounds during an outdoor session. What must staff do immediately?",
+      options: ["Bring children indoors via the nearest door and lock it — then await further instruction from the site manager", "Call 999 first, then bring children inside", "Take children to the assembly point as in a fire drill", "Wait for the site manager to come outside and direct you"],
+      answer: 0 },
+    { q: "During a lockdown, a parent arrives at the main entrance and demands their child. What is correct?",
+      options: ["Release the child — parental authority overrides the lockdown", "Do not open the door. No children may leave during a lockdown — the parent must wait until the all-clear is given by the site manager or police.", "Contact the site manager and let them make the decision on the door", "Release the child only if the parent has the correct collection password"],
+      answer: 1 },
+    { q: "Who is responsible for giving the all-clear after a lockdown?",
+      options: ["The first staff member to confirm the threat has passed", "The site manager or a Director — or the police if they have been called", "The person who initiated the lockdown", "Any qualified member of staff once two rooms have been checked"],
+      answer: 1 }
+  ],
+
+  sc: [
+    { q: "You are the only practitioner in a room of eight two-year-olds. A child needs urgent attention in another part of the room. You cannot watch the whole group at once. What must you do?",
+      options: ["Attend to the child — the others are old enough to be left briefly", "Bring the whole group together to one supervised space before attending to the individual child, or call for immediate support", "Ask the oldest child to keep an eye on the others for a moment", "Complete the task quickly — brief unattended moments are acceptable"],
+      answer: 1 },
+    { q: "What is the correct staff-to-child ratio for two-year-olds at Greencoat?",
+      options: ["1 staff member to 4 children", "1 staff member to 5 children", "1 staff member to 6 children", "1 staff member to 8 children"],
+      answer: 1 },
+    { q: "You notice a colleague sitting in a corner of the room scrolling their phone while a group of children play unsupervised near climbing equipment. What should you do?",
+      options: ["Ignore it — it is not your place to comment on a colleague's practice", "Address the immediate safety issue yourself by supervising the children, then report the practice to the site manager", "Call out to the colleague across the room to put their phone away", "Mention it to the colleague privately after the session ends"],
+      answer: 1 }
+  ],
+
+  ie: [
+    { q: "A child in your room uses a wheelchair. The outdoor area has a step that prevents access. What must you do?",
+      options: ["Supervise the child indoors while the others go outside — their safety comes first", "Report it to the site manager immediately as a reasonable adjustment is required — the child must not be excluded from outdoor activities", "Ask the child's parents to decide whether outdoor play is appropriate for their child", "Carry the child over the step — this is a practical solution that keeps them included"],
+      answer: 1 },
+    { q: "During circle time a child uses derogatory language about another child's race. What is the correct response?",
+      options: ["Address it calmly in the moment, record the incident, and inform both sets of parents at collection", "Ignore it — young children do not understand what they are saying", "Tell the child off firmly in front of the group as a deterrent to others", "Wait until the end of the session, then speak to the child privately"],
+      answer: 0 },
+    { q: "A parent tells you they do not want their child to sit next to a child from a particular ethnic background. What must you do?",
+      options: ["Comply privately to maintain the parent relationship", "Refuse the request, explain Greencoat's equality policy, and report the conversation to the site manager and Taz Khan", "Raise it at the next staff meeting to get colleagues' opinions before responding", "Refer the parent to Ofsted if they persist"],
+      answer: 1 }
+  ],
+
+  ict: [
+    { q: "A student on placement asks to change a child's nappy to complete their log. What must happen first?",
+      options: ["Allow it — workplace experience requires hands-on tasks", "A qualified member of staff must be present throughout and actively supervising — students may not carry out intimate care unsupported", "Check whether the student has passed their safeguarding module before deciding", "Get written parental consent specifically for the student to carry out the change"],
+      answer: 1 },
+    { q: "During a nappy change you notice bruising on a child's inner thigh that you have not seen before. What do you do?",
+      options: ["Complete the change, note the bruising in the daily log, and mention it to parents at collection", "Complete the change safely, then report immediately to the DSL — do not wait, do not tell parents first", "Take a photo for evidence before completing the change", "Ask the child directly how they got the bruise before deciding what to do"],
+      answer: 1 },
+    { q: "Where must nappy changing always take place?",
+      options: ["In any quiet area of the nursery where privacy can be maintained", "In the designated nappy-changing area only — never in the main playroom or behind a closed door", "In the child's home room so their key person can be present", "Wherever is most convenient provided a changing mat is available"],
+      answer: 1 }
+  ],
+
+  kp: [
+    { q: "A child's key person is absent for three weeks. What must the site manager ensure?",
+      options: ["The child's file is locked until the key person returns", "A named buddy (secondary key person) takes over all key person responsibilities for that child and parents are informed", "Another key person checks in on the child informally — no formal handover is required for short absences", "The child is reassigned to a new key person permanently"],
+      answer: 1 },
+    { q: "A parent asks you to keep a welfare concern about their child confidential — they do not want it shared with anyone. What must you tell them?",
+      options: ["Agree — respecting parental wishes is a legal obligation under the Children Act", "Explain that you cannot promise confidentiality if there is a safeguarding concern. The child's welfare must come first.", "Tell them you will record it privately in the child's file but will not share it unless they give permission", "Defer to the site manager — this is a decision above your level"],
+      answer: 1 },
+    { q: "How often should a key person offer a formal review meeting with parents?",
+      options: ["Once per year, at the annual parents' evening", "At least twice per year, or more frequently if the parent requests it or the child has additional needs", "Only when a concern has been identified about the child's development", "Whenever the parent asks — there is no set minimum frequency"],
+      answer: 1 }
+  ],
+
+  preg_guide: [
+    { q: "How many weeks before the expected due date must an employee give notice of maternity leave?",
+      options: ["4 weeks", "8 weeks", "15 weeks", "20 weeks"],
+      answer: 2 },
+    { q: "From 6 April 2026, what is the new minimum notice period an employee must give to change their maternity leave return date?",
+      options: ["2 weeks", "4 weeks", "6 weeks", "8 weeks"],
+      answer: 3 },
+    { q: "A pregnant employee tells you she is struggling with her workload. What is Greencoat's first obligation?",
+      options: ["Offer unpaid leave until she feels ready to return to her normal duties", "Complete or review a pregnancy risk assessment and make any necessary reasonable adjustments to her role", "Move her to a back-office role away from children for the remainder of her pregnancy", "Refer her to occupational health before making any changes"],
+      answer: 1 }
+  ],
+
+  // ════════════════════════════════════════════════════════════════════
+  // TIER 2/3 — CATEGORY FALLBACKS
+  // ════════════════════════════════════════════════════════════════════
+
+  _cat_safeguarding: [
+    { q: "A child discloses that someone at home hurts them. What is the correct immediate action?",
+      options: ["Ask the child to repeat the disclosure in front of a second staff member so there is a witness", "Listen without leading questions, record their exact words, and report to the DSL immediately", "Tell the child you will speak to their parents and ask them to explain", "Wait until the end of the session so as not to upset the child further"],
+      answer: 1 },
+    { q: "You are completing a referral form for a child protection concern. Which contact is correct for Birmingham's Children's Advice and Support Service?",
+      options: ["0121 675 1669", "0121 303 1888", "0300 123 4666", "0121 464 2612"],
+      answer: 1 },
+    { q: "Which of these is NOT a category of child abuse under statutory guidance?",
+      options: ["Physical abuse", "Emotional abuse", "Financial abuse", "Sexual abuse"],
+      answer: 2 }
+  ],
+
+  _cat_health_care: [
+    { q: "A child vomits at 10am. Under Greencoat's infection control policy, when can they return to the nursery?",
+      options: ["Once they have been symptom-free for 24 hours", "48 hours after the last episode of vomiting or diarrhoea", "After a GP confirms they are no longer contagious", "As soon as they feel well enough — the 48-hour rule is advisory only"],
+      answer: 1 },
+    { q: "You are caring for a sleeping baby and need to carry out a quick task in the adjacent room. What must you do?",
+      options: ["Leave the door open so you can hear the baby", "Take the baby with you or ensure another staff member stays with them — sleeping babies must never be left unattended", "Check on them every 5 minutes — brief absences are acceptable", "Ask a parent volunteer to sit with the baby"],
+      answer: 1 },
+    { q: "A child has a care plan for a medical condition. Who is responsible for ensuring all staff in that child's room know the plan?",
+      options: ["The child's parents — they should brief each staff member individually", "The site manager, supported by the key person", "The SENCO only — other staff do not need to know medical details", "The nursery nurse with the highest qualification"],
+      answer: 1 }
+  ],
+
+  _cat_health_safety: [
+    { q: "You discover a fire exit in your room is blocked by equipment. What do you do?",
+      options: ["Note it in the next risk assessment review", "Clear the obstruction immediately and report it to the fire marshal and site manager", "Report it at the end of the day in the maintenance log", "Continue the session and move the equipment at the end of the day"],
+      answer: 1 },
+    { q: "During an outdoor session you find a used syringe near the fence. What is the correct action?",
+      options: ["Pick it up using gloves and dispose of it in the clinical waste bin", "Do not touch it — bring all children inside immediately, cordon the area, and report to the site manager for safe disposal", "Bury it in the soil where children cannot reach it", "Leave it and report it to the council for collection"],
+      answer: 1 },
+    { q: "A RIDDOR-reportable accident involving a child must be reported to the Health and Safety Executive within how long?",
+      options: ["7 days", "10 days", "14 days", "28 days"],
+      answer: 1 }
+  ],
+
+  _cat_staffing: [
+    { q: "A staff member raises a formal grievance about their treatment by a colleague. Who should they submit it to first?",
+      options: ["Their trade union representative directly", "Their site manager — or a Director if the grievance involves the site manager", "Ofsted, as they have oversight of nursery employment practices", "The HR adviser without involving nursery management at all"],
+      answer: 1 },
+    { q: "How often must all staff receive a formal supervision meeting at Greencoat?",
+      options: ["Once per year", "Twice per year", "Every 2-3 months (at least 4 times per year)", "Monthly — more frequently during probation"],
+      answer: 2 },
+    { q: "A member of staff is dismissed for gross misconduct involving a child. What must Greencoat do?",
+      options: ["Keep it confidential — employment law prevents disclosure", "Refer the individual to the DBS for a barring consideration and notify Ofsted", "Record it in the SCR and review the circumstance at the next annual audit", "Contact ACAS for guidance before taking any notification steps"],
+      answer: 1 }
+  ],
+
+  _cat_governance: [
+    { q: "A parent requests to see the CCTV footage of an incident involving their child. What is the correct process?",
+      options: ["Show them the footage immediately — parents have an absolute right to see footage involving their child", "Direct them to make a Subject Access Request — Directors review and respond within one calendar month", "Refuse — CCTV footage is confidential and cannot be shared with parents", "Contact the ICO for permission before disclosing any footage"],
+      answer: 1 },
+    { q: "Under GDPR, how long may Greencoat retain CCTV footage that is not required for an investigation?",
+      options: ["7 days", "14 days", "31 days", "90 days"],
+      answer: 2 },
+    { q: "You receive an email from an unknown sender asking you to click a link to update your nursery software login. What should you do?",
+      options: ["Click the link — it may be a genuine system update", "Delete the email and report it to the site manager as a potential phishing attempt", "Forward it to IT support before clicking anything", "Reply to ask the sender to confirm it is genuine"],
+      answer: 1 }
+  ],
+
+  _cat_child_development: [
+    { q: "A child has been with you for three weeks and is still very distressed at every drop-off. Who should be involved in reviewing the settling-in plan?",
+      options: ["Only the key person — they know the child best", "The key person, site manager, and parents together — a revised settling-in plan should be agreed", "Parents only — the nursery's role ends once the child is on the premises", "The SENCo — prolonged settling difficulties always indicate a developmental need"],
+      answer: 1 },
+    { q: "What does the EYFS require regarding a child's two-year progress check?",
+      options: ["A written assessment shared with parents and, where relevant, health visitors", "A verbal update to parents at pick-up — no written record is required", "A formal meeting with the local authority before the child turns 30 months", "Testing across all seven areas of learning and sharing results with school"],
+      answer: 0 },
+    { q: "A child transitions to a new room. What is the minimum expected as part of the transition process?",
+      options: ["A one-day taster session in the new room", "Planned, gradual transition visits with the key person, handover of learning journey, and a transition meeting with the receiving key person", "A letter home informing parents of the transition date", "A written developmental assessment completed by the leaving key person"],
+      answer: 1 }
+  ],
+
+  _cat_child_safety: [
+    { q: "Before taking children on an outing, what must be completed?",
+      options: ["A verbal briefing with all attending staff", "A written risk assessment specific to the outing, increased ratios confirmed, emergency contacts available, and parent consent obtained", "A register check and a head count at the gate", "A phone call to the venue to confirm it is child-safe"],
+      answer: 1 },
+    { q: "A child from your group goes missing during an outing. What is the immediate first step?",
+      options: ["Begin an immediate search of the surrounding area with all available staff", "One staff member stays with the group — another searches nearby while the site manager and police are contacted immediately. Do not split the group.", "Call the child's parents first so they can come and help search", "Return to the nursery with the rest of the group and call police from there"],
+      answer: 1 },
+    { q: "A parent arrives to collect their child from the nursery entrance but their name is not on the authorised collection list for today. What must you do?",
+      options: ["Release the child — parents are always authorised to collect their own children", "Refuse release until you have spoken to the other authorised parent or carer and confirmed the change. Record the decision.", "Use your judgement based on whether you recognise them", "Ask the child if they want to go with this person"],
+      answer: 1 }
+  ],
+
+  _cat_families: [
+    { q: "Parents are going through a separation. One parent insists you do not share any information about their child with the other parent. What is Greencoat's position?",
+      options: ["Comply — the requesting parent has parental responsibility and their wishes take priority", "Both parents with parental responsibility have an equal right to information about their child. A formal legal order restricting this is required before any restriction is applied.", "Share information with both parents but log every instance for legal protection", "Contact children's social care for guidance before making any decision"],
+      answer: 1 },
+    { q: "A family tells you they are observing Ramadan and their child is fasting. The child is 4. What must you do?",
+      options: ["Respect the family's wishes and ensure the child is not offered food during the fast", "Speak sensitively with parents — young children must receive adequate nutrition in your care. Safeguarding obligations cannot be overridden by religious practice.", "Contact children's social care — this constitutes neglect", "Allow fasting but ensure the child drinks plenty of water"],
+      answer: 1 },
+    { q: "A parent tells you their child witnessed domestic violence at home last night. What must you do?",
+      options: ["Offer the parent emotional support and check in on the child during the session", "Record it, report it to the DSL the same day — domestic violence exposure is a safeguarding concern for the child", "Advise the parent to contact their GP and monitor the situation", "Only act if the child shows visible signs of distress during the session"],
+      answer: 1 }
+  ],
+
+  _cat_inclusion: [
+    { q: "A child is identified as potentially having additional needs. What is the first step under the SEND Code of Practice?",
+      options: ["Refer immediately to the local authority for an Education, Health and Care (EHC) needs assessment", "Begin SEN Support: observe and assess, then plan and implement strategies with parents — involve the SENCo (Sidra Begum)", "Wait until the child's 2-year check before taking any formal action", "Seek parental permission to discuss with the child's health visitor before taking any action at nursery"],
+      answer: 1 },
+    { q: "A child in your room uses Makaton. You do not know any Makaton signs. What should you do?",
+      options: ["Use gestures and hope the child understands — formal training is the SENCo's responsibility", "Speak to the SENCo and site manager — you need basic Makaton training. The child has a right to a communicative environment.", "Ask parents to teach you during drop-off when you have a moment", "Use picture cards as an alternative — Makaton is not required if alternatives exist"],
+      answer: 1 },
+    { q: "Which act sets out the legal framework for equality and non-discrimination at Greencoat?",
+      options: ["The Children Act 2004", "The Equality Act 2010", "The Human Rights Act 1998", "The Special Educational Needs and Disability Act 2001"],
+      answer: 1 }
+  ],
+
+  _cat_health_wellbeing: [
+    { q: "A child who is normally cheerful is withdrawn and reluctant to be changed today. They flinch when you reach for their waistband. What must you do?",
+      options: ["Proceed carefully with the change and note the behaviour in the daily diary", "Do not force the change if the child is distressed. Report your observations to the DSL immediately — this may be a safeguarding concern.", "Speak to the child's parents at collection and ask if anything has happened at home", "Ask another practitioner to try — the child may respond better to a different person"],
+      answer: 1 },
+    { q: "What guidance does Greencoat follow to reduce the risk of Sudden Infant Death Syndrome (SIDS) for sleeping babies?",
+      options: ["NHS and Lullaby Trust guidance — babies are always laid on their back with feet to the foot of the cot", "British Paediatric Association guidance — babies may sleep on their side if they roll naturally", "EYFS guidance only — the nursery's own risk assessment is sufficient", "Individual parental preference takes precedence over any published guidance"],
+      answer: 0 }
+  ]
+};
+
+// ── Category mapping — maps policy cat to fallback key ────────────────
+const CAT_FALLBACK_MAP = {
+  'Safeguarding':       '_cat_safeguarding',
+  'Health & Care':      '_cat_health_care',
+  'Health & Safety':    '_cat_health_safety',
+  'Staffing':           '_cat_staffing',
+  'Governance':         '_cat_governance',
+  'Child Development':  '_cat_child_development',
+  'Child Safety':       '_cat_child_safety',
+  'Families':           '_cat_families',
+  'Inclusion':          '_cat_inclusion',
+  'Health & Wellbeing': '_cat_health_wellbeing',
+};
+
+function getFallbackQuiz(policy) {
+  // Tier 1: use tailored questions
+  if (FALLBACK_QUIZZES[policy.id]) return FALLBACK_QUIZZES[policy.id];
+  // Tier 2/3: use category fallback
+  const catKey = CAT_FALLBACK_MAP[policy.cat];
+  if (catKey && FALLBACK_QUIZZES[catKey]) return FALLBACK_QUIZZES[catKey];
+  return null;
+}
+
+
 const DEFAULT_POLICIES = [
   {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Safeguarding_Policy_Feb2026.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
   {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',desc:'Procedures for staff to report concerns, including qualifying disclosures, sexual harassment provisions, DSL-first escalation route.',adopted:'March 2026'},
@@ -1407,7 +1791,6 @@ const DEFAULT_POLICIES = [
   {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',desc:'Bribery Act 2010 compliance, what constitutes bribery, gifts and hospitality guidelines.',adopted:'March 2026'},
   {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',desc:'Supporting children and families experiencing bereavement, staff guidance on language and response.',adopted:'March 2026'},
   {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',desc:'Log template for recording CCTV system checks, access events, and Subject Access Requests.',adopted:'March 2026'},
-  {id:'cwb',tier:3,title:"Children's Well-being in the Nursery Policy",cat:'Child Development',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:'Promoting children\'s emotional health and wellbeing, attachment-based practice.',adopted:'March 2026'},
   {id:'crp',tier:3,title:'Conflict Resolution with Parents and Aggressive Behaviour Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',desc:'De-escalation of parental conflict, zero tolerance of aggressive behaviour.',adopted:'March 2026'},
   {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',desc:'Response to serious incidents including staff death, major injury, outbreak of disease.',adopted:'March 2026'},
   {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',desc:'Protecting nursery systems and data from cyber threats, staff training, suspicious email reporting.',adopted:'March 2026'},
@@ -1441,6 +1824,7 @@ const DEFAULT_POLICIES = [
   {id:'pers',tier:3,title:'Personnel Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Personnel_Policy_Mar2026.docx',desc:'HR management framework covering employment terms, performance management, equal opportunities, and staff records.',adopted:'March 2026'},
   {id:'phys',tier:3,title:'Physical Activity Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Physical_Activity_Policy_Mar2026.docx',desc:'Commitment to daily physical activity. PANCo: Sadiyah Begum, responsible for promoting active play.',adopted:'March 2026'},
   {id:'preg',tier:3,title:'Pregnancy and Family Leave Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Policy_Mar2026.docx',desc:'Maternity, paternity, shared parental leave and adoption leave entitlements. Reflects Employment Rights Act 2025 changes.',adopted:'March 2026'},
+  {id:'preg_guide',tier:1,title:'Pregnancy & Family Leave — Staff Guide',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Staff_Guide_Mar2026.docx',desc:'Step-by-step guide for staff covering maternity, paternity, adoption, shared parental leave, neonatal care and key deadlines.',adopted:'March 2026'},
   {id:'qual',tier:3,title:'Quality Provision Policy',cat:'Governance',sites:['all'],file:'Greencoat_Quality_Provision_Policy_Mar2026.docx',desc:'Commitment to high-quality care and education, self-evaluation, quality improvement, and continuous development.',adopted:'March 2026'},
   {id:'ref',tier:3,title:'Referral Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Referral_Form_Mar2026.docx',desc:'Template form for referring a safeguarding concern to Birmingham Children\'s Social Care or the LADO.',adopted:'March 2026'},
   {id:'rtw',tier:3,title:'Return to Work Interview Record',cat:'Staffing',sites:['all'],file:'Greencoat_Return_to_Work_Interview_Record_Mar2026.docx',desc:'Template for return to work conversations following any period of absence, however short.',adopted:'March 2026'},
@@ -1490,6 +1874,7 @@ let queueMode = false;
 let quizCache = {};
 let preloadedQuiz = null;   // questions ready for the currently-open policy
 let preloadedQuizForId = null; // policy ID these questions belong to — guards against race condition
+let aiController       = null; // AbortController for AI requests (module-scoped for cancel)
 let _loadDocController = null; // AbortController for the active loadDoc fetch
 let isPreloadingQuiz = false;
 let docSearchMatches = [], docSearchIndex = 0;
@@ -1501,7 +1886,28 @@ if (!staffToken) {
 
 // ─── LIVE SYNC ────────────────────────────────────────────────────────────
 async function fetchLiveConfig() {
-  return Promise.resolve(); // All data is local — no server needed
+  try {
+    const res = await fetch('/api/admin-data?action=config');
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json.ok && json.data) {
+      if (Array.isArray(json.data.policies) && json.data.policies.length > 0) {
+        // Only override if server has more policies than our default (prevents accidental wipe)
+        if (json.data.policies.length >= DEFAULT_POLICIES.length) {
+          POLICIES = json.data.policies;
+        }
+      }
+      if (Array.isArray(json.data.staff) && json.data.staff.length > 0) {
+        STAFF = json.data.staff;
+        buildStaffSelector();
+        // If currently logged-in staff no longer in updated list, force re-login
+        if (currentStaff && !STAFF.includes(currentStaff)) {
+          logoutStaff();
+          showToast('Your account is no longer active. Please contact your manager.', 'err');
+        }
+      }
+    }
+  } catch(e) { /* offline or first deploy — use defaults */ }
 }
 
 async function trackActivity(storeName, key, value) {
@@ -1521,6 +1927,29 @@ async function trackActivity(storeName, key, value) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
+// ── SERVER SYNC (fire-and-forget — never blocks UI) ──────────────────────
+function syncAcksToServer() {
+  if (!currentStaff) return;
+  const acks = [...acknowledged];
+  fetch('/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'sync_acks', staffName: currentStaff, data: { acks } })
+  }).catch(() => {}); // silent fail — localStorage is source of truth
+}
+
+function logActivityToServer(activityType, key, value, policyId, policyTitle) {
+  if (!currentStaff) return;
+  fetch('/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'log_activity', staffName: currentStaff, data: {
+      activityType, key: key || null, value: value || null,
+      policyId: policyId || null, policyTitle: policyTitle || null
+    }})
+  }).catch(() => {}); // silent fail
+}
+
 async function init() {
   await fetchLiveConfig(); 
 
@@ -1687,16 +2116,30 @@ function onStaffChange(name) {
 }
 
 async function syncAcksFromServer(name) {
-    if (!name) return;
-    const key = `gc_acks_${name.replace(/\s+/g,'_')}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
-        acknowledged = new Set(JSON.parse(stored));
-        updateProgressUI();
-        renderPriorityBanner();
-        if (queueMode) renderQueueList();
+  if (!name) return;
+  const localKey = `gc_acks_${name.replace(/\s+/g,'_')}`;
+  // Start with localStorage (source of truth)
+  const localStored = JSON.parse(localStorage.getItem(localKey) || '[]');
+  let merged = new Set(localStored);
+  // Best-effort fetch from server to merge any acks from other devices
+  try {
+    const res = await fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_acks', staffName: name })
+    });
+    if (res.ok) {
+      const d = await res.json();
+      if (Array.isArray(d.acks)) d.acks.forEach(id => merged.add(id));
     }
-    return true;
+  } catch(e) { /* offline — local only */ }
+  // Save merged result back to localStorage
+  acknowledged = merged;
+  localStorage.setItem(localKey, JSON.stringify([...acknowledged]));
+  updateProgressUI();
+  renderPriorityBanner();
+  if (queueMode) renderQueueList();
+  return true;
 }
 
 function updateProgressUI() {
@@ -1996,8 +2439,22 @@ function askAIAbout(id) { const p = POLICIES.find(x => x.id === id); if (p) { if
 function askAIAboutCurrent() { if (currentPolicy) { if (!aiOpen) toggleAI(); document.getElementById('aiInput').value = `Explain the key points of the "${currentPolicy.title}".`; window._contextPolicy = currentPolicy.title; sendAI(); } }
 
 async function loadChatHistory(name) {
-  // Reset chat on staff change — server-side chat history retrieval can be added later
   chatHistory = [];
+  // Restore recent chat from localStorage for this staff member
+  if (name) {
+    try {
+      const logKey = `gc_activity_${name.replace(/\s+/g,'_')}`;
+      const log = JSON.parse(localStorage.getItem(logKey) || '[]');
+      const recentChats = log.filter(e => e.action === 'aichat').slice(-3);
+      if (recentChats.length > 0) {
+        // Silently pre-load last few exchanges into chatHistory for context
+        recentChats.forEach(c => {
+          chatHistory.push({ role: 'user', content: c.key || '' });
+          if (c.value) chatHistory.push({ role: 'assistant', content: typeof c.value === 'string' && c.value.startsWith('{') ? JSON.parse(c.value).answer || c.value : c.value });
+        });
+      }
+    } catch(e) { chatHistory = []; }
+  }
   const msgs = document.getElementById('aiMessages');
   if (msgs) {
     msgs.innerHTML = `<div class="ai-msg bot"><div class="ai-bubble">👋 Hi${name ? ', ' + name.split(' ')[0] : ''}! I know all your policies, the latest UK EYFS statutory framework, and Ofsted criteria. Ask me anything!</div></div>`;
@@ -2006,6 +2463,8 @@ async function loadChatHistory(name) {
 
 async function sendAI() {
   const input = document.getElementById('aiInput'); const text = input.value.trim(); if (!text) return;
+  // Guard: abort any in-flight request before starting a new one
+  if (aiController) { aiController.abort(); aiController = null; }
   addAIMessage('user', text);
   chatHistory.push({ role: 'user', content: text });
   input.value = ''; input.style.height = '';
@@ -2018,12 +2477,11 @@ async function sendAI() {
   if (readerOpen && docEl && currentPolicy) {
     pText = docEl.innerText;
   } else {
-    // No document open — send lightweight catalog of all policy titles + descriptions
     catalog = POLICIES.map(p => `- **${p.title}**: ${p.desc}`).join('\n');
   }
 
-  const aiController = new AbortController();
-  const aiTimeout = setTimeout(() => aiController.abort(), 30000); // 30s timeout
+  aiController = new AbortController();
+  const aiTimeout = setTimeout(() => { if (aiController) aiController.abort(); }, 30000);
   try {
     const res = await fetch('/api/ai', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2042,7 +2500,9 @@ async function sendAI() {
     const reply = data.reply || 'Sorry, I could not get a response. Please try again.';
     chatHistory.push({ role: 'assistant', content: reply });
     addAIMessage('bot', reply);
-    if (currentStaff) trackActivity('aichat', Date.now().toString(), { policy: currentPolicy?.title||'General', question: text, answer: reply, date: new Date().toISOString() });
+    const replySnippet = reply.slice(0, 500);
+    if (currentStaff) logActivityToServer('aichat', text.slice(0, 200), replySnippet, currentPolicy?.id||null, currentPolicy?.title||'General');
+    trackActivity('aichat', Date.now().toString(), { policy: currentPolicy?.title||'General', question: text.slice(0,200), answer: replySnippet, date: new Date().toISOString() });
   } catch(e) {
     document.getElementById('aiTyping').classList.remove('show');
     const msg = e?.name === 'AbortError'
@@ -2051,12 +2511,20 @@ async function sendAI() {
     addAIMessage('bot', msg);
   } finally {
     clearTimeout(aiTimeout);
+    aiController = null;
   }
 }
-
 function addAIMessage(role, text) {
   const msgs = document.getElementById('aiMessages'); const div = document.createElement('div'); div.className = `ai-msg ${role}`;
-  div.innerHTML = `<div class="ai-bubble">${text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>').replace(/^[-•]\s+(.+)$/gm, '• $1').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>`;
+  if (role === 'user') {
+    // User messages: plain text only — escape HTML to prevent injection
+    const bubble = document.createElement('div'); bubble.className = 'ai-bubble';
+    bubble.textContent = text;
+    div.appendChild(bubble);
+  } else {
+    // Bot/assistant messages: render markdown-style formatting
+    div.innerHTML = `<div class="ai-bubble">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>').replace(/^[-•]\s+(.+)$/gm, '• $1').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>`;
+  }
   msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
 }
 function autoResize(el) { el.style.height = ''; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
@@ -2091,10 +2559,18 @@ async function preloadQuiz(policy, isRetry) {
   isPreloadingQuiz = true;
   preloadedQuiz = null;
   try {
-    const docEl = document.getElementById('docContent');
-    const policyText = docEl ? docEl.innerText.slice(0, 8000) : '';
+    // Always fetch the actual policy file for quiz generation — never rely on rendered HTML
+    let policyText = '';
+    try {
+      const resDoc = await fetch(policy.file);
+      if (resDoc.ok) {
+        const buf = await resDoc.arrayBuffer();
+        const raw = await mammoth.extractRawText({ arrayBuffer: buf });
+        policyText = raw.value;
+      }
+    } catch(e) {}
     const seed = isRetry ? ` RETRY seed:${Date.now()}` : '';
-    const prompt = `Generate exactly 3 multiple-choice questions to test a nursery staff member's understanding of this policy: "${policy.title}".${seed} Focus on scenarios, responsibilities and correct procedures. Questions must be answerable from the policy text.`;
+    const prompt = `Generate exactly 3 multiple-choice questions EXCLUSIVELY about the "${policy.title}". Policy ID: ${policy.id}.${seed} IMPORTANT: Every question must be directly and only answerable from the policy text provided. Do NOT ask generic safeguarding, ratio or EYFS questions — questions must be specific to this policy's subject matter, procedures and staff responsibilities.`;
     const res = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2157,13 +2633,21 @@ async function ackCurrent() {
     if (preloadedQuiz && preloadedQuiz.length >= 3) {
       openQuizForAck(p);
     } else {
-      // Quiz generation unavailable — offer direct acknowledge as fallback
-      const bypass = confirm(
-        'Knowledge check unavailable right now (AI service may be busy).\n\n' +
-        'Do you still want to acknowledge this policy?\n\n' +
-        'By confirming, you confirm you have read and understood: ' + p.title
-      );
-      if (bypass) doDirectAcknowledge(p);
+      // AI unavailable — try static fallback questions before offering bypass
+      const fallback = getFallbackQuiz(p);
+      if (fallback && fallback.length >= 3) {
+        preloadedQuiz = fallback;
+        preloadedQuizForId = p.id;
+        openQuizForAck(p);
+        showToast('Using offline knowledge check', 'info');
+      } else {
+        // No fallback available (edge case) — direct acknowledge with confirmation
+        const bypass = confirm(
+          'Knowledge check unavailable right now.\n\n' +
+          'By confirming, you have read and understood: ' + p.title
+        );
+        if (bypass) doDirectAcknowledge(p);
+      }
     }
   }
 }
@@ -2220,6 +2704,7 @@ function showQuizResult() {
       score: quizScore, total, pct, passed,
       date: new Date().toISOString(), policy: quizPolicy.id
     });
+    logActivityToServer('quiz', quizPolicy.id, JSON.stringify({score:quizScore,total,pct,passed}), quizPolicy.id, quizPolicy.title);
   }
 
   const fin = document.getElementById('quizFinal');
@@ -2231,12 +2716,14 @@ function showQuizResult() {
         <div class="quiz-score-num good">✓ ${quizScore}/${total}</div>
         <div class="quiz-score-msg">${pct === 100 ? 'Perfect score! You know this policy inside out.' : 'Good understanding. You\'re ready to acknowledge this policy.'}</div>
         <div class="quiz-score-actions">
-          <button class="ca-btn primary" onclick="doAcknowledge()">✓ Acknowledge Policy</button>
+          <button class="ca-btn primary" onclick="doAcknowledge().catch(e=>{showToast('Could not acknowledge — please try again','err');console.error(e)})">✓ Acknowledge Policy</button>
         </div>
       </div>`;
   } else {
     // FAIL — wipe quiz and preload fresh questions in background
     preloadedQuiz = null;
+    preloadedQuizForId = null;
+    isPreloadingQuiz = true; // set true immediately so ackCurrent doesn't offer bypass during reload
     preloadQuiz(quizPolicy, true);
     fin.innerHTML = `
       <div class="quiz-score-box">
@@ -2263,6 +2750,8 @@ function doDirectAcknowledge(p) {
   showToast('✓ Acknowledged', 'ok');
   checkCelebration();
   trackActivity('read', p.id, { readAt: new Date().toISOString(), direct: true });
+  syncAcksToServer();
+  logActivityToServer('read', p.id, null, p.id, p.title);
 }
 
 async function doAcknowledge() {
@@ -2292,6 +2781,8 @@ async function doAcknowledge() {
   }
   checkCelebration();
   trackActivity('read', p.id, { readAt: new Date().toISOString() });
+  syncAcksToServer();
+  logActivityToServer('read', p.id, null, p.id, p.title);
 }
 
 function closeQuiz() {
@@ -2490,7 +2981,8 @@ window.addEventListener('resize', updateFooterFontCtrlVisibility);
 function updateReadProgress() {
   const body = document.getElementById('readerBody');
   if (!body) return;
-  const pct = body.scrollTop / (body.scrollHeight - body.clientHeight) * 100;
+  const scrollRange = body.scrollHeight - body.clientHeight;
+  const pct = scrollRange > 0 ? (body.scrollTop / scrollRange * 100) : 100;
   const fill = document.getElementById('readerScrollFill');
   if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
 }
@@ -2632,6 +3124,16 @@ function processPinEntry(name) {
   }
   const storedPin = getEffectivePin(name);
 
+  // Check for active lockout (survives page refresh via sessionStorage)
+  const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
+  const lockedUntil = parseInt(sessionStorage.getItem(lockoutKey) || '0');
+  if (lockedUntil > Date.now()) {
+    const secsLeft = Math.ceil((lockedUntil - Date.now()) / 1000);
+    document.getElementById('pinMsg').textContent = `⚠ Too many attempts. Try again in ${secsLeft}s.`;
+    document.getElementById('pinPad').style.pointerEvents = 'none';
+    return;
+  }
+
   if (pinPhase === 'enter') {
     if (!storedPin) { // no PIN set — shouldn't reach here but handle gracefully
       pinPhase = 'setup';
@@ -2651,6 +3153,9 @@ function processPinEntry(name) {
       if (pinAttempts >= 5) {
         document.getElementById('pinPad').style.pointerEvents = 'none';
         // Keep name select ENABLED — another user on shared device must still be able to log in
+        const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
+        const lockoutUntil = Date.now() + 30000;
+        sessionStorage.setItem(lockoutKey, lockoutUntil); // survives F5, clears on tab close
         let secs = 30;
         const msgEl = document.getElementById('pinMsg');
         msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
@@ -2659,6 +3164,7 @@ function processPinEntry(name) {
           if (secs <= 0) {
             clearInterval(countdown);
             pinAttempts = 0;
+            sessionStorage.removeItem(lockoutKey);
             document.getElementById('pinPad').style.pointerEvents = '';
             msgEl.textContent = '';
           } else {
@@ -2724,7 +3230,10 @@ function showChangePinFlow() {
 function pinSuccess(name) {
   // If admin has set a PIN, remove any stale self-set PIN to avoid ghost fallback
   try {
-    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
+    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}',
+  {id:'lia_cctv', tier:3, title:'CCTV Legitimate Interests Assessment (LIA)', cat:'Governance', sites:['all'], file:'Greencoat_LIA_CCTV_Mar2026.docx', desc:'Legal basis for operating CCTV across Greencoat sites — three-part test: purpose, necessity, balance.'},
+  {id:'dpia_audio', tier:3, title:'Data Protection Impact Assessment — Audio Recording (Sparkhill)', cat:'Governance', sites:['sparkhill'], file:'Greencoat_DPIA_Audio_Sparkhill_Mar2026.docx', desc:'DPIA covering audio-capable cameras in Sparkhill playrooms. Required under UK GDPR for high-risk processing.'},
+  {id:'sop', tier:2, title:'Standard Operating Procedures (Managers & Admin)', cat:'Governance', sites:['all'], file:'Greencoat_Standard_Operating_Procedures_Mar2026.docx', desc:'Management reference document: role responsibility matrix, escalation flowcharts, key timescales and checklists across all operational areas.'});
     if (adminPins[name]) localStorage.removeItem(getPinKey(name));
   } catch(e) {}
   setPinSession(name);

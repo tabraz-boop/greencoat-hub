@@ -45,14 +45,14 @@ CRITICAL RULES YOU MUST NEVER BREAK:
       sysText += `\n\nThe user is currently looking at the policy titled: "${body.currentPolicy}".`;
     }
     if (body.policyText && body.policyText.trim().length > 50) {
-      sysText += `\n\n=== FULL EXACT POLICY TEXT ===\n${body.policyText.slice(0, 8000)}\n==============================`;
+      sysText += `\n\n=== FULL EXACT POLICY TEXT ===\n${body.policyText.slice(0, body.jsonMode ? 20000 : 8000)}\n==============================`;
     }
     if (body.policyCatalog && body.policyCatalog.trim().length > 10) {
-      sysText += `\n\nNo specific policy document is currently open. However, here is a catalog of all 111 Greencoat Nursery CIC policies with their descriptions. Use this to answer general questions, provide summaries, and point the user to the relevant policy. After answering, always suggest they open the full policy for complete details.\n\n=== POLICY CATALOG ===\n${body.policyCatalog}\n======================`;
+      sysText += `\n\nNo specific policy document is currently open. However, here is a catalog of all 118 Greencoat Nursery CIC policies with their descriptions. Use this to answer general questions, provide summaries, and point the user to the relevant policy. After answering, always suggest they open the full policy for complete details.\n\n=== POLICY CATALOG ===\n${body.policyCatalog}\n======================`;
     }
     // Quiz-specific system rules
     if (body.jsonMode) {
-      sysText += `\n\nQUIZ GENERATION RULES — follow these exactly:\n1. Generate realistic scenario-based questions (e.g. "A parent asks you to...") not just definition recall.\n2. All questions must be directly answerable from the policy text provided.\n3. Include at least one question about staff responsibilities and one about what to do in a specific situation.\n4. Distractors (wrong answers) must be plausible but clearly incorrect to someone who has read the policy.\n5. EYFS staff-to-child ratio rules must be respected in any scenario questions.\n6. If the user prompt contains "RETRY" or a numeric seed, you MUST generate COMPLETELY DIFFERENT questions and scenarios — do not reuse any question, scenario or wording from previous attempts.\n7. Return ONLY valid JSON matching the required schema. No markdown, no preamble.`;
+      sysText += `\n\nQUIZ GENERATION RULES — follow these exactly:\n0. CRITICAL: Generate questions ONLY about the specific policy named in the user prompt. NEVER use generic safeguarding, ratio or EYFS questions unless the policy is specifically about safeguarding or EYFS ratios. Each question must only be answerable from the provided policy text — if you cannot find the answer in the policy text, do not ask that question.\n1. Generate realistic scenario-based questions (e.g. "A parent asks you to...") not just definition recall.\n2. All questions must be directly and exclusively answerable from the policy text provided — not from general knowledge.\n3. Include at least one question about staff responsibilities under this specific policy and one about what to do in a situation described in this policy.\n4. Distractors (wrong answers) must be plausible but clearly incorrect to someone who has read the policy.\n5. EYFS staff-to-child ratio rules must be respected in any scenario questions.\n6. If the user prompt contains "RETRY" or a numeric seed, you MUST generate COMPLETELY DIFFERENT questions and scenarios — do not reuse any question, scenario or wording from previous attempts.\n7. Return ONLY valid JSON matching the required schema. No markdown, no preamble.`;
     }
 
     // ── Generation config ───────────────────────────────────────────
@@ -88,8 +88,9 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     // ── Waterfall model rotation ─────────────────────────────────────
     // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
     const modelsToTry = [
-      'gemini-3.1-flash-lite',  // Primary: 500 RPD free limit — highest capacity
-      'gemini-2.5-flash'        // Fallback: 20 RPD free limit — smarter but restricted
+      'gemini-3.1-flash-lite-preview', // Primary: fastest, most cost-efficient Gemini 3 series
+      'gemini-2.0-flash-lite',         // Secondary: stable high-RPD free tier
+      'gemini-2.5-flash'               // Last resort: smarter but rate-limited
     ];
 
     let reply = null;
