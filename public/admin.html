@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greencoat — Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   GREENCOAT ADMIN HUB — PREMIUM DARK DESIGN SYSTEM v3
+   Vercel · Linear · Radix dark mode aesthetic
+═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* Surfaces */
+  --bg:    #0a0a0a;
+  --bg2:   #111111;
+  --card:  #141414;
+  --card2: #1a1a1a;
+
+  /* Borders */
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.12);
+  --border3: rgba(255,255,255,.18);
+
+  /* Accents */
+  --teal:    #14b8a6;
+  --teal-d:  #0d9488;
+  --teal-lt: rgba(20,184,166,.1);
+
+  /* Tier / status */
+  --t1: #ef4444; --t1-bg: rgba(239,68,68,.1);   --t1-border: rgba(239,68,68,.2);
+  --t2: #f59e0b; --t2-bg: rgba(245,158,11,.1);  --t2-border: rgba(245,158,11,.2);
+  --t3: #10b981; --t3-bg: rgba(16,185,129,.1);  --t3-border: rgba(16,185,129,.2);
+
+  /* Text */
+  --text:  #f2f2f0;
+  --text2: #a8a8a4;
+  --text3: #5a5a58;
+  --white: #ffffff;
+
+  /* Geometry */
+  --radius: 14px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-full: 999px;
+
+  /* Shadows */
+  --sh:    0 4px 24px rgba(0,0,0,.5);
+  --sh-sm: 0 1px 4px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
+  --sh-lg: 0 12px 48px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.4);
+
+  /* Motion */
+  --ease: cubic-bezier(.16,1,.3,1);
+  --duration: 150ms;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+
+/* ── LOGIN ───────────────────────────────────────────────── */
+.login-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% -20%, rgba(20,184,166,.07) 0%, transparent 60%);
+}
+.login-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-xl);
+  padding: 2.25rem 2rem;
+  width: 100%; max-width: 360px;
+  box-shadow: var(--sh-lg);
+}
+.login-logo { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.75rem; }
+.login-mark {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--teal-d), var(--teal));
+  border-radius: var(--r-md); display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: #fff;
+  box-shadow: 0 4px 16px rgba(20,184,166,.3);
+}
+.login-org { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; line-height: 1.2; }
+.login-sub { font-size: .62rem; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; }
+.login-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: .2rem; }
+.login-desc  { font-size: .8rem; color: var(--text2); margin-bottom: 1.4rem; line-height: 1.5; }
+.form-group { margin-bottom: .9rem; }
+.form-group label {
+  display: block; font-size: .68rem; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: .38rem;
+}
+.form-input {
+  width: 100%; padding: .6rem .85rem;
+  border-radius: var(--r-md); border: 1px solid var(--border2);
+  background: rgba(255,255,255,.04); color: var(--text);
+  font-family: inherit; font-size: .88rem; outline: none;
+  transition: all var(--duration) var(--ease);
+}
+.form-input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(20,184,166,.15);
+  background: rgba(255,255,255,.06);
+}
+.login-err { font-size: .75rem; color: var(--t1); margin-bottom: .75rem; display: none; }
+.btn-full {
+  width: 100%; padding: .65rem;
+  border-radius: var(--r-md); border: none;
+  background: linear-gradient(135deg, var(--teal-d), var(--teal));
+  color: #fff; font-family: inherit; font-size: .9rem; font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(20,184,166,.25);
+  transition: all var(--duration) var(--ease);
+}
+.btn-full:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(20,184,166,.4); }
+.btn-full:active { transform: scale(.98); }
+
+/* ── APP ─────────────────────────────────────────────────── */
+.admin-app { display: none; flex-direction: column; min-height: 100vh; }
+
+/* ── TOPBAR ──────────────────────────────────────────────── */
+.topbar {
+  background: rgba(10,10,10,.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; height: 56px;
+  display: flex; align-items: center; gap: .85rem;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 1px 0 var(--border);
+}
+.topbar-logo { display: flex; align-items: center; gap: .6rem; }
+.topbar-mark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--teal-d), var(--teal));
+  border-radius: var(--r-sm); display: flex; align-items: center;
+  justify-content: center; font-size: .9rem; color: #fff; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(20,184,166,.25);
+}
+.topbar-title { font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.topbar-badge {
+  font-size: .58rem; padding: .14rem .48rem;
+  border-radius: var(--r-full);
+  background: rgba(239,68,68,.12); color: #fca5a5;
+  border: 1px solid var(--t1-border); font-weight: 800;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: .4rem; }
+.tbtn {
+  padding: .35rem .8rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); font-family: inherit; font-size: .74rem; font-weight: 600;
+  cursor: pointer; transition: all var(--duration) var(--ease);
+  display: flex; align-items: center; gap: .32rem;
+  text-decoration: none;
+}
+.tbtn:hover { border-color: var(--border3); color: var(--text); background: rgba(255,255,255,.04); }
+.tbtn:active { transform: scale(.97); }
+.status-live {
+  background: rgba(16,185,129,.1); color: #6ee7b7;
+  border: 1px solid rgba(16,185,129,.2);
+  padding: .36rem .8rem; border-radius: var(--r-full);
+  font-size: .7rem; font-weight: 700;
+  display: flex; align-items: center; gap: .35rem;
+}
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tabs {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem; display: flex; gap: .15rem; overflow-x: auto;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: .7rem .95rem;
+  font-size: .78rem; font-weight: 600; color: var(--text2);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all var(--duration) var(--ease);
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: inherit; letter-spacing: -.01em;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* ── PANELS ──────────────────────────────────────────────── */
+.panels { flex: 1; padding: 1.5rem; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+}
+.section-hd h2 { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -.025em; }
+.section-hd p  { font-size: .76rem; color: var(--text2); margin-top: .15rem; }
+
+/* ── CARDS ───────────────────────────────────────────────── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem; margin-bottom: .9rem;
+  box-shadow: var(--sh-sm);
+}
+.card-title {
+  font-weight: 700; font-size: .84rem; color: var(--text); margin-bottom: .75rem;
+  display: flex; align-items: center; gap: .5rem; letter-spacing: -.01em;
+}
+
+/* ── TABLE ───────────────────────────────────────────────── */
+.table-controls { display: flex; gap: .65rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.search-input {
+  flex: 1; min-width: 200px; padding: .42rem .85rem;
+  border-radius: var(--r-md); border: 1px solid var(--border2);
+  background: rgba(255,255,255,.04); color: var(--text);
+  font-family: inherit; font-size: .82rem; outline: none;
+  transition: all var(--duration) var(--ease);
+}
+.search-input:focus {
+  border-color: var(--teal); background: rgba(255,255,255,.06);
+  box-shadow: 0 0 0 3px rgba(20,184,166,.12);
+}
+.filter-sel {
+  padding: .42rem .75rem; border-radius: var(--r-md);
+  border: 1px solid var(--border2); background: rgba(255,255,255,.04);
+  color: var(--text); font-family: inherit; font-size: .8rem;
+  outline: none; cursor: pointer;
+  transition: border-color var(--duration);
+}
+.filter-sel:focus { border-color: var(--teal); }
+.filter-sel option { background: #141414; }
+.tbl-wrap { overflow-x: auto; border-radius: var(--r-md); border: 1px solid var(--border); }
+.policy-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.policy-table th {
+  text-align: left; padding: .52rem .75rem;
+  color: var(--text3); font-size: .64rem; text-transform: uppercase;
+  letter-spacing: .1em; font-weight: 700;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+  background: var(--card2);
+}
+.policy-table td { padding: .58rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text2); }
+.policy-table tr:last-child td { border-bottom: none; }
+.policy-table tr:hover td { background: rgba(255,255,255,.02); }
+.policy-table td:first-child { font-weight: 600; color: var(--text); max-width: 280px; }
+
+/* ── TIER BADGES ─────────────────────────────────────────── */
+.tier-badge {
+  padding: .12rem .48rem; border-radius: var(--r-full);
+  font-size: .62rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .04em; white-space: nowrap; border: 1px solid;
+}
+.t1b { background: var(--t1-bg); color: #fca5a5; border-color: var(--t1-border); }
+.t2b { background: var(--t2-bg); color: #fcd34d; border-color: var(--t2-border); }
+.t3b { background: var(--t3-bg); color: #6ee7b7; border-color: var(--t3-border); }
+
+/* ── ACTION BUTTONS ──────────────────────────────────────── */
+.act-btn {
+  padding: .2rem .55rem; border-radius: var(--r-sm);
+  font-family: inherit; font-size: .7rem; font-weight: 700;
+  cursor: pointer; border: 1px solid transparent;
+  transition: all var(--duration) var(--ease); white-space: nowrap;
+}
+.act-btn:active { transform: scale(.96); }
+.btn-edit { background: var(--teal-lt); color: var(--teal); border-color: rgba(20,184,166,.25); }
+.btn-edit:hover { background: var(--teal); color: #fff; }
+.btn-del  { background: var(--t1-bg); color: #fca5a5; border-color: var(--t1-border); }
+.btn-del:hover  { background: var(--t1); color: #fff; }
+
+/* ── COMPLIANCE STATS ────────────────────────────────────── */
+.comp-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: .75rem; margin-bottom: 1.1rem;
+}
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1rem; text-align: center;
+  transition: all var(--duration) var(--ease); box-shadow: var(--sh-sm);
+}
+.stat-card:hover { border-color: var(--border3); transform: translateY(-1px); }
+.stat-num { font-size: 2rem; font-weight: 800; color: var(--teal); line-height: 1; letter-spacing: -.05em; }
+.stat-label { font-size: .7rem; color: var(--text3); margin-top: .3rem; }
+
+.comp-bar-wrap { display: flex; align-items: center; gap: .6rem; }
+.comp-bar { flex: 1; height: 5px; background: rgba(255,255,255,.06); border-radius: var(--r-full); overflow: hidden; }
+.comp-bar-fill { height: 100%; border-radius: var(--r-full); transition: width .6s var(--ease); }
+.pct-label { font-size: .7rem; font-weight: 700; color: var(--text2); width: 36px; text-align: right; flex-shrink: 0; }
+
+.staff-comp-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .6rem 0; border-bottom: 1px solid var(--border);
+}
+.staff-comp-row:last-child { border-bottom: none; }
+.staff-name-col { width: 140px; font-size: .82rem; font-weight: 700; color: var(--text); flex-shrink: 0; }
+.tier-bars { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; align-items: center; }
+.tier-bar-group { display: flex; flex-direction: column; gap: .18rem; }
+.tier-bar-label { font-size: .58rem; color: var(--text3); }
+.overall-pct { font-size: 1rem; font-weight: 800; width: 48px; text-align: right; flex-shrink: 0; letter-spacing: -.03em; }
+
+/* ── STAFF CHIPS ─────────────────────────────────────────── */
+.staff-chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .9rem; }
+.staff-chip {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .3rem .7rem; border-radius: var(--r-full);
+  background: var(--card2); border: 1px solid var(--border2);
+  font-size: .8rem; color: var(--text);
+  transition: all var(--duration) var(--ease);
+}
+.staff-chip:hover { border-color: var(--border3); }
+.chip-del {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
+  transition: color var(--duration); display: flex; align-items: center;
+}
+.chip-del:hover { color: var(--t1); }
+.add-staff-row { display: flex; gap: .55rem; }
+.add-staff-input {
+  flex: 1; padding: .48rem .85rem; border-radius: var(--r-md);
+  border: 1px solid var(--border2); background: rgba(255,255,255,.04);
+  color: var(--text); font-family: inherit; font-size: .84rem; outline: none;
+  transition: all var(--duration) var(--ease);
+}
+.add-staff-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(20,184,166,.12); }
+
+/* ── SETTINGS GRID ───────────────────────────────────────── */
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .85rem; }
+.setting-group {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem;
+}
+.setting-group h3 {
+  font-size: .84rem; font-weight: 700; color: var(--text); margin-bottom: .9rem;
+  padding-bottom: .55rem; border-bottom: 1px solid var(--border); letter-spacing: -.015em;
+}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.75); z-index: 900;
+  align-items: center; justify-content: center;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: var(--r-xl); width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--sh-lg); animation: slideUp .2s var(--ease);
+}
+@keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-hd {
+  padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-hd h3 { font-size: 1rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.modal-close {
+  background: none; border: 1px solid var(--border2);
+  border-radius: var(--r-sm); width: 27px; height: 27px;
+  cursor: pointer; color: var(--text3); font-size: .88rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--duration) var(--ease);
+}
+.modal-close:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.modal-body { padding: 1.1rem 1.4rem; }
+.modal-ft {
+  padding: .8rem 1.4rem; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: .5rem;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: .8rem; }
+.form-col { margin-bottom: .8rem; }
+.form-col label, .form-row label {
+  display: block; font-size: .66rem; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: .32rem;
+}
+.form-col .form-input, .form-row .form-input { width: 100%; }
+.checkbox-group { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .32rem; }
+.checkbox-label {
+  display: flex; align-items: center; gap: .32rem;
+  font-size: .78rem; color: var(--text2); cursor: pointer;
+}
+.checkbox-label input { accent-color: var(--teal); }
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+  padding: .42rem .9rem; border-radius: var(--r-md); border: none;
+  font-family: inherit; font-size: .8rem; font-weight: 700;
+  cursor: pointer; transition: all var(--duration) var(--ease);
+  display: inline-flex; align-items: center; gap: .32rem;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary {
+  background: var(--teal); color: #fff;
+  box-shadow: 0 2px 10px rgba(20,184,166,.2);
+}
+.btn-primary:hover { background: var(--teal-d); box-shadow: 0 4px 16px rgba(20,184,166,.3); }
+.btn-ghost {
+  background: rgba(255,255,255,.05); color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: rgba(255,255,255,.09); color: var(--text); }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  padding: .55rem 1.1rem; border-radius: var(--r-md);
+  font-size: .8rem; font-weight: 700; color: #fff;
+  opacity: 0; transition: all .25s var(--ease);
+  z-index: 9999; pointer-events: none; white-space: nowrap;
+  box-shadow: var(--sh);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--t3); }
+.toast.error   { background: var(--t1); }
+.toast.info    { background: var(--teal-d); }
+
+/* ── SPINNER ─────────────────────────────────────────────── */
+.spinner {
+  width: 18px; height: 18px; border: 2px solid var(--border2);
+  border-top-color: var(--teal); border-radius: 50%;
+  animation: spin .7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
+
+/* ── HEATMAP ─────────────────────────────────────────────── */
+.heatmap-scroll { overflow-x: auto; }
+.heatmap-table { border-collapse: separate; border-spacing: 2px; font-size: .65rem; min-width: 600px; }
+.heatmap-table th {
+  padding: .32rem .5rem; text-align: center; color: var(--text3);
+  font-weight: 600; white-space: nowrap;
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
+}
+.heatmap-table td.staff-name {
+  font-size: .74rem; font-weight: 700; color: var(--text);
+  white-space: nowrap; padding: .3rem .65rem;
+  position: sticky; left: 0; background: var(--bg2); z-index: 5;
+}
+.hm-cell { width: 18px; height: 18px; border-radius: 3px; cursor: pointer; transition: transform .1s; }
+.hm-cell:hover { transform: scale(1.4); z-index: 20; position: relative; }
+.hm-cell.done { background: var(--t3); }
+.hm-cell.miss { background: rgba(239,68,68,.25); }
+.hm-cell.t1   { outline: 2px solid rgba(239,68,68,.5); }
+
+/* ── OFSTED SCORE CARD ───────────────────────────────────── */
+.ofsted-score-card {
+  border-radius: var(--r-lg); padding: 1.1rem; margin-bottom: 1.1rem;
+  display: flex; align-items: center; gap: 1.1rem; border: 1px solid;
+}
+.ofsted-score-card.green { border-color: rgba(16,185,129,.25); background: var(--t3-bg); }
+.ofsted-score-card.amber { border-color: rgba(245,158,11,.25);  background: var(--t2-bg); }
+.ofsted-score-card.red   { border-color: var(--t1-border);       background: var(--t1-bg); }
+.ofs-num { font-size: 2.75rem; font-weight: 800; line-height: 1; flex-shrink: 0; letter-spacing: -.05em; }
+.ofsted-score-card.green .ofs-num { color: var(--t3); }
+.ofsted-score-card.amber .ofs-num { color: var(--t2); }
+.ofsted-score-card.red   .ofs-num { color: var(--t1); }
+.ofs-text h3 { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.ofs-text p  { font-size: .76rem; color: var(--text2); margin-top: .2rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><div class="login-mark">G</div><div><div class="login-org">Greencoat Nursery CIC</div><div class="login-sub">Admin Console</div></div></div>
+    <h2 class="login-title">Sign in</h2>
+    <p class="login-desc">Authorised personnel only</p>
+    <div id="loginErr" class="login-err">Incorrect username or password.</div>
+    <div class="form-group"><label>Username</label><input type="text" id="loginUser" class="form-input" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPass" class="form-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-full" onclick="doLogin()">Sign in →</button>
+  </div>
+</div>
+
+<div class="admin-app" id="adminApp">
+  <div class="topbar">
+    <div class="topbar-logo"><div class="topbar-mark">G</div><div><div class="topbar-title">Policy Hub Admin</div></div></div>
+    <span class="topbar-badge">Admin</span>
+    <div class="topbar-right">
+      <span class="status-live" style="margin-right:1rem;">🟢 Live Auto-Sync Active</span>
+      <a class="tbtn" href="index.html" target="_blank">↗ View Portal</a>
+      <button class="tbtn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('policies',this)">📋 Policies</button>
+    <button class="tab" onclick="switchTab('staff',this)">👥 Staff</button>
+    <button class="tab" onclick="switchTab('compliance',this)">📊 Compliance</button>
+    <button class="tab" onclick="switchTab('aiquestions',this)">🤖 AI Questions</button>
+    <button class="tab" onclick="switchTab('settings',this)">⚙ Settings</button>
+    <button class="tab" onclick="switchTab('heatmap',this)">🗂 Heatmap</button>
+    <button class="tab" onclick="switchTab('pins',this)">🔑 Staff PINs</button>
+  </div>
+
+  <div class="panels">
+    <div class="panel active" id="panel-policies">
+      <div class="section-hd">
+        <div><h2>Policy Library</h2><p id="policyCount">Loading…</p></div>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Add Policy</button>
+      </div>
+      <div class="table-controls">
+        <input type="text" class="search-input" id="searchPolicies" placeholder="Search policies…" oninput="renderPolicyTable()">
+        <select class="filter-sel" id="filterTier" onchange="renderPolicyTable()"><option value="">All tiers</option><option value="1">Tier 1 — Essential</option><option value="2">Tier 2 — Common</option><option value="3">Tier 3 — Library</option></select>
+        <select class="filter-sel" id="filterCat" onchange="renderPolicyTable()"><option value="">All categories</option></select>
+      </div>
+      <div class="tbl-wrap">
+        <table class="policy-table">
+          <thead><tr><th>Title</th><th>Tier</th><th>Category</th><th>Sites</th><th>Adopted</th><th>Actions</th></tr></thead>
+          <tbody id="policyTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-staff">
+      <div class="section-hd"><div><h2>Staff List</h2><p id="staffCount">—</p></div></div>
+      <div class="card">
+        <div class="card-title">👤 Current staff</div>
+        <div class="staff-chips" id="staffChips"></div>
+        <div class="add-staff-row">
+          <input type="text" class="add-staff-input" id="newStaffName" placeholder="Full name…" onkeydown="if(event.key==='Enter')addStaff()">
+          <button class="btn btn-primary" onclick="addStaff()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-compliance">
+      <div class="section-hd">
+        <div><h2>Compliance Dashboard</h2><p id="compSummary">Loading…</p></div>
+        <div style="display:flex;gap:.5rem;align-items:center"><button class="btn btn-ghost" onclick="loadCompliance()">↻ Refresh</button></div>
+      </div>
+      <div class="comp-stats" id="compStats"></div>
+      <div class="card" id="compCard">
+        <div style="text-align:center;padding:2rem;color:var(--text3)"><div class="spinner"></div><p style="margin-top:.75rem;font-size:.8rem">Loading compliance data…</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-settings">
+      <div class="section-hd"><div><h2>Settings</h2><p>Organisation and portal configuration</p></div></div>
+      <div class="settings-grid">
+        <div class="setting-group">
+          <h3>Organisation</h3>
+          <div class="form-col"><label>Organisation name</label><input type="text" class="form-input" id="setOrgName" value="Greencoat Nursery CIC"></div>
+          <div class="form-col"><label>Policy adopted date</label><input type="text" class="form-input" id="setAdoptedDate" value="March 2026"></div>
+          <div class="form-col"><label>Review date</label><input type="text" class="form-input" id="setReviewDate" value="March 2027"></div>
+          <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+        </div>
+        <div class="setting-group">
+          <h3>Security</h3>
+          <div class="form-col"><label>New admin password</label><input type="password" class="form-input" id="newPass" placeholder="Leave blank to keep current"></div>
+          <div class="form-col"><label>Confirm password</label><input type="password" class="form-input" id="confPass" placeholder="Repeat new password"></div>
+          <button class="btn btn-primary" onclick="changePassword()">Change password</button>
+          <p style="font-size:.7rem; color:var(--text2); margin-top:.75rem">⚠️ Make sure to update the Netlify Environment Variables if you change this.</p>
+        </div>
+        <div class="setting-group" style="border-color:var(--t1)">
+          <h3 style="color:#fca5a5; border-bottom-color:var(--t1)">⚠️ Emergency Reset</h3>
+          <p style="font-size:.75rem;color:var(--text2);margin-bottom:.8rem">If the portal is blank or corrupted, click this to wipe the database and restore the original 111 policies and default staff list.</p>
+          <button class="btn" style="background:rgba(239,68,68,.2);color:#fca5a5" onclick="restoreDefaults()">Restore Defaults & Fix Portal</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-aiquestions">
+      <div class="section-hd" style="margin-bottom:1rem;">
+        <div><h2>🤖 Staff AI Questions</h2><p style="font-size: .8rem; color: var(--text2);">Every question staff have asked the AI about policies.</p></div>
+        <button class="btn-primary" onclick="loadAiQuestions()" style="padding:.4rem .85rem;border-radius:8px;cursor:pointer;font-size:.8rem">↻ Refresh</button>
+      </div>
+      <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
+        <input type="text" id="aiQSearch" placeholder="Search questions…" oninput="filterAiQuestions()" style="flex:1;min-width:200px;padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none">
+        <select id="aiQStaffFilter" onchange="filterAiQuestions()" style="padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none"><option value="">All Staff</option></select>
+        <select id="aiQPolicyFilter" onchange="filterAiQuestions()" style="padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none"><option value="">All Policies</option></select>
+      </div>
+      <div id="aiQStats" style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap"></div>
+      <div id="aiQList" style="display:flex;flex-direction:column;gap:.65rem"><p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading questions…</p></div>
+    </div>
+
+    <div class="panel" id="panel-heatmap">
+      <div class="section-hd">
+        <div><h2>Compliance Heatmap</h2><p>Every staff member × every policy at a glance.</p></div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <button class="btn btn-ghost" onclick="loadHeatmap()">↻ Refresh</button>
+          <button class="btn btn-primary" onclick="exportCSV()">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div id="ofstedScore" class="ofsted-score-card hidden"></div>
+      <div id="heatmapWrap"><div style="text-align:center;padding:3rem;color:var(--text3)"><div class="spinner"></div></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="policyModal">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="modalTitle">Edit policy</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-col"><label>Policy title</label><input type="text" class="form-input" id="editTitle" placeholder="Full policy title"></div>
+      <div class="form-row">
+        <div><label>Tier</label><select class="form-input" id="editTier"><option value="1">Tier 1 — Essential</option><option value="2">Tier 2 — Common</option><option value="3">Tier 3 — Library</option></select></div>
+        <div><label>Category</label><select class="form-input" id="editCat"><option>Safeguarding</option><option>Health & Safety</option><option>Health & Care</option><option>Child Safety</option><option>Child Development</option><option>Staffing</option><option>Governance</option><option>Families</option><option>Inclusion</option></select></div>
+      </div>
+      <div class="form-col"><label>Sites</label>
+        <div class="checkbox-group">
+          <label class="checkbox-label"><input type="checkbox" id="siteAll" value="all"> All sites</label>
+          <label class="checkbox-label"><input type="checkbox" id="siteSh" value="sparkhill"> Sparkhill</label>
+          <label class="checkbox-label"><input type="checkbox" id="siteBw" value="bearwood"> Bearwood</label>
+          <label class="checkbox-label"><input type="checkbox" id="siteBa" value="billesley"> Billesley Ark</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>Filename (.docx)</label><input type="text" class="form-input" id="editFile" placeholder="Greencoat_Policy_Name_Mar2026.docx"></div>
+        <div><label>Adopted date</label><input type="text" class="form-input" id="editAdopted" placeholder="March 2026"></div>
+      </div>
+      <div class="form-col"><label>Description</label><textarea class="form-input" id="editDesc" rows="3" placeholder="Brief summary…" style="resize:vertical"></textarea></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="savePolicy()">Save policy</button></div>
+  </div>
+</div>
+
+
+<div class="panel" id="panel-pins">
+  <div class="section-hd">
+    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
+    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
+  </div>
+  <div id="pinTableWrap"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH ─────────────────────────────────────────────────────────────────
+const ADMIN_USER = 'admin';
+let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    err.style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'flex';
+    try { init(); } catch(e) { console.error('Init error:', e); }
+  } else {
+    err.style.display = 'block';
+    err.textContent = 'Incorrect username or password.';
+  }
+}
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── DEFAULT DATA ────────────────────────────────────────────────────────
+const DEFAULT_STAFF = ['Ambreen Afzal','Anila Naz','Hadiya Tariq','Joanna Payne','Kiran Riaz','Kubir Hussain','Lawaiza Firdous','Momina Khatun','Muniba Zaman','Sadiyah Begum','Saira Nisa','Sidra Begum','Sunella Anjam','Taslim Yaqub','Taz Khan','Zahraa Rashid'];
+const DEFAULT_POLICIES = [
+  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Safeguarding_Policy_-_Part_A_and_B_v4.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
+  {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',desc:'Procedures for staff to report concerns, including qualifying disclosures, sexual harassment provisions, DSL-first escalation route.',adopted:'March 2026'},
+  {id:'llc',tier:1,title:'Low-Level Concerns Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concerns_Policy_Mar2026.docx',desc:'How to record and report low-level concerns about staff behaviour that do not meet the threshold for referral.',adopted:'March 2026'},
+  {id:'scc',tier:1,title:'Staff Code of Conduct',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Code_of_Conduct_Mar2026.docx',desc:'Professional standards expected of all staff, including conduct with children, families, colleagues and on social media.',adopted:'March 2026'},
+  {id:'os',tier:1,title:'Online Safety Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Online_Safety_Policy_Mar2026.docx',desc:'Risks of online harm including content, contact, conduct and commerce. DSL responsibilities, CEOP and IWF reporting.',adopted:'March 2026'},
+  {id:'ppb',tier:1,title:'Promoting Positive Behaviour Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Promoting_Positive_Behaviour_Policy_Mar2026.docx',desc:'Approaches to supporting children\'s behaviour positively. Named behaviour lead: Sidra Begum (Lead SENCo).',adopted:'March 2026'},
+  {id:'rec',tier:1,title:'Safer Recruitment, Selection and Suitability of Staff Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Safer_Recruitment_Policy_Mar2026.docx',desc:'Safer recruitment procedures including DBS checks, overseas criminal records checks (including multi-country), health questionnaires, right to work, disqualification checks and ongoing suitability.',adopted:'March 2026'},
+  {id:'acc',tier:1,title:'Accidents and First Aid Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Accidents_First_Aid_Policy_Mar2026.docx',desc:'All staff are paediatric first aid trained. Accident file locations, first aid box locations, and monthly checking schedule.',adopted:'March 2026'},
+  {id:'med',tier:1,title:'Medication Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Policy_Mar2026.docx',desc:'Administration of both prescription and non-prescription medication, parental consent requirements, and record-keeping procedures.',adopted:'March 2026'},
+  {id:'alg',tier:1,title:'Allergies and Allergic Reactions Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Allergies_Policy_Mar2026.docx',desc:'Identification, recording and management of allergies. Allergy register held in the kitchen and main room.',adopted:'March 2026'},
+  {id:'arr',tier:1,title:'Arrivals and Departures Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Arrivals_Departures_Policy_Mar2026.docx',desc:'Safe procedures for signing children in and out, authorised collection, password systems, and record-keeping.',adopted:'March 2026'},
+  {id:'lc',tier:1,title:'Late Collection and Non-Collection of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Late_Collection_Policy_Mar2026.docx',desc:'Grace period of 15 minutes before formal procedure initiates. Staff may call sooner. Late fee applied at management discretion.',adopted:'March 2026'},
+  {id:'mc',tier:1,title:'Missing Child from Nursery Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for on nursery premises, including search protocol, police notification.',adopted:'March 2026'},
+  {id:'el',tier:1,title:'Emergency Lockdown Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Emergency_Lockdown_Policy_Mar2026.docx',desc:'Procedure for full or partial lockdown. Drills held at least annually using non-alarming scenarios.',adopted:'March 2026'},
+  {id:'sc',tier:1,title:'Supervision of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Children_Policy_Mar2026.docx',desc:'Staffing arrangements, ratios and supervision expectations to ensure children\'s safety at all times on nursery premises.',adopted:'March 2026'},
+  {id:'ie',tier:1,title:'Inclusion and Equality Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Inclusion_Equality_Policy_Mar2026.docx',desc:'Commitment to inclusive practice under the Equality Act 2010. Training at induction and through CPD.',adopted:'March 2026'},
+  {id:'sg_summ',tier:2,title:'Safeguarding Staff Summary Sheet',cat:'Safeguarding',sites:['all'],file:'Greencoat_Safeguarding_Staff_Summary_Feb2026.docx',desc:'Quick-reference visual guide: DSL contacts at all 3 sites, types of abuse, 5-step reporting procedure, Summary of Interaction process.',adopted:'February 2026'},
+  {id:'ict',tier:1,title:'Intimate Care and Toileting Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Intimate_Care_Toileting_Policy_Mar2026.docx',desc:'Merged policy covering nappy changing procedure, respectful intimate care principles, toilet training in line with DfE guidance (18-30 month window), room transition expectations, SEND adjustments, and safeguarding across all intimate care routines.',adopted:'March 2026'},
+    {id:'sleep',tier:2,title:'Sleep Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sleep_Policy_Mar2026.docx',desc:'Safe sleep arrangements, monitoring procedures, positional preferences, risk reduction for SIDS.',adopted:'March 2026'},
+  {id:'infect',tier:2,title:'Infection Control Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Infection_Control_Policy_Mar2026.docx',desc:'Hygiene standards, handwashing procedures, oral health, management of infectious illnesses, and exclusion periods.',adopted:'March 2026'},
+  {id:'sick',tier:2,title:'Sickness and Illness Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sickness_Illness_Policy_Mar2026.docx',desc:'Recognition and management of children\'s illness on-site, exclusion guidance, record-keeping.',adopted:'March 2026'},
+  {id:'send',tier:2,title:'Special Educational Needs and Disabilities (SEND) Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_SEND_Policy_Mar2026.docx',desc:'Identification and support for children with SEND, graduated approach, EHCP, working with external agencies.',adopted:'March 2026'},
+  {id:'dp',tier:2,title:'Data Protection and Confidentiality Policy',cat:'Governance',sites:['all'],file:'Greencoat_Data_Protection_Policy_Mar2026.docx',desc:'GDPR compliance, lawful bases for processing, what personal data is held and why, and staff confidentiality obligations.',adopted:'March 2026'},
+  {id:'mob',tier:2,title:'Mobile Phone and Electronic Device Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Mobile_Phone_Electronic_Device_Policy_Mar2026.docx',desc:'Restrictions on personal mobile use in childcare areas, designated storage, professional use of devices.',adopted:'March 2026'},
+  {id:'sn',tier:2,title:'Social Networking Policy',cat:'Governance',sites:['all'],file:'Greencoat_Social_Networking_Policy_Mar2026.docx',desc:'Staff responsibilities when using social media personally and professionally, prohibition on posting images of children.',adopted:'March 2026'},
+  {id:'nutri',tier:2,title:'Nutrition and Mealtimes Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Nutrition_Mealtimes_Policy_Mar2026.docx',desc:'Nutritional standards for meals and snacks, mealtime environment, dietary needs and allergies.',adopted:'March 2026'},
+  {id:'packed',tier:2,title:'Packed Lunch Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Packed_Lunch_Policy_Mar2026.docx',desc:'Standards and guidance for packed lunches, prohibited items (nuts), storage, and parental communication.',adopted:'March 2026'},
+  {id:'out',tier:2,title:'Outdoor Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Outdoor_Play_Policy_Mar2026.docx',desc:'Daily outdoor play commitment, risk-benefit approach to outdoor learning, weather considerations.',adopted:'March 2026'},
+  {id:'set',tier:2,title:'Settling In Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Settling_In_Policy_Mar2026.docx',desc:'Graduated settling-in process, key person role, working with parents during transition.',adopted:'March 2026'},
+  {id:'trans',tier:2,title:'Transitions Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Transitions_Policy_Mar2026.docx',desc:'Supporting children through planned and unplanned transitions including room moves, change of key person.',adopted:'March 2026'},
+  {id:'pap',tier:2,title:'Parents as Partners Policy',cat:'Families',sites:['all'],file:'Greencoat_Parents_as_Partners_Policy_Mar2026.docx',desc:'Partnership approach with families, two-way information sharing, involving parents in learning.',adopted:'March 2026'},
+  {id:'comp',tier:2,title:'Complaints and Compliments Policy',cat:'Governance',sites:['all'],file:'Greencoat_Complaints_Compliments_Policy_Mar2026.docx',desc:'How to raise, record and resolve complaints. Timescales for response, escalation to Ofsted.',adopted:'March 2026'},
+  {id:'cctv_sh',tier:2,title:'CCTV Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_CCTV_Policy_Sparkhill_Mar2026.docx',desc:'14 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
+  {id:'cctv_bw',tier:2,title:'CCTV Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_CCTV_Policy_Bearwood_Mar2026.docx',desc:'8 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
+  {id:'supv_sh',tier:2,title:'Supervision Policy — Sparkhill',cat:'Staffing',sites:['sparkhill'],file:'Greencoat_Supervision_Policy_Sparkhill_Mar2026.docx',desc:'Six supervisions per year (every half term) trialling mini-supervision model.',adopted:'March 2026'},
+  {id:'supv_sm',tier:2,title:'Supervision Policy — Bearwood & Billesley Ark',cat:'Staffing',sites:['bearwood','billesley'],file:'Greencoat_Supervision_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Three supervisions per year for smaller two-person sites. Carried out by manager or deputy.',adopted:'March 2026'},
+  {id:'lac',tier:2,title:'Looked After Children Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Looked_After_Children_Policy_Mar2026.docx',desc:'Designated LAC persons: site DSLs. Individual education plans, virtual school heads.',adopted:'March 2026'},
+  {id:'sf',tier:2,title:'Separated Family Policy',cat:'Families',sites:['all'],file:'Greencoat_Separated_Family_Policy_Mar2026.docx',desc:'Handling parental responsibility, court orders, collection rights, information sharing.',adopted:'March 2026'},
+  {id:'school',tier:2,title:'School Collection Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_School_Collection_Policy_Mar2026.docx',desc:'Procedures for collecting children from school, authorised persons, signing-out records.',adopted:'March 2026'},
+  {id:'visit',tier:2,title:'Visits and Outings Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Policy_Mar2026.docx',desc:'Risk assessment for outings, ratios, permission, sticker ID system.',adopted:'March 2026'},
+  {id:'bite',tier:2,title:'Biting Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Biting_Policy_Mar2026.docx',desc:'Understanding biting as communication in young children, staff response, supporting the bitten child.',adopted:'March 2026'},
+  {id:'baby_sh',tier:2,title:'Caring for Babies and Toddlers Policy — Sparkhill',cat:'Health & Care',sites:['sparkhill'],file:'Greencoat_Caring_for_Babies_Policy_Sparkhill_Mar2026.docx',desc:'Baby room (max 6, ratio 1:3) and toddler room (max 20). Mobile cot for evacuation.',adopted:'March 2026'},
+  {id:'baby_ot',tier:2,title:'Caring for Babies and Toddlers Policy — Bearwood & Billesley Ark',cat:'Health & Care',sites:['bearwood','billesley'],file:'Greencoat_Caring_for_Babies_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Toddlers-only sites (no dedicated baby room). EYFS requirements for under-2s, ratio 1:3.',adopted:'March 2026'},
+  {id:'childreg',tier:2,title:'Child Registration Form',cat:'Governance',sites:['all'],file:'Greencoat_Child_Registration_Form_Mar2026.docx',desc:'Registration form capturing child and family details, emergency contacts, medical information.',adopted:'March 2026'},
+  {id:'attend',tier:2,title:'Attendance Policy',cat:'Governance',sites:['all'],file:'Greencoat_Attendance_Policy_Mar2026.docx',desc:'Expectations for regular attendance, absence notification procedures, follow-up for unexplained absences.',adopted:'March 2026'},
+  {id:'abs_children',tier:2,title:'Absence Policy (Children)',cat:'Governance',sites:['all'],file:'Greencoat_Absence_Policy_Children_Mar2026.docx',desc:'Procedures for reporting, monitoring and following up child absence including unexplained absence escalation to Day 10 welfare check, and safeguarding considerations.',adopted:'March 2026'},
+  {id:'fire_sh',tier:2,title:'Fire Safety Policy — Sparkhill',cat:'Health & Safety',sites:['sparkhill'],file:'Greencoat_Fire_Safety_Policy_Sparkhill_Mar2026.docx',desc:'Fire wardens: Zahra Rashid and Sidra Begum. Primary assembly: rear of own car park.',adopted:'March 2026'},
+  {id:'fire_bw',tier:2,title:'Fire Safety Policy — Bearwood',cat:'Health & Safety',sites:['bearwood'],file:'Greencoat_Fire_Safety_Policy_Bearwood_Mar2026.docx',desc:'Fire warden: Sadiyah Begum. Primary assembly: nursery land/car park.',adopted:'March 2026'},
+  {id:'fire_ba',tier:2,title:'Fire Safety Policy — Billesley Ark',cat:'Health & Safety',sites:['billesley'],file:'Greencoat_Fire_Safety_Policy_Billesley_Ark_Mar2026.docx',desc:'Fire warden: Sunella Anjam. Assembly point: Billesley Common playground via rear fire exit.',adopted:'March 2026'},
+  {id:'hs',tier:2,title:'Health and Safety — General Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Health_Safety_General_Policy_Mar2026.docx',desc:'General health and safety responsibilities, fridge and freezer temperature recording, food hygiene.',adopted:'March 2026'},
+  {id:'abs',tier:3,title:'Absence Management Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Absence_Management_Procedure_Mar2026.docx',desc:'Managing staff absence including return to work interviews, trigger points, occupational health referrals.',adopted:'March 2026'},
+  {id:'aiu',tier:3,title:'Acceptable Internet Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Acceptable_Internet_Use_Policy_Mar2026.docx',desc:'Appropriate use of nursery IT systems, password management, phishing awareness.',adopted:'March 2026'},
+  {id:'asr',tier:3,title:'Access, Storage and Retention of Records Policy',cat:'Governance',sites:['all'],file:'Greencoat_Access_Storage_Retention_Records_Policy_Mar2026.docx',desc:'How long different categories of records must be kept, parent and staff access rights.',adopted:'March 2026'},
+  {id:'adm_sh',tier:3,title:'Admissions Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_Admissions_Policy_Sparkhill_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places, and registration process. Sparkhill: max 62 children.',adopted:'March 2026'},
+  {id:'adm_bw',tier:3,title:'Admissions Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_Admissions_Policy_Bearwood_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Bearwood: max 32 children.',adopted:'March 2026'},
+  {id:'adm_ba',tier:3,title:'Admissions Policy — Billesley Ark',cat:'Governance',sites:['billesley'],file:'Greencoat_Admissions_Policy_Billesley_Ark_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Billesley Ark: max 24 children.',adopted:'March 2026'},
+  {id:'alc',tier:3,title:'Alcohol and Substance Misuse Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Alcohol_Substance_Misuse_Policy_Mar2026.docx',desc:'Prohibition on being under the influence at work, support available, and disciplinary consequences.',adopted:'March 2026'},
+  {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',desc:'Bribery Act 2010 compliance, what constitutes bribery, gifts and hospitality guidelines.',adopted:'March 2026'},
+  {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',desc:'Supporting children and families experiencing bereavement, staff guidance on language and response.',adopted:'March 2026'},
+  {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',desc:'Log template for recording CCTV system checks, access events, and Subject Access Requests.',adopted:'March 2026'},
+  {id:'cwb',tier:3,title:"Children's Well-being in the Nursery Policy",cat:'Child Development',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:'Promoting children\'s emotional health and wellbeing, attachment-based practice.',adopted:'March 2026'},
+  {id:'crp',tier:3,title:'Conflict Resolution with Parents and Aggressive Behaviour Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',desc:'De-escalation of parental conflict, zero tolerance of aggressive behaviour.',adopted:'March 2026'},
+  {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',desc:'Response to serious incidents including staff death, major injury, outbreak of disease.',adopted:'March 2026'},
+  {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',desc:'Protecting nursery systems and data from cyber threats, staff training, suspicious email reporting.',adopted:'March 2026'},
+  {id:'disc_beh',tier:3,title:'Dealing with Discriminatory Behaviour Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Dealing_with_Discriminatory_Behaviour_Policy_Mar2026.docx',desc:'How to identify and challenge discriminatory behaviour from staff, children, parents or visitors.',adopted:'March 2026'},
+  {id:'discip',tier:3,title:'Disciplinary Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Disciplinary_Procedure_Mar2026.docx',desc:'Formal disciplinary process including informal action, formal warnings, gross misconduct.',adopted:'March 2026'},
+  {id:'elo',tier:3,title:'Early Learning Opportunities Statement',cat:'Child Development',sites:['all'],file:'Greencoat_Early_Learning_Opportunities_Statement_Mar2026.docx',desc:'How Greencoat delivers the EYFS, our approach to planning and assessment.',adopted:'March 2026'},
+  {id:'env',tier:3,title:'Environmental Sustainability Policy',cat:'Governance',sites:['all'],file:'Greencoat_Environmental_Sustainability_Policy_Mar2026.docx',desc:'Commitment to sustainability in nursery operations, waste reduction, energy efficiency.',adopted:'March 2026'},
+  {id:'equip',tier:3,title:'Equipment and Resources Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Equipment_Resources_Policy_Mar2026.docx',desc:'Selection, maintenance, inspection and safe storage of nursery equipment and resources.',adopted:'March 2026'},
+  {id:'food_play',tier:3,title:'Food Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Food_Play_Policy_Mar2026.docx',desc:'Safe use of food in play and sensory activities, allergen awareness, hygiene.',adopted:'March 2026'},
+  {id:'gdpr',tier:3,title:'GDPR Privacy Notice',cat:'Governance',sites:['all'],file:'Greencoat_GDPR_Privacy_Notice_Mar2026.docx',desc:'Privacy notice for parents and staff covering what personal data is held, how it is used.',adopted:'March 2026'},
+  {id:'griev',tier:3,title:'Grievance Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Grievance_Procedure_Mar2026.docx',desc:'Informal and formal grievance process, timescales, investigation standards.',adopted:'March 2026'},
+  {id:'gun',tier:3,title:'Gun and Superhero Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Gun_Superhero_Play_Policy_Mar2026.docx',desc:'Managing superhero and weapon play in a developmentally appropriate way, safe boundaries.',adopted:'March 2026'},
+  {id:'harass',tier:3,title:'Harassment and Sexual Harassment Risk Assessment Template',cat:'Staffing',sites:['all'],file:'Greencoat_Harassment_Sexual_Harassment_Risk_Assessment_Mar2026.docx',desc:'Template for assessing risk of harassment and sexual harassment in the workplace.',adopted:'March 2026'},
+  {id:'hwp',tier:3,title:'Healthy Workplace Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Healthy_Workplace_Policy_Mar2026.docx',desc:'Promoting staff physical and mental health, occupational health support, adjustments for health conditions.',adopted:'March 2026'},
+  {id:'imm',tier:3,title:'Immunisation Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Policy_Mar2026.docx',desc:'Promoting immunisation in line with government health policy, recording vaccination status.',adopted:'March 2026'},
+  {id:'immd',tier:3,title:'Immunisation Disclaimer Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Disclaimer_Form_Mar2026.docx',desc:'Form for parents to complete if they decline recommended immunisations for their child.',adopted:'March 2026'},
+  {id:'inc_form',tier:3,title:'Incident Form',cat:'Health & Safety',sites:['all'],file:'Greencoat_Incident_Form_Mar2026.docx',desc:'Template for recording incidents, near misses, and hazards identified on nursery premises.',adopted:'March 2026'},
+  {id:'lone',tier:3,title:'Lone Working Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Lone_Working_Policy_Mar2026.docx',desc:'Ensuring no staff member works alone in a room or building, risk assessment for lone working scenarios.',adopted:'March 2026'},
+  {id:'llcf',tier:3,title:'Low-Level Concern Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concern_Form_Mar2026.docx',desc:'Template form for recording low-level concerns about staff behaviour, to be submitted to the DSL.',adopted:'March 2026'},
+  {id:'exw',tier:3,title:'Managing Extreme Weather Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Managing_Extreme_Weather_Policy_Mar2026.docx',desc:'Procedures for extreme heat, cold, storms and flooding. Sun safety, vitamin D guidance.',adopted:'March 2026'},
+  {id:'mh',tier:3,title:'Manual Handling Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Manual_Handling_Policy_Mar2026.docx',desc:'Safe manual handling techniques, training requirements, risk assessment for regular lifting tasks.',adopted:'March 2026'},
+  {id:'med_form',tier:3,title:'Medication Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Form_Mar2026.docx',desc:'Template form for parental consent to administer medication, dosage instructions, and administration record.',adopted:'March 2026'},
+  {id:'men',tier:3,title:'Menopause Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Menopause_Policy_Mar2026.docx',desc:'Supporting staff experiencing menopause symptoms, reasonable adjustments, confidential conversations.',adopted:'March 2026'},
+  {id:'miss_out',tier:3,title:'Missing Child from Outings Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_from_Outings_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for during an outing. Immediate search, police notification.',adopted:'March 2026'},
+  {id:'more',tier:3,title:'More Able and Talented Children Policy',cat:'Child Development',sites:['all'],file:'Greencoat_More_Able_Talented_Children_Policy_Mar2026.docx',desc:'Identifying and supporting more able children through challenge, enrichment, and specialist services.',adopted:'March 2026'},
+  {id:'mult',tier:3,title:'Multiple Birth Families Policy',cat:'Families',sites:['all'],file:'Greencoat_Multiple_Birth_Families_Policy_Mar2026.docx',desc:'Supporting families with twins, triplets and higher multiples, individual key persons, and transition planning.',adopted:'March 2026'},
+  {id:'nos',tier:3,title:'No Smoking and Vaping Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_No_Smoking_Vaping_Policy_Mar2026.docx',desc:'Absolute prohibition on smoking and vaping on nursery premises or in vehicles used for nursery purposes.',adopted:'March 2026'},
+  {id:'nop',tier:3,title:'Nursery Operational Plan',cat:'Governance',sites:['all'],file:'Greencoat_Nursery_Operational_Plan_Mar2026.docx',desc:'Reference document covering day-to-day operational standards including funded hours delivery, staffing ratios.',adopted:'March 2026'},
+  {id:'ora',tier:3,title:'Overall Approach to Risk Assessment',cat:'Health & Safety',sites:['all'],file:'Greencoat_Overall_Approach_Risk_Assessment_Mar2026.docx',desc:'Framework for identifying, assessing and managing risks in the nursery, including the risk-benefit approach.',adopted:'March 2026'},
+  {id:'perm',tier:3,title:'Permission Forms',cat:'Governance',sites:['all'],file:'Greencoat_Permission_Forms_Mar2026.docx',desc:'Standard permission forms for outings, photography, medical treatment, and emergency procedures.',adopted:'March 2026'},
+  {id:'pers',tier:3,title:'Personnel Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Personnel_Policy_Mar2026.docx',desc:'HR management framework covering employment terms, performance management, equal opportunities, and staff records.',adopted:'March 2026'},
+  {id:'phys',tier:3,title:'Physical Activity Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Physical_Activity_Policy_Mar2026.docx',desc:'Commitment to daily physical activity. PANCo: Sadiyah Begum, responsible for promoting active play.',adopted:'March 2026'},
+  {id:'preg',tier:3,title:'Pregnancy and Family Leave Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Policy_Mar2026.docx',desc:'Maternity, paternity, shared parental leave and adoption leave entitlements. Reflects Employment Rights Act 2025 changes.',adopted:'March 2026'},
+  {id:'qual',tier:3,title:'Quality Provision Policy',cat:'Governance',sites:['all'],file:'Greencoat_Quality_Provision_Policy_Mar2026.docx',desc:'Commitment to high-quality care and education, self-evaluation, quality improvement, and continuous development.',adopted:'March 2026'},
+  {id:'ref',tier:3,title:'Referral Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Referral_Form_Mar2026.docx',desc:'Template form for referring a safeguarding concern to Birmingham Children\'s Social Care or the LADO.',adopted:'March 2026'},
+  {id:'rtw',tier:3,title:'Return to Work Interview Record',cat:'Staffing',sites:['all'],file:'Greencoat_Return_to_Work_Interview_Record_Mar2026.docx',desc:'Template for return to work conversations following any period of absence, however short.',adopted:'March 2026'},
+  {id:'saf',tier:3,title:'Safety Checks',cat:'Health & Safety',sites:['all'],file:'Greencoat_Safety_Checks_Mar2026.docx',desc:'Regular safety check schedules for premises, equipment, utilities, and outdoor areas.',adopted:'March 2026'},
+  {id:'scr',tier:3,title:'Single Central Record (SCR)',cat:'Staffing',sites:['all'],file:'Greencoat_Single_Central_Record_Mar2026.docx',desc:'Template for recording all pre-employment checks (DBS, identity, right to work, qualifications) for each member of staff.',adopted:'March 2026'},
+  {id:'spc',tier:3,title:'Special Consideration for Employees Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Special_Consideration_Employees_Policy_Mar2026.docx',desc:'Reasonable adjustments and special consideration for employees with health conditions, disabilities, or personal circumstances.',adopted:'March 2026'},
+  {id:'sdt',tier:3,title:'Staff Development and Training Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Development_Training_Policy_Mar2026.docx',desc:'All staff hold Level 3+, several hold Level 5/6, Director holds Level 7 with PGCE/QTS. Commitment to ongoing CPD.',adopted:'March 2026'},
+  {id:'swb',tier:3,title:'Staff Well-being Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Wellbeing_Policy_Mar2026.docx',desc:'Well-being lead: Sadiyah Begum. Supervision frequency reflects site model. Zero tolerance of harassment.',adopted:'March 2026'},
+  {id:'soc',tier:3,title:'Staff Working with Their Own Children Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Working_with_Own_Children_Policy_Mar2026.docx',desc:'Managing conflicts of interest when staff members have children or close relatives attending the nursery.',adopted:'March 2026'},
+  {id:'stud',tier:3,title:'Student Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Student_Policy_Mar2026.docx',desc:'Welcoming and supporting students on placement, supervision requirements, DBS checks, conduct expectations.',adopted:'March 2026'},
+  {id:'sv',tier:3,title:'Supervision of Visitors Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Visitors_Policy_Mar2026.docx',desc:'Signing-in procedures, escorting visitors, contractor management, and ensuring visitors are never left unsupervised.',adopted:'March 2026'},
+  {id:'dum',tier:3,title:'Use of Dummies in Nursery Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Use_of_Dummies_Policy_Mar2026.docx',desc:'Guidance on use of dummies as comforters, hygiene requirements, speech development considerations, and parental agreement.',adopted:'March 2026'},
+  {id:'vola',tier:3,title:'Volunteer Agreement',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteer_Agreement_Mar2026.docx',desc:'Agreement covering volunteer tasks, expectations, DBS requirements, and safeguarding responsibilities.',adopted:'March 2026'},
+  {id:'volp',tier:3,title:'Volunteers Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteers_Policy_Mar2026.docx',desc:'Framework for welcoming volunteers. Designated officer: Taz Khan (Director). DBS, induction, supervision.',adopted:'March 2026'},
+  {id:'dse',tier:3,title:'Working with Display Screen Equipment Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Working_with_Display_Screen_Equipment_Policy_Mar2026.docx',desc:'DSE assessment requirements, eye test entitlements, workstation adjustments, and reporting symptoms.',adopted:'March 2026'},
+  {id:'yw',tier:3,title:'Young Worker Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Young_Worker_Policy_Mar2026.docx',desc:'Legal requirements and additional safeguards for staff under 18 or apprentices, including working hours, supervision.',adopted:'March 2026'},
+  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',desc:'Planning template for nursery outings including risk assessment, staffing ratios, parental consent, emergency contacts.',adopted:'March 2026'}
+];
+
+let STAFF = [...DEFAULT_STAFF];
+let POLICIES = [...DEFAULT_POLICIES];
+let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
+
+async function saveGlobalConfig() {
+  try {
+    const res = await fetch('/api/admin-data?action=config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
+      body: JSON.stringify({ policies: POLICIES, staff: STAFF, config: CONFIG })
+    });
+    if (res.status === 401) throw new Error('Unauthorised: Check your Netlify Environment Variable password');
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    showToast('Live portal updated ✓', 'success');
+  } catch(e) { showToast('Failed to sync: ' + e.message, 'error'); }
+}
+
+async function loadGlobalConfig() {
+  try {
+    const res = await fetch('/api/admin-data?action=config');
+    const json = await res.json();
+    if (json.ok && json.data) {
+      if (Array.isArray(json.data.policies) && json.data.policies.length > 0) POLICIES = json.data.policies;
+      if (Array.isArray(json.data.staff) && json.data.staff.length > 0) STAFF = json.data.staff;
+      if (json.data.config) Object.assign(CONFIG, json.data.config);
+    }
+  } catch(e) { console.log("Using offline defaults"); }
+}
+
+function restoreDefaults() {
+  if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 111 Greencoat policies and staff list.")) return;
+  POLICIES = [...DEFAULT_POLICIES];
+  STAFF = [...DEFAULT_STAFF];
+  saveGlobalConfig();
+  renderPolicyTable();
+  renderStaffList();
+  buildCatFilter();
+  showToast("Defaults restored successfully.", "success");
+}
+
+async function init() {
+  await loadGlobalConfig();
+  renderPolicyTable();
+  renderStaffList();
+  loadSettingsUI();
+  loadCompliance();
+  buildCatFilter();
+}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'compliance') loadCompliance();
+  if (id === 'heatmap') loadHeatmap();
+  if (id === 'aiquestions') loadAiQuestions();
+}
+
+function buildCatFilter() {
+  const cats = [...new Set(POLICIES.map(p=>p.cat || 'General'))].sort();
+  const sel = document.getElementById('filterCat');
+  sel.innerHTML = '<option value="">All categories</option>';
+  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+}
+
+function renderPolicyTable() {
+  const q    = document.getElementById('searchPolicies').value.toLowerCase();
+  const tier = document.getElementById('filterTier').value;
+  const cat  = document.getElementById('filterCat').value;
+  const list = POLICIES.filter(p => {
+    if (!p) return false;
+    const pTier = parseInt(p.tier) || 3;
+    const pCat = p.cat || 'General';
+    const pTitle = p.title || '';
+    if (tier && pTier !== parseInt(tier)) return false;
+    if (cat && pCat !== cat) return false;
+    if (q && !pTitle.toLowerCase().includes(q) && !pCat.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  document.getElementById('policyCount').textContent = `${list.length} of ${POLICIES.length} policies shown`;
+  const tcls = {1:'t1b',2:'t2b',3:'t3b'}; const tlbl = {1:'Tier 1',2:'Tier 2',3:'Tier 3'};
+  document.getElementById('policyTbody').innerHTML = list.map(p => {
+    const pTier = parseInt(p.tier) || 3;
+    const pCat = p.cat || 'General';
+    const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
+    const pTitle = p.title || 'Untitled';
+    return `<tr><td>${pTitle}</td><td><span class="tier-badge ${tcls[pTier]||'t3b'}">${tlbl[pTier]||'Tier 3'}</span></td><td>${pCat}</td><td>${pSites.includes('all') ? 'All' : pSites.map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(', ')}</td><td>${p.adopted||''}</td><td><button class="act-btn btn-edit" onclick="openEditModal('${p.id}')">Edit</button><button class="act-btn btn-del" style="margin-left:.3rem" onclick="deletePolicy('${p.id}')">Delete</button></td></tr>`;
+  }).join('');
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Add policy'; document.getElementById('editId').value = ''; document.getElementById('editTitle').value = ''; document.getElementById('editTier').value = '3'; document.getElementById('editCat').value = 'Governance'; document.getElementById('editFile').value = ''; document.getElementById('editAdopted').value = 'March 2026'; document.getElementById('editDesc').value = '';
+  ['siteAll','siteSh','siteBw','siteBa'].forEach(id => document.getElementById(id).checked = false); document.getElementById('siteAll').checked = true; document.getElementById('policyModal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const p = POLICIES.find(x=>x.id===id); if (!p) return;
+  const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
+  document.getElementById('modalTitle').textContent = 'Edit policy'; document.getElementById('editId').value = p.id; document.getElementById('editTitle').value = p.title||''; document.getElementById('editTier').value = p.tier||3; document.getElementById('editCat').value = p.cat||'Governance'; document.getElementById('editFile').value = p.file||''; document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
+  document.getElementById('siteAll').checked = pSites.includes('all'); document.getElementById('siteSh').checked = pSites.includes('sparkhill'); document.getElementById('siteBw').checked = pSites.includes('bearwood'); document.getElementById('siteBa').checked = pSites.includes('billesley');
+  document.getElementById('policyModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('policyModal').classList.remove('open'); }
+
+function savePolicy() {
+  const id = document.getElementById('editId').value; const sites = [];
+  if (document.getElementById('siteAll').checked) sites.push('all'); if (document.getElementById('siteSh').checked) sites.push('sparkhill'); if (document.getElementById('siteBw').checked) sites.push('bearwood'); if (document.getElementById('siteBa').checked) sites.push('billesley');
+  const data = { id: id || 'p_' + Date.now(), tier: parseInt(document.getElementById('editTier').value), title: document.getElementById('editTitle').value, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], file: document.getElementById('editFile').value.trim(), adopted: document.getElementById('editAdopted').value, desc: document.getElementById('editDesc').value };
+  if (id) { const i = POLICIES.findIndex(p=>p.id===id); if (i>=0) POLICIES[i] = data; } else { POLICIES.push(data); }
+  closeModal(); renderPolicyTable(); buildCatFilter(); saveGlobalConfig();
+}
+
+function deletePolicy(id) { if (!confirm('Delete this policy permanently?')) return; POLICIES = POLICIES.filter(p=>p.id!==id); renderPolicyTable(); saveGlobalConfig(); }
+
+function renderStaffList() {
+  if (!Array.isArray(STAFF)) STAFF = [];
+  document.getElementById('staffCount').textContent = `${STAFF.length} staff members`;
+  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${n}<button class="chip-del" onclick="removeStaff('${(n||'').replace(/'/g,"\\'")}')">✕</button></div>`).join('');
+}
+
+function addStaff() {
+  const v = document.getElementById('newStaffName').value.trim();
+  if (!v) return;
+  if (!Array.isArray(STAFF)) STAFF = [];
+  if (STAFF.includes(v)) {
+    showToast('Staff member already exists', 'error');
+    return;
+  }
+  STAFF.push(v);
+  renderStaffList();
+  document.getElementById('newStaffName').value = '';
+  saveGlobalConfig();
+}
+
+function removeStaff(n) { if(!confirm(`Remove ${n} from active staff?`)) return; STAFF = STAFF.filter(s=>s!==n); renderStaffList(); saveGlobalConfig(); }
+
+function loadSettingsUI() { document.getElementById('setOrgName').value = CONFIG.orgName || ''; document.getElementById('setReviewDate').value = CONFIG.reviewDate || ''; document.getElementById('setAdoptedDate').value = CONFIG.adoptedDate || ''; }
+function saveSettings() { CONFIG.orgName = document.getElementById('setOrgName').value; CONFIG.adoptedDate = document.getElementById('setAdoptedDate').value; CONFIG.reviewDate = document.getElementById('setReviewDate').value; saveGlobalConfig(); }
+function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
+
+// ── COMPLIANCE ─────────────────────────────────────────────────────────────
+async function loadCompliance() {
+  try {
+    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+    if (res.status === 401) throw new Error('Unauthorised: Password does not match Netlify');
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json(); renderCompliance(data.staff || []);
+  } catch(e) { document.getElementById('compCard').innerHTML = `<p style="color:var(--t1);font-size:.85rem;padding:2rem;text-align:center">Cannot load data. <br>${e.message}</p>`; }
+}
+
+function renderCompliance(staffData) {
+  const t1 = POLICIES.filter(p=>p.tier===1); const t2 = POLICIES.filter(p=>p.tier===2); const t3 = POLICIES.filter(p=>p.tier===3);
+  const totalReads = staffData.reduce((s,x)=>s+(x.readCount||0),0); const totalQuizzes = staffData.reduce((s,x)=>s+(x.quizCount||0),0); const activeStaff = staffData.filter(x=>(x.readCount||0)>0).length; const redoCount = staffData.filter(s => (s.recentQuizzes||[])[0]?.needsRedo).length;
+  document.getElementById('compStats').innerHTML = `<div class="stat-card"><div class="stat-num">${staffData.length}</div><div class="stat-label">Staff tracked</div></div><div class="stat-card"><div class="stat-num">${totalReads}</div><div class="stat-label">Policies read</div></div><div class="stat-card"><div class="stat-num">${totalQuizzes}</div><div class="stat-label">Quizzes taken</div></div><div class="stat-card" style="${redoCount>0?'border-color:var(--t1)':''}"><div class="stat-num" style="${redoCount>0?'color:var(--t1)':''}">${redoCount}</div><div class="stat-label">⚠️ Redo required</div></div>`;
+  document.getElementById('compSummary').textContent = `${totalReads} policy reads across ${activeStaff} of ${staffData.length} staff.`;
+  if (!staffData.length) { document.getElementById('compCard').innerHTML = '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:2rem">No data yet — staff need to open the portal and read a policy.</p>'; return; }
+
+  const rows = staffData.map(entry => {
+    const name = entry.name || entry.staffName || '—'; const acks = new Set(entry.acknowledgedPolicyIds||entry.readPolicyIds||[]);
+    const pct1 = t1.length ? Math.round(t1.filter(p=>acks.has(p.id)).length/t1.length*100) : 0; const pct2 = t2.length ? Math.round(t2.filter(p=>acks.has(p.id)).length/t2.length*100) : 0; const pct3 = t3.length ? Math.round(t3.filter(p=>acks.has(p.id)).length/t3.length*100) : 0; const overall = POLICIES.length ? Math.round(acks.size/POLICIES.length*100) : 0;
+    const col = overall >= 80 ? 'var(--t3)' : overall >= 40 ? 'var(--t2)' : 'var(--t1)'; const lastRead = entry.lastRead ? new Date(entry.lastRead).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    const latestQuiz = (entry.recentQuizzes||[])[0]; const needsRedo = latestQuiz && latestQuiz.needsRedo;
+    const quizBadge = entry.quizCount > 0 ? needsRedo ? `<span style="background:rgba(239,68,68,.15);color:var(--t1);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem" title="${latestQuiz.pct}% — needs redo">⚠️ Redo Required</span>` : `<span style="background:rgba(20,184,166,.15);color:var(--teal);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">🧠 ${latestQuiz?.pct||'?'}% pass</span>` : '';
+    const aiBadge = entry.aiChatCount > 0 ? `<span style="background:rgba(139,92,246,.15);color:#8b5cf6;border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">🤖 ${entry.aiChatCount}</span>` : '';
+    const summaryBadge = entry.summaryCount > 0 ? `<span style="background:rgba(245,158,11,.12);color:var(--gold);border-radius:5px;padding:.1rem .4rem;font-size:.7rem;margin-left:.4rem">⚡ ${entry.summaryCount}</span>` : '';
+    return `<div class="staff-comp-row" style="cursor:pointer" onclick="loadStaffDetail('${entry.staffKey}','${name.replace(/'/g,"\\'")}')"><div class="staff-name-col">${name}${quizBadge}${summaryBadge}${aiBadge}<div style="font-size:.68rem;color:var(--text3);margin-top:.15rem">Last read: ${lastRead}</div></div><div class="tier-bars"><div class="tier-bar-group"><div class="tier-bar-label">Tier 1</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct1}%;background:var(--t1)"></div></div><span class="pct-label" style="color:var(--t1)">${pct1}%</span></div></div><div class="tier-bar-group"><div class="tier-bar-label">Tier 2</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct2}%;background:var(--t2)"></div></div><span class="pct-label" style="color:var(--t2)">${pct2}%</span></div></div><div class="tier-bar-group"><div class="tier-bar-label">Tier 3</div><div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:${pct3}%;background:var(--t3)"></div></div><span class="pct-label" style="color:var(--t3)">${pct3}%</span></div></div></div><div class="overall-pct" style="color:${col}">${overall}%</div></div>`;
+  });
+  document.getElementById('compCard').innerHTML = `<div class="card-title">📊 Staff reading progress <span style="font-size:.75rem;font-weight:400;color:var(--text3)">(click a row for detail)</span></div>${rows.join('')}`;
+}
+
+async function loadStaffDetail(staffKey, name) {
+  try {
+    const res = await fetch(`/api/admin-data?action=staff-detail&staff=${encodeURIComponent(staffKey)}`, { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+    if (res.status === 401) throw new Error('Unauthorised: Check password');
+    const data = await res.json();
+    const recentReads = (data.reads||[]).slice(0,10).map(r => `<li style="margin-bottom:.3rem">${r.policyId} <span style="color:var(--text3);font-size:.72rem">${new Date(r.readAt).toLocaleDateString('en-GB')}</span></li>`).join('');
+    const quizItems = (data.quizzes||[]).slice(0,8).map(q => {
+      const pass = q.passed; const badge = (q.pct === null || q.pct === undefined) ? '' : pass ? `<span style="background:rgba(16,185,129,.15);color:var(--t3);border-radius:4px;padding:.1rem .35rem;font-size:.68rem;margin-left:.3rem">✅ ${q.pct}% PASS</span>` : `<span style="background:rgba(239,68,68,.15);color:var(--t1);border-radius:4px;padding:.1rem .35rem;font-size:.68rem;margin-left:.3rem">❌ ${q.pct}% REDO</span>`;
+      return `<li style="margin-bottom:.4rem;font-size:.78rem">${q.policy||q.key}${badge} <span style="color:var(--text3);font-size:.7rem">${q.date?new Date(q.date).toLocaleDateString('en-GB'):''}</span></li>`;
+    }).join('');
+    
+    const existing = document.getElementById('staffDetailPanel'); if (existing) existing.remove();
+    const panel = document.createElement('div'); panel.id = 'staffDetailPanel';
+    panel.style.cssText = 'position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--card);border-left:1px solid var(--border2);z-index:500;overflow-y:auto;padding:1.5rem;box-shadow:-8px 0 32px rgba(0,0,0,.4)';
+    panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem"><h3 style="font-family:inherit;font-size:1.1rem">👤 ${name}</h3><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem"><div style="background:var(--card2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--teal)">${data.reads?.length||0}</div><div style="font-size:.72rem;color:var(--text3)">Policies Read</div></div><div style="background:var(--card2);border-radius:10px;padding:.85rem;text-align:center"><div style="font-size:1.6rem;font-weight:700;color:var(--gold)">${data.quizzes?.length||0}</div><div style="font-size:.72rem;color:var(--text3)">Quizzes Taken</div></div></div>${recentReads ? `<div style="margin-bottom:1rem"><div style="font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Recent Reads</div><ul style="list-style:none;font-size:.8rem">${recentReads}</ul></div>` : ''}${quizItems ? `<div><div style="font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Quiz Activity</div><ul style="list-style:none;font-size:.8rem">${quizItems}</ul></div>` : ''}`;
+    document.body.appendChild(panel);
+  } catch(e) { showToast('Could not load detail: ' + e.message, 'error'); }
+}
+
+// ── AI QUESTIONS ──────────────────────────────────────────────────────────
+let allAiQuestions = [];
+async function loadAiQuestions() {
+  document.getElementById('aiQList').innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
+  try {
+    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+    if (res.status === 401) throw new Error('Unauthorised: Password does not match Netlify');
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    allAiQuestions = []; const staffNames = new Set(); const policyNames = new Set();
+    for (const staff of (data.staff || [])) {
+      const det = await fetch(`/api/admin-data?action=staff-detail&staff=${encodeURIComponent(staff.staffKey)}`, { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } }).then(r=>r.json()).catch(()=>({aiChats:[]}));
+      for (const chat of (det.aiChats || [])) {
+        allAiQuestions.push({ staffName: staff.name, ...chat });
+        staffNames.add(staff.name); if (chat.policy) policyNames.add(chat.policy);
+      }
+    }
+    allAiQuestions.sort((a,b) => new Date(b.date) - new Date(a.date));
+    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + [...staffNames].sort().map(n=>`<option value="${n}">${n}</option>`).join('');
+    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + [...policyNames].sort().map(p=>`<option value="${p}">${p}</option>`).join('');
+    renderAiQuestions(allAiQuestions);
+  } catch(e) { document.getElementById('aiQList').innerHTML = `<p style="color:var(--t1);font-size:.85rem;padding:2rem;text-align:center">Could not load: ${e.message}</p>`; }
+}
+
+function filterAiQuestions() {
+  const search = document.getElementById('aiQSearch').value.toLowerCase(); const staff = document.getElementById('aiQStaffFilter').value; const policy = document.getElementById('aiQPolicyFilter').value;
+  const filtered = allAiQuestions.filter(q => {
+    if (staff && q.staffName !== staff) return false; if (policy && q.policy !== policy) return false;
+    if (search && !q.question?.toLowerCase().includes(search) && !q.answer?.toLowerCase().includes(search) && !q.staffName?.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  renderAiQuestions(filtered);
+}
+
+function renderAiQuestions(questions) {
+  const stats = document.getElementById('aiQStats'); const list = document.getElementById('aiQList');
+  const uniqueStaff = new Set(questions.map(q=>q.staffName)).size; const uniquePolicies = new Set(questions.map(q=>q.policy)).size;
+  stats.innerHTML = `<div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--teal);font-weight:700">${questions.length}</span> <span style="color:var(--text2)">questions</span></div><div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--gold);font-weight:700">${uniqueStaff}</span> <span style="color:var(--text2)">staff members</span></div><div style="background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.6rem 1rem;font-size:.8rem"><span style="color:var(--t3);font-weight:700">${uniquePolicies}</span> <span style="color:var(--text2)">policies asked about</span></div>`;
+  if (!questions.length) { list.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">No questions match your filters.</p>'; return; }
+  list.innerHTML = questions.map(q => `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem;gap:.5rem;flex-wrap:wrap"><div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap"><span style="background:rgba(20,184,166,.15);color:var(--teal);border-radius:6px;padding:.2rem .6rem;font-size:.72rem;font-weight:700">👤 ${q.staffName||'Unknown'}</span><span style="background:rgba(245,158,11,.1);color:var(--gold);border-radius:6px;padding:.2rem .6rem;font-size:.72rem">📄 ${q.policy||'Unknown policy'}</span></div><span style="font-size:.7rem;color:var(--text3);flex-shrink:0">${q.date ? new Date(q.date).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'}</span></div><div style="font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.5rem">❓ ${q.question||'—'}</div><div style="font-size:.78rem;color:var(--text2);line-height:1.55;background:var(--card2);border-radius:7px;padding:.6rem .85rem;border-left:3px solid var(--teal)">${(q.answer||'—').replace(/\n/g, '<br>')}</div></div>`).join('');
+}
+
+// ── HEATMAP & OFSTED ──────────────────────────────────────────────────────
+async function loadHeatmap() {
+  let compData = [];
+  try {
+    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+    if (res.status === 401) throw new Error('Unauthorised: Check password');
+    if (res.ok) { const d = await res.json(); compData = d.staff || []; }
+  } catch(e) { document.getElementById('heatmapWrap').innerHTML = `<p style="color:var(--t1);padding:2rem;text-align:center">${e.message}</p>`; return; }
+  renderHeatmap(compData); renderOfstedScore(compData);
+}
+
+function renderOfstedScore(compData) {
+  const t1 = POLICIES.filter(p => p.tier === 1);
+  const t1WithAllAcks = t1.filter(p => compData.length > 0 && compData.every(s => (s.acknowledgedPolicyIds || []).includes(p.id)));
+  const pct = t1.length ? Math.round(t1WithAllAcks.length / t1.length * 100) : 0;
+  const cls = pct === 100 ? 'green' : pct >= 60 ? 'amber' : 'red'; const icon = pct === 100 ? '🟢' : pct >= 60 ? '🟡' : '🔴'; const label = pct === 100 ? 'Inspection Ready' : pct >= 60 ? 'Progressing' : 'Action Required';
+  const el = document.getElementById('ofstedScore'); el.className = 'ofsted-score-card ' + cls; el.classList.remove('hidden');
+  el.innerHTML = `<div style="font-size:2.5rem">${icon}</div><div class="ofs-num">${pct}%</div><div class="ofs-text"><h3>Ofsted Readiness — ${label}</h3><p>${t1WithAllAcks.length} of ${t1.length} Tier 1 policies acknowledged by all ${compData.length} staff members tracked.</p><p style="margin-top:.3rem;font-size:.72rem;color:var(--text3)">For full inspection readiness, all Tier 1 policies must be read by every member of staff.</p></div>`;
+}
+
+function renderHeatmap(compData) {
+  if (!compData.length) { document.getElementById('heatmapWrap').innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No acknowledgement data yet.</p>'; return; }
+  const tiers = [{ tier:1, label:'Tier 1', cls:'t1b' }, { tier:2, label:'Tier 2', cls:'t2b' }, { tier:3, label:'Tier 3', cls:'t3b' }];
+  let tableHTML = `<div class="heatmap-scroll"><table class="heatmap-table"><thead><tr><th style="text-align:left">Staff</th>`;
+  tiers.forEach(({ tier, label, cls }) => { const ps = POLICIES.filter(p => p.tier === tier); tableHTML += `<th colspan="${ps.length}"><span class="tier-badge ${cls}">${label}</span></th>`; });
+  tableHTML += `<th>Overall</th></tr><tr><th></th>`;
+  tiers.forEach(({ tier }) => { POLICIES.filter(p => p.tier === tier).forEach(p => { tableHTML += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);height:90px;font-size:.58rem;padding:.25rem">${(p.title||'').length > 20 ? (p.title||'').slice(0,18)+'…' : (p.title||'')}</th>`; }); });
+  tableHTML += `<th></th></tr></thead><tbody>`;
+  compData.forEach(entry => {
+    const acks = new Set(entry.acknowledgedPolicyIds || []);
+    const pct = Math.round((POLICIES.filter(p => acks.has(p.id)).length / POLICIES.length) * 100);
+    tableHTML += `<tr><td class="staff-name">${entry.name || entry.staffName}</td>`;
+    tiers.forEach(({ tier }) => { POLICIES.filter(p => p.tier === tier).forEach(p => { const yes = acks.has(p.id); tableHTML += `<td title="${p.title} — ${yes ? 'Read ✓' : 'Outstanding'}" style="padding:2px"><div class="hm-cell${yes ? ' done' : ' miss'}${tier === 1 ? ' t1' : ''}"></div></td>`; }); });
+    tableHTML += `<td style="padding:.3rem .65rem;font-weight:700;color:${pct >= 80 ? 'var(--t3)' : pct >= 40 ? 'var(--t2)' : 'var(--t1)'};font-size:.78rem">${pct}%</td></tr>`;
+  });
+  tableHTML += `</tbody></table></div>`; document.getElementById('heatmapWrap').innerHTML = tableHTML;
+}
+
+async function exportCSV() {
+  showToast('Fetching data…', 'info');
+  let compData = [];
+  try {
+    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
+    if (res.ok) { const d = await res.json(); compData = d.staff || []; }
+  } catch(e) { showToast('Export failed: ' + e.message, 'error'); return; }
+  const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
+  compData.forEach(entry => {
+    const acks = new Set(entry.acknowledgedPolicyIds || []);
+    POLICIES.forEach(p => rows.push([entry.name, p.id, `"${(p.title||'').replace(/"/g,'""')}"`, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
+  });
+  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type:'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `greencoat_compliance_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  showToast('CSV exported ✓', 'success');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='info') {
+  const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`;
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className='toast',3000);
+}
+
+document.addEventListener('keydown', e => { if (e.key==='Enter' && document.getElementById('loginScreen').style.display!=='none') doLogin(); });
+
+
+// ── PIN MANAGEMENT (admin) ──────────────────────────────────────────
+function getAdminPins() {
+  try { return JSON.parse(localStorage.getItem('gc_staff_pins') || '{}'); }
+  catch { return {}; }
+}
+function saveAdminPins(pins) {
+  localStorage.setItem('gc_staff_pins', JSON.stringify(pins));
+}
+
+function renderPinTable() {
+  const wrap = document.getElementById('pinTableWrap');
+  if (!wrap) return;
+  const pins = getAdminPins();
+  const staff = typeof DEFAULT_POLICIES !== 'undefined'
+    ? (window.CURRENT_STAFF || DEFAULT_STAFF)
+    : DEFAULT_STAFF;
+
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
+  html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
+    '<th style="text-align:left;padding:.6rem .75rem">Staff member</th>' +
+    '<th style="text-align:center;padding:.6rem .75rem">Current PIN</th>' +
+    '<th style="padding:.6rem .75rem;text-align:right">Actions</th></tr></thead><tbody>';
+
+  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
+  staffList.forEach((name, i) => {
+    const pin = pins[name] || '0000';
+    const isDefault = pin === '0000';
+    const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--bg3)';
+    html += `<tr style="background:${fill}">
+      <td style="padding:.6rem .75rem;font-weight:600">${name}</td>
+      <td style="text-align:center;padding:.6rem .75rem">
+        <span style="font-family:monospace;font-size:1rem;letter-spacing:.15em;color:${isDefault?'#e57373':'var(--gc-green)'}">${pin}</span>
+        ${isDefault ? '<span style="font-size:.7rem;color:#e57373;margin-left:.4rem">(default)</span>' : ''}
+      </td>
+      <td style="text-align:right;padding:.6rem .75rem">
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem"
+          onclick="adminSetPin('${name.replace(/'/g,"\'")}')">Set PIN</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem"
+          onclick="adminResetPin('${name.replace(/'/g,"\'")}')">Reset to 0000</button>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function adminSetPin(name) {
+  const p1 = prompt(`Set new 4-digit PIN for ${name}:`);
+  if (p1 === null) return;
+  if (!/^\d{4}$/.test(p1)) { showToast('PIN must be exactly 4 digits', 'error'); return; }
+  const p2 = prompt(`Confirm PIN for ${name}:`);
+  if (p1 !== p2) { showToast('PINs did not match — not saved', 'error'); return; }
+  const pins = getAdminPins();
+  pins[name] = p1;
+  saveAdminPins(pins);
+  showToast(`PIN updated for ${name}`, 'success');
+  renderPinTable();
+}
+
+function adminResetPin(name) {
+  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
+  const pins = getAdminPins();
+  pins[name] = '0000';
+  saveAdminPins(pins);
+  showToast(`PIN reset for ${name}`, 'success');
+  renderPinTable();
+}
+
+function resetAllPins() {
+  if (!confirm('Reset ALL staff PINs to 0000? Staff will be prompted to set a new PIN on next login.')) return;
+  const pins = {};
+  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
+  staffList.forEach(n => pins[n] = '0000');
+  saveAdminPins(pins);
+  showToast('All PINs reset to 0000', 'success');
+  renderPinTable();
+}
+
+// Render PIN table when the tab is activated
+const _origSwitchTab = switchTab;
+function switchTab(id, el) {
+  _origSwitchTab(id, el);
+  if (id === 'pins') renderPinTable();
+}
+</script>
+</body>
+</html>

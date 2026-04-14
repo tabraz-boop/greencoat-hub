@@ -1,0 +1,2819 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-size="normal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greencoat Nursery — Policy Hub</title>
+<meta name="theme-color" content="#2B6B3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Policy Hub">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════
+   GREENCOAT POLICY HUB — PREMIUM DESIGN SYSTEM v3
+   Inspired by Linear · Stripe · Vercel · Apple iOS 18
+═══════════════════════════════════════════════════════════ */
+
+/* ── DESIGN TOKENS ───────────────────────────────────────── */
+:root {
+  /* Brand */
+  --gc-green:       #1e6641;
+  --gc-green-mid:   #2d855a;
+  --gc-green-light: #f0f9f4;
+  --gc-green-glow:  rgba(30,102,65,.12);
+  --gc-yellow:      #f0b429;
+  --gc-yellow-pale: #fffbeb;
+
+  /* Surface */
+  --bg:      #f7f7f6;
+  --bg2:     #ffffff;
+  --bg3:     #f3f3f2;
+  --bg4:     #ebebea;
+
+  /* Borders */
+  --border:  rgba(0,0,0,.07);
+  --border2: rgba(0,0,0,.12);
+
+  /* Text */
+  --text:  #0f0f0e;
+  --text2: #4a4a47;
+  --text3: #9a9a96;
+
+  /* Tier colours */
+  --t1: #dc2626; --t1-bg: rgba(220,38,38,.08);  --t1-border: rgba(220,38,38,.18);
+  --t2: #c17c0a; --t2-bg: rgba(240,180,41,.1);  --t2-border: rgba(240,180,41,.25);
+  --t3: #1a7a4a; --t3-bg: rgba(26,122,74,.08);  --t3-border: rgba(26,122,74,.18);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.1),  0 32px 72px rgba(0,0,0,.12);
+
+  /* Geometry */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(.16,1,.3,1);
+  --ease-in: cubic-bezier(.4,0,1,1);
+  --ease-out: cubic-bezier(0,0,.2,1);
+  --duration: 160ms;
+
+  --base: 15px;
+  --reader-font-size: 1rem;
+  --reader-line-height: 1.85;
+}
+
+[data-size="small"]  { --base: 13px; }
+[data-size="normal"] { --base: 15px; }
+[data-size="large"]  { --base: 17px; }
+[data-size="xlarge"] { --base: 20px; }
+
+/* ── DARK MODE ────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:      #0a0a0a;
+  --bg2:     #111111;
+  --bg3:     #1a1a1a;
+  --bg4:     #222222;
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.12);
+  --text:    #f2f2f0;
+  --text2:   #a8a8a4;
+  --text3:   #5a5a58;
+  --gc-green-light: rgba(30,102,65,.15);
+  --gc-green-glow:  rgba(30,102,65,.2);
+  --gc-yellow-pale: rgba(240,180,41,.08);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.6), 0 32px 72px rgba(0,0,0,.5);
+  --t1-bg: rgba(220,38,38,.12); --t2-bg: rgba(240,180,41,.1); --t3-bg: rgba(26,122,74,.1);
+}
+
+/* ── BASE RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: var(--base); -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── TOPBAR ──────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem 1.25rem;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+  box-shadow: var(--shadow-xs);
+}
+[data-theme="dark"] .topbar {
+  background: rgba(10,10,10,.85);
+}
+
+.topbar-logo {
+  display: flex; align-items: center; gap: .55rem;
+  text-decoration: none; flex-shrink: 0;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--gc-green);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(30,102,65,.3);
+}
+.logo-words { line-height: 1.2; }
+.logo-name {
+  font-size: .88rem; font-weight: 700; color: var(--text);
+  letter-spacing: -.015em;
+}
+.logo-sub {
+  font-size: .58rem; color: var(--text3);
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.topbar-divider {
+  width: 1px; height: 20px; background: var(--border); flex-shrink: 0;
+}
+
+.topbar-search {
+  flex: 1; display: flex; align-items: center; gap: .55rem;
+  background: var(--bg3);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  padding: .38rem .75rem;
+  max-width: 440px;
+  transition: all var(--duration) var(--ease);
+}
+.topbar-search:focus-within {
+  background: var(--bg2);
+  border-color: var(--gc-green);
+  box-shadow: 0 0 0 3px var(--gc-green-glow);
+}
+.topbar-search input {
+  background: none; border: none; outline: none; flex: 1;
+  font-family: inherit; font-size: .82rem;
+  color: var(--text); font-weight: 500;
+}
+.topbar-search input::placeholder { color: var(--text3); }
+.topbar-search .s-icon { color: var(--text3); font-size: .82rem; flex-shrink: 0; }
+.mic-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: .82rem; padding: 0; flex-shrink: 0; transition: color var(--duration); }
+.mic-btn:hover { color: var(--gc-green); }
+.search-clear { color: var(--text3); cursor: pointer; font-size: .82rem; display: none; flex-shrink: 0; }
+.search-clear.show { display: block; }
+
+.topbar-right { display: flex; align-items: center; gap: .35rem; margin-left: auto; flex-shrink: 0; }
+.tb-btn {
+  display: flex; align-items: center; gap: .3rem;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: .3rem .65rem;
+  color: var(--text2);
+  font-family: inherit; font-size: .72rem; font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  text-decoration: none; white-space: nowrap;
+}
+.tb-btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+.tb-btn:active { transform: scale(.97); }
+.tb-btn.active { background: var(--gc-green-light); border-color: var(--gc-green); color: var(--gc-green); font-weight: 700; }
+.tb-btn.ai-btn { background: var(--gc-green); border-color: var(--gc-green); color: #fff; }
+.tb-btn.ai-btn:hover { background: var(--gc-green-mid); }
+
+.ai-pulse { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pulse 2s ease infinite; }
+.queue-toggle {
+  display: none; align-items: center; gap: .35rem;
+  font-size: .72rem; font-weight: 600;
+  color: var(--text2); background: transparent;
+  border: 1px solid var(--border2); border-radius: var(--r-sm);
+  padding: .3rem .65rem; cursor: pointer; transition: all var(--duration) var(--ease);
+}
+.queue-toggle:hover { background: var(--bg3); }
+.queue-toggle.active { background: var(--gc-green); border-color: var(--gc-green); color: #fff; }
+
+/* ── MAIN LAYOUT ────────────────────────────────────────── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+/* ── HAMBURGER (mobile only) ──────────────────────────── */
+.topbar-menu-btn {
+  display: none; background: none; border: none;
+  font-size: 1.25rem; color: var(--text2); cursor: pointer;
+  padding: .3rem .5rem; border-radius: 6px; line-height: 1;
+}
+@media (max-width: 768px) { .topbar-menu-btn { display: flex; align-items: center; } }
+
+.sidebar {
+  width: 228px; flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: width .25s var(--ease);
+}
+
+.staff-box {
+  padding: .85rem 1rem .7rem;
+  border-bottom: 1px solid var(--border);
+}
+.staff-label {
+  font-size: .6rem; font-weight: 700;
+  color: var(--text3); text-transform: uppercase;
+  letter-spacing: .1em; margin-bottom: .4rem;
+}
+.staff-select {
+  width: 100%; padding: .4rem .65rem;
+  border-radius: var(--r-sm); border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text);
+  font-family: inherit; font-size: .82rem; font-weight: 600;
+  outline: none; cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+.staff-select:focus {
+  border-color: var(--gc-green);
+  box-shadow: 0 0 0 3px var(--gc-green-glow);
+}
+
+.progress-box {
+  padding: .6rem 1rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: .6rem;
+}
+.ring-wrap { position: relative; flex-shrink: 0; }
+.ring-svg { transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--bg4); }
+.ring-fill  { fill: none; stroke: var(--gc-green); stroke-linecap: round; transition: stroke-dashoffset .8s var(--ease); }
+.ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-pct  { font-size: .68rem; font-weight: 800; color: var(--gc-green); line-height: 1; letter-spacing: -.02em; }
+.ring-word { font-size: .42rem; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+.progress-info { flex: 1; min-width: 0; }
+.progress-name { font-size: .82rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
+.progress-sub  { font-size: .68rem; color: var(--text3); margin-top: .1rem; }
+
+.nav-section { flex: 1; overflow-y: auto; padding: .4rem 0 .75rem; }
+.nav-group-label { font-size: .58rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .12em; padding: .9rem .9rem .3rem; }
+.nav-section-label { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); padding: .9rem 1rem .25rem; }
+.nav-item {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .42rem .85rem .42rem 1rem;
+  cursor: pointer; color: var(--text2);
+  font-size: .81rem; font-weight: 500;
+  border-radius: 0;
+  border-left: 2px solid transparent;
+  transition: all var(--duration) var(--ease);
+  position: relative;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active {
+  background: var(--gc-green-light);
+  color: var(--gc-green);
+  border-left-color: var(--gc-green);
+  font-weight: 600;
+}
+.nav-icon { font-size: .88rem; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-count {
+  margin-left: auto;
+  font-size: .6rem; font-weight: 700;
+  color: var(--text3);
+  background: var(--bg4);
+  border-radius: var(--r-full);
+  padding: .06rem .42rem; flex-shrink: 0;
+}
+.nav-item.active .nav-count { background: var(--gc-green); color: #fff; }
+
+/* ── CONTENT AREA ────────────────────────────────────────── */
+.content-area { flex: 1; display: flex; overflow: hidden; }
+.policy-list {
+  flex: 1; overflow-y: auto;
+  padding: .65rem .9rem;
+  display: flex; flex-direction: column; gap: .4rem;
+}
+
+/* ── PRIORITY BANNER ─────────────────────────────────────── */
+.priority-banner {
+  margin: 0 .9rem .65rem;
+  padding: .75rem 1rem;
+  border-radius: var(--r-lg);
+  border: 1px solid;
+  display: flex; align-items: flex-start; gap: .75rem;
+}
+.priority-banner.tier1 {
+  border-color: var(--t1-border);
+  background: var(--t1-bg);
+}
+.priority-banner.done {
+  border-color: rgba(30,102,65,.2);
+  background: var(--gc-green-light);
+}
+.pb-icon  { font-size: 1.3rem; flex-shrink: 0; }
+.pb-text h3 { font-size: .88rem; font-weight: 700; color: var(--text); letter-spacing: -.015em; }
+.pb-text p  { font-size: .72rem; color: var(--text2); margin-top: .15rem; }
+.pb-pct {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 1.75rem; font-weight: 800;
+  color: var(--t1); line-height: 1; letter-spacing: -.04em;
+}
+.priority-banner.done .pb-pct { color: var(--gc-green); }
+
+/* ── RECENT STRIP ────────────────────────────────────────── */
+.recent-strip {
+  padding: .45rem .9rem .1rem;
+  display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+}
+.recent-label {
+  font-size: .62rem; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .08em; flex-shrink: 0;
+}
+.recent-chip {
+  padding: .2rem .55rem; border-radius: var(--r-full);
+  background: var(--bg3); border: 1px solid var(--border);
+  font-size: .7rem; color: var(--text2); cursor: pointer; font-weight: 600;
+  white-space: nowrap;
+  transition: all var(--duration) var(--ease);
+}
+.recent-chip:hover { background: var(--gc-green-light); border-color: var(--gc-green); color: var(--gc-green); }
+
+/* ── TIER SECTION ────────────────────────────────────────── */
+.tier-section { margin-bottom: .2rem; }
+.tier-header {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .55rem .25rem .55rem; cursor: pointer; user-select: none;
+}
+.tier-badge {
+  padding: .18rem .55rem; border-radius: var(--r-full);
+  font-size: .62rem; font-weight: 800;
+  letter-spacing: .02em; text-transform: uppercase; flex-shrink: 0;
+  border: 1px solid;
+}
+.t1b { background: var(--t1-bg); color: var(--t1); border-color: var(--t1-border); }
+.t2b { background: var(--t2-bg); color: var(--t2); border-color: var(--t2-border); }
+.t3b { background: var(--t3-bg); color: var(--t3); border-color: var(--t3-border); }
+.tier-title {
+  font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.02em;
+}
+.tier-meta  { margin-left: auto; font-size: .7rem; color: var(--text3); flex-shrink: 0; }
+.tier-toggle { font-size: .78rem; color: var(--text3); flex-shrink: 0; transition: transform .2s var(--ease); }
+.tier-toggle.collapsed { transform: rotate(-90deg); }
+
+/* ── POLICY CARD (Bento Box) ─────────────────────────────── */
+.policy-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: .9rem 1rem;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  display: flex; flex-direction: column; gap: .38rem;
+  box-shadow: var(--shadow-xs);
+}
+.policy-card:hover {
+  border-color: rgba(30,102,65,.25);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.policy-card:active { transform: scale(.99); box-shadow: var(--shadow-xs); }
+.policy-card.acked {
+  border-color: rgba(30,102,65,.2);
+  background: var(--gc-green-light);
+}
+[data-theme="dark"] .policy-card.acked {
+  background: rgba(30,102,65,.1);
+  border-color: rgba(30,102,65,.25);
+}
+[data-theme="dark"] .policy-card {
+  background: var(--bg2);
+  border-color: var(--border);
+}
+.card-top { display: flex; align-items: flex-start; gap: .55rem; }
+.card-ack-icon {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-top: .1rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .6rem; border: 1.5px solid var(--border2);
+  transition: all var(--duration) var(--ease);
+}
+.policy-card.acked .card-ack-icon {
+  background: var(--gc-green); border-color: var(--gc-green); color: #fff;
+}
+.card-title {
+  font-size: .84rem; font-weight: 650; color: var(--text);
+  line-height: 1.35; letter-spacing: -.01em;
+}
+@media (max-width: 768px) {
+  .card-title { font-size: .88rem; font-weight: 600; }
+  .policy-card { padding: 1rem; }
+}
+.card-tags { display: flex; gap: .28rem; flex-wrap: wrap; align-items: center; }
+.card-cat {
+  font-size: .6rem; color: var(--text3); background: var(--bg3);
+  padding: .1rem .42rem; border-radius: var(--r-full); font-weight: 600;
+  border: 1px solid var(--border);
+}
+.card-site {
+  font-size: .58rem; font-weight: 700;
+  padding: .1rem .4rem; border-radius: var(--r-full); border: 1px solid;
+}
+.site-sparkhill  { background: rgba(30,102,65,.08);  color: var(--gc-green);   border-color: rgba(30,102,65,.18); }
+.site-bearwood   { background: rgba(99,102,241,.08); color: #6366f1;           border-color: rgba(99,102,241,.2); }
+.site-billesley  { background: rgba(240,180,41,.1);  color: #a07800;           border-color: rgba(240,180,41,.25); }
+[data-theme="dark"] .site-bearwood { color: #a5b4fc; border-color: rgba(165,180,252,.2); }
+[data-theme="dark"] .site-billesley { color: var(--gc-yellow); }
+.card-desc { font-size: .73rem; color: var(--text2); line-height: 1.5; }
+.card-actions {
+  display: flex; gap: .3rem; flex-wrap: wrap;
+  padding-top: .38rem; border-top: 1px solid var(--border);
+}
+.ca-btn {
+  padding: .26rem .6rem; border-radius: var(--r-sm);
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); font-family: inherit; font-size: .68rem; font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  display: flex; align-items: center; gap: .25rem;
+}
+.ca-btn:hover { background: var(--gc-green-light); border-color: rgba(30,102,65,.3); color: var(--gc-green); }
+.ca-btn:active { transform: scale(.97); }
+.ca-btn.primary {
+  background: var(--gc-green); border-color: var(--gc-green); color: #fff;
+}
+.ca-btn.primary:hover { background: var(--gc-green-mid); }
+.ca-btn.yellow {
+  background: var(--gc-yellow-pale); border-color: rgba(240,180,41,.4); color: #7a5c00;
+}
+[data-theme="dark"] .ca-btn.yellow {
+  background: rgba(240,180,41,.1); color: var(--gc-yellow); border-color: rgba(240,180,41,.25);
+}
+.summary-popup {
+  padding: .6rem .85rem; border-radius: var(--r-md);
+  background: var(--gc-green-light); border: 1px solid rgba(30,102,65,.15);
+  font-size: .74rem; line-height: 1.65; color: var(--text2);
+}
+
+.empty-state { padding: 4rem 2rem; text-align: center; color: var(--text3); }
+.empty-state .es-icon { font-size: 2.5rem; margin-bottom: .75rem; opacity: .5; }
+
+/* ── OFSTED PANEL ────────────────────────────────────────── */
+.ofsted-panel {
+  margin: 0 .9rem .65rem; border-radius: var(--r-lg);
+  border: 1px solid var(--border2); display: none;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .ofsted-panel.show {
+    position: fixed; inset: 0; z-index: 800;
+    overflow-y: auto; border-radius: 0;
+    max-height: 100vh;
+  }
+}
+
+.ofsted-panel.show { display: block; }
+.ofsted-panel.green { border-color: rgba(30,102,65,.2); background: var(--gc-green-light); }
+.ofsted-panel.amber { border-color: rgba(240,180,41,.25); background: var(--gc-yellow-pale); }
+.ofsted-panel.red   { border-color: var(--t1-border); background: var(--t1-bg); }
+.ofsted-head { padding: .85rem 1rem; display: flex; align-items: center; gap: .75rem; }
+.ofsted-emoji { font-size: 1.4rem; flex-shrink: 0; }
+.ofsted-info h3 { font-size: .88rem; font-weight: 700; color: var(--text); letter-spacing: -.015em; }
+.ofsted-score-num { font-size: 2.2rem; font-weight: 800; letter-spacing: -.04em; }
+.ofsted-bars { padding: .5rem 1rem .85rem; display: flex; flex-direction: column; gap: .4rem; }
+.ob-row { display: flex; align-items: center; gap: .6rem; }
+.ob-label { font-size: .68rem; color: var(--text2); width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ob-track { flex: 1; height: 5px; background: var(--bg4); border-radius: var(--r-full); overflow: hidden; }
+.ob-fill  { height: 100%; border-radius: var(--r-full); transition: width .6s var(--ease); }
+.ob-pct { font-size: .7rem; font-weight: 700; width: 20px; text-align: right; flex-shrink: 0; }
+
+/* ── READER OVERLAY ──────────────────────────────────────── */
+.reader-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+@media (max-width: 768px) { .reader-overlay { padding: 0; align-items: flex-end; } }
+.reader-overlay.open { display: flex; animation: fadeIn .18s var(--ease-out); }
+
+.reader-modal {
+  background: var(--bg2);
+  border-radius: var(--r-xl);
+  width: 100%; max-width: 820px; max-height: 92vh;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp .22s var(--ease);
+  border: 1px solid var(--border);
+}
+@media (max-width: 768px) {
+  .reader-modal {
+    max-width: 100%; max-height: 96vh; height: 96vh;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+  }
+}
+
+.reader-head {
+  padding: 1rem 1.25rem .8rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: .55rem; flex-shrink: 0;
+}
+@media (max-width: 768px) { .reader-head { padding: .75rem 1rem .6rem; } }
+.reader-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.reader-title {
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  line-height: 1.3; flex: 1; letter-spacing: -.02em;
+}
+.reader-close {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r-sm); width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text3); font-size: .85rem;
+  flex-shrink: 0;
+  transition: all var(--duration) var(--ease);
+}
+.reader-close:hover { background: var(--bg4); color: var(--text); }
+.reader-close:active { transform: scale(.94); }
+.reader-meta { display: flex; gap: .35rem; flex-wrap: wrap; }
+.reader-tag {
+  padding: .1rem .42rem; border-radius: var(--r-full);
+  font-size: .62rem; font-weight: 700; border: 1px solid;
+}
+.reader-toolbar { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+@media (max-width: 768px) {
+  .reader-toolbar .tb-secondary { display: none; }
+  .reader-toolbar { gap: .28rem; }
+  .reading-time { display: none; }
+}
+.reading-time { font-size: .67rem; color: var(--text3); margin-left: auto; }
+.font-size-ctrl { display: flex; align-items: center; gap: 1px; margin-left: auto; }
+.font-size-ctrl button {
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); font-family: inherit; font-weight: 700;
+  cursor: pointer; padding: .2rem .45rem; font-size: .72rem;
+  transition: all var(--duration) var(--ease); line-height: 1.4;
+}
+.font-size-ctrl button:first-child { border-radius: var(--r-sm) 0 0 var(--r-sm); }
+.font-size-ctrl button:last-child  { border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.font-size-ctrl button:hover { background: var(--gc-green); color: #fff; border-color: var(--gc-green); }
+.font-size-ctrl button:active { transform: scale(.96); }
+
+.reader-scroll-progress { height: 2px; background: var(--bg4); flex-shrink: 0; }
+.reader-scroll-fill { height: 100%; width: 0%; background: var(--gc-green); transition: width .08s linear; }
+
+.doc-search-bar {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .45rem .85rem;
+  background: var(--gc-yellow-pale);
+  border-bottom: 1px solid var(--border);
+}
+.doc-search-bar input {
+  flex: 1; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: .3rem .65rem; outline: none;
+  font-family: inherit; font-size: .8rem;
+  transition: all var(--duration) var(--ease);
+}
+.doc-search-bar input:focus {
+  border-color: var(--gc-green);
+  box-shadow: 0 0 0 3px var(--gc-green-glow);
+}
+.doc-search-results { font-size: .72rem; color: var(--text2); white-space: nowrap; }
+.doc-search-nav button {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); width: 26px; height: 26px; cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+.doc-search-nav button:hover { background: var(--gc-green); border-color: var(--gc-green); color: #fff; }
+
+/* ── DOC CONTENT ─────────────────────────────────────────── */
+.reader-body {
+  flex: 1; overflow-y: auto;
+  padding: 1.5rem 2rem;
+  scroll-behavior: smooth;
+}
+@media (max-width: 768px) { .reader-body { padding: 1rem 1.1rem; } }
+.doc-content {
+  max-width: 680px; margin: 0 auto;
+  line-height: var(--reader-line-height);
+  font-size: var(--reader-font-size);
+}
+.doc-content h1 {
+  font-size: 1.2em; font-weight: 800; color: var(--gc-green);
+  border-bottom: 2px solid var(--gc-green-light);
+  padding-bottom: .4rem; margin: 1.5rem 0 .7rem;
+  letter-spacing: -.025em;
+}
+.doc-content h2 {
+  font-size: 1.05em; font-weight: 700; color: var(--text);
+  margin: 1.2rem 0 .5rem; letter-spacing: -.02em;
+}
+.doc-content h3 { font-size: 1em; font-weight: 700; color: var(--text); margin: 1rem 0 .4rem; }
+.doc-content p  { color: var(--text); margin: 0 0 .8em; }
+.doc-content li { color: var(--text); margin-bottom: .3em; }
+.doc-content ul, .doc-content ol { padding-left: 1.4em; margin: 0 0 .8em; }
+.doc-content blockquote {
+  border-left: 3px solid var(--gc-green); margin: 1em 0;
+  padding: .4em 1em; background: var(--gc-green-light);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-style: italic; color: var(--text2);
+}
+.doc-content strong { color: var(--gc-green); font-weight: 700; }
+.doc-content .table-wrap {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  margin: 1rem 0; border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+.doc-content table { width: 100%; border-collapse: collapse; font-size: .84em; min-width: 360px; }
+.doc-content th { background: var(--gc-green); color: #fff; padding: .5rem .75rem; text-align: left; font-weight: 600; }
+.doc-content td { padding: .45rem .75rem; border-bottom: 1px solid var(--border); }
+.doc-content tr:last-child td { border-bottom: none; }
+.doc-highlight { background: var(--gc-yellow); color: #1a1a1a; border-radius: 2px; padding: 0 1px; }
+.doc-highlight.current { background: #ff6b00; color: #fff; }
+.doc-loading { padding: 3rem; text-align: center; color: var(--text3); }
+.spinner {
+  width: 28px; height: 28px; margin: 0 auto 1rem;
+  border: 2px solid var(--border2); border-top-color: var(--gc-green);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+
+/* ── READER FOOTER ───────────────────────────────────────── */
+.reader-foot {
+  padding: .8rem 1.25rem; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: .7rem;
+  background: var(--bg2); flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .reader-foot { flex-wrap: wrap; padding: .6rem .85rem; gap: .4rem; }
+  .reader-foot > div:first-child { width: 100%; }
+  .ack-btn { flex: 1; justify-content: center; font-size: .85rem; padding: .65rem .75rem; min-height: 44px; }
+  .reader-foot .ca-btn { font-size: .75rem; padding: .45rem .7rem; }
+  #nextPolicyBtn { flex: 1; justify-content: center; }
+  .font-size-ctrl { display: flex !important; margin-left: 0; }
+  .font-size-ctrl button { padding: .35rem .55rem; font-size: .78rem; min-width: 28px; min-height: 28px; }
+}
+.ack-info { flex: 1; font-size: .72rem; color: var(--text2); }
+.ack-btn {
+  padding: .48rem 1.1rem; border-radius: var(--r-md);
+  font-family: inherit; font-size: .8rem; font-weight: 700;
+  cursor: pointer; border: 1.5px solid var(--gc-green);
+  background: transparent; color: var(--gc-green);
+  flex-shrink: 0; display: flex; align-items: center; gap: .35rem;
+  transition: all var(--duration) var(--ease);
+}
+.ack-btn:not(.acked):hover { background: var(--gc-green-light); }
+.ack-btn:not(.acked):active { transform: scale(.97); }
+.ack-btn.acked { background: var(--gc-green); color: #fff; border-color: var(--gc-green); }
+.ack-date { font-size: .68rem; color: var(--gc-green); margin-top: .15rem; }
+
+/* ── NO FILE STATE ───────────────────────────────────────── */
+.no-file { padding: 2rem 1.5rem; text-align: center; color: var(--text2); max-width: 420px; margin: 0 auto; }
+.no-file h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; letter-spacing: -.02em; }
+
+/* ── QUIZ OVERLAY ────────────────────────────────────────── */
+.quiz-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; padding: 1.25rem;
+}
+.quiz-overlay.open { display: flex; animation: fadeIn .18s var(--ease-out); }
+.quiz-modal {
+  background: var(--bg2);
+  border-radius: var(--r-xl);
+  width: 100%; max-width: 580px; max-height: 88vh;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp .22s var(--ease);
+}
+.quiz-modal::before {
+  content: ''; display: block; height: 3px;
+  background: linear-gradient(90deg, var(--gc-green), #4ade80);
+  flex-shrink: 0;
+}
+.quiz-head {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.quiz-head-title { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+.quiz-head-sub { font-size: .72rem; color: var(--text3); margin-top: .15rem; }
+.quiz-body { flex: 1; overflow-y: auto; padding: 1.1rem 1.25rem; }
+.quiz-q { margin-bottom: 1.25rem; }
+.quiz-qtext { font-size: .88rem; font-weight: 650; color: var(--text); margin-bottom: .6rem; line-height: 1.4; letter-spacing: -.01em; }
+.quiz-options { display: flex; flex-direction: column; gap: .38rem; }
+.quiz-opt {
+  padding: .6rem .9rem; border-radius: var(--r-md);
+  border: 1px solid var(--border2); background: var(--bg);
+  text-align: left; cursor: pointer; font-size: .82rem; color: var(--text);
+  font-family: inherit;
+  transition: all var(--duration) var(--ease);
+}
+.quiz-opt:hover:not(:disabled) { border-color: var(--gc-green); background: var(--gc-green-light); color: var(--gc-green); }
+.quiz-opt:active:not(:disabled) { transform: scale(.99); }
+.quiz-opt.correct { background: var(--gc-green-light) !important; border-color: rgba(30,102,65,.35) !important; color: var(--gc-green) !important; font-weight: 600; }
+.quiz-opt.wrong { background: var(--t1-bg) !important; border-color: var(--t1-border) !important; color: var(--t1) !important; }
+.quiz-result { margin-top: .42rem; font-size: .76rem; padding: .4rem .6rem; border-radius: var(--r-sm); }
+.quiz-result.ok  { background: var(--gc-green-light); color: var(--gc-green); }
+.quiz-result.bad { background: var(--t1-bg); color: var(--t1); }
+.quiz-score-box {
+  text-align: center; padding: 1.5rem 1rem;
+  border: 1px solid var(--border); border-radius: var(--r-lg); margin-top: .5rem;
+}
+.quiz-score-num { font-size: 2.75rem; font-weight: 800; letter-spacing: -.05em; }
+.quiz-score-num.perfect { color: var(--gc-green); }
+.quiz-score-num.good    { color: var(--t2); }
+.quiz-score-num.retry   { color: var(--t1); }
+.quiz-score-msg { font-size: .82rem; color: var(--text2); margin: .5rem 0; line-height: 1.5; }
+.quiz-score-actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+
+/* ── AI PANEL ────────────────────────────────────────────── */
+.ai-panel {
+  width: 340px; flex-shrink: 0;
+  background: var(--bg2); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transition: width .28s var(--ease);
+}
+.ai-panel.closed { width: 0; border: none; overflow: hidden; }
+.ai-head {
+  padding: .8rem 1rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--gc-green);
+}
+.ai-head h3 { font-size: .88rem; font-weight: 700; color: #fff; }
+.ai-head p  { font-size: .62rem; color: rgba(255,255,255,.65); }
+.ai-head-icon { font-size: 1.05rem; flex-shrink: 0; }
+.ai-head-info { flex: 1; }
+.ai-close-btn {
+  background: rgba(255,255,255,.12); border: none;
+  border-radius: var(--r-sm); width: 26px; height: 26px;
+  color: #fff; cursor: pointer;
+  transition: background var(--duration);
+}
+.ai-close-btn:hover { background: rgba(255,255,255,.22); }
+.ai-messages { flex: 1; overflow-y: auto; padding: .8rem; display: flex; flex-direction: column; gap: .55rem; }
+.ai-msg { max-width: 88%; }
+.ai-msg.user { align-self: flex-end; }
+.ai-msg.bot  { align-self: flex-start; }
+.ai-bubble {
+  padding: .5rem .82rem; border-radius: 12px;
+  font-size: .8rem; line-height: 1.5;
+}
+.ai-msg.user .ai-bubble { background: var(--gc-green); color: #fff; border-radius: 12px 12px 2px 12px; }
+.ai-msg.bot  .ai-bubble { background: var(--bg3); color: var(--text); border-radius: 12px 12px 12px 2px; border: 1px solid var(--border); }
+.ai-typing {
+  align-self: flex-start; padding: .5rem .82rem;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px 12px 12px 2px; display: none;
+}
+.ai-typing.show { display: flex; gap: .3rem; align-items: center; }
+.dot { width: 5px; height: 5px; background: var(--gc-green); border-radius: 50%; animation: dots .9s ease infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+.ai-suggestions { padding: .45rem .8rem; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: .28rem; }
+.sug-chip {
+  padding: .22rem .58rem; border-radius: var(--r-full);
+  background: var(--gc-green-light); border: 1px solid rgba(30,102,65,.15);
+  font-size: .7rem; cursor: pointer; color: var(--gc-green); font-weight: 500;
+  transition: all var(--duration) var(--ease);
+}
+.sug-chip:hover { background: var(--gc-green); color: #fff; }
+.ai-disclaimer { font-size: .62rem; color: var(--text3); text-align: center; padding: .28rem .8rem .5rem; font-style: italic; }
+.ai-input-row { padding: .6rem .8rem; border-top: 1px solid var(--border); display: flex; gap: .45rem; }
+.ai-textarea {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r-md); padding: .48rem .72rem; resize: none;
+  outline: none; min-height: 36px; font-family: inherit; font-size: .8rem;
+  transition: all var(--duration) var(--ease);
+}
+.ai-textarea:focus { border-color: var(--gc-green); box-shadow: 0 0 0 3px var(--gc-green-glow); }
+.ai-send-btn {
+  width: 34px; height: 34px; border-radius: var(--r-md);
+  background: var(--gc-green); color: #fff; border: none; cursor: pointer;
+  transition: all var(--duration) var(--ease);
+  display: flex; align-items: center; justify-content: center;
+}
+.ai-send-btn:hover { background: var(--gc-green-mid); }
+.ai-send-btn:active { transform: scale(.93); }
+
+/* ── SETTINGS ────────────────────────────────────────────── */
+.settings-overlay { position: fixed; inset: 0; z-index: 700; display: none; }
+.settings-overlay.open { display: block; }
+.settings-backdrop { position: absolute; inset: 0; }
+.settings-panel {
+  position: absolute; top: 52px; right: .75rem;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-xl);
+  padding: 1rem; width: 228px;
+  box-shadow: var(--shadow-md); z-index: 1;
+  animation: slideUp .18s var(--ease);
+}
+.settings-title { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; letter-spacing: -.02em; }
+.settings-group { margin-bottom: .5rem; }
+.settings-group-label { font-size: .6rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .3rem; }
+.size-btns, .theme-btns { display: flex; gap: .25rem; margin-bottom: .85rem; }
+.sz-btn, .th-btn {
+  flex: 1; padding: .32rem .2rem;
+  border-radius: var(--r-sm); border: 1px solid var(--border2);
+  background: var(--bg3); font-size: .72rem; cursor: pointer;
+  font-family: inherit; transition: all var(--duration) var(--ease);
+}
+.sz-btn:active, .th-btn:active { transform: scale(.96); }
+.sz-btn.active, .th-btn.active { background: var(--gc-green); color: #fff; border-color: var(--gc-green); }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 1.5rem; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text); color: var(--bg2);
+  padding: .55rem 1.1rem; border-radius: var(--r-md);
+  font-size: .8rem; font-weight: 600; z-index: 9000;
+  transition: transform .28s var(--ease);
+  pointer-events: none; white-space: nowrap;
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 768px) { .toast { bottom: 74px; } }
+.toast.show  { transform: translateX(-50%) translateY(0); }
+.toast.ok    { background: var(--gc-green); }
+.toast.err   { background: var(--t1); }
+.toast.info  { background: #2563eb; }
+
+/* ── CELEBRATION TOAST ─────────────────────────────────────── */
+.celebration-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    pointer-events: none;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── MOBILE FILTERS ──────────────────────────────────────── */
+.mob-site-bar, .mob-tier-bar { display: none; }
+@media (max-width: 768px) {
+  .mob-site-bar {
+    display: flex; gap: .4rem; padding: .5rem .85rem;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mob-site-bar::-webkit-scrollbar { display: none; }
+  .mob-site-pill {
+    padding: .36rem .85rem; border-radius: var(--r-full);
+    border: 1.5px solid var(--border2); background: transparent;
+    font-size: .76rem; font-weight: 700; color: var(--text2);
+    white-space: nowrap; transition: all var(--duration) var(--ease);
+  }
+  .mob-site-pill.active { background: var(--gc-green); border-color: var(--gc-green); color: #fff; }
+  .mob-tier-bar {
+    display: flex; gap: .35rem; padding: .38rem .85rem .5rem;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mob-tier-bar::-webkit-scrollbar { display: none; }
+  .mob-tier-pill {
+    padding: .26rem .7rem; border-radius: var(--r-full);
+    border: 1.5px solid var(--border2); background: transparent;
+    font-size: .7rem; font-weight: 700; color: var(--text3); white-space: nowrap;
+    transition: all var(--duration) var(--ease);
+  }
+  .mob-tier-pill.active { background: var(--gc-green); border-color: var(--gc-green); color: #fff; }
+  .sidebar {
+    position: fixed; left: -240px; top: 0; height: 100vh;
+    z-index: 450; transition: left .25s var(--ease);
+    box-shadow: none;
+  }
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+  }
+  .ai-panel.closed { display: none; }
+  .ai-panel { width: 100%; }
+  .mob-nav { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .policy-list { padding-bottom: 72px; }
+  .topbar-right .tb-btn:not(.ai-btn) { display: none; }
+  .ca-btn { padding: .38rem .7rem; font-size: .74rem; border-radius: var(--r-sm); }
+}
+
+/* ── BOTTOM NAV (iOS-native style) ───────────────────────── */
+.mob-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid var(--border);
+  grid-template-columns: repeat(4, 1fr);
+  z-index: 400;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -1px 0 var(--border), 0 -4px 16px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .mob-nav { background: rgba(17,17,17,.9); }
+.mn-btn {
+  display: flex; flex-direction: column; align-items: center;
+  padding: .5rem .25rem; background: none; border: none;
+  font-size: .58rem; color: var(--text3); font-family: inherit;
+  transition: all var(--duration) var(--ease); cursor: pointer; gap: .1rem;
+}
+.mn-btn.active { color: var(--gc-green); }
+.mn-btn:active { transform: scale(.9); }
+.mn-icon { font-size: 1.1rem; }
+
+/* ── CONFETTI & CELEBRATION ─────────────────────────────── */
+.confetti-canvas { position: fixed; inset: 0; pointer-events: none; }
+.celebration-wrap {
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none; display: flex;
+  align-items: center; justify-content: center;
+}
+.celebration-card {
+  background: var(--gc-green); color: #fff;
+  border-radius: var(--r-xl); padding: 2rem 2.5rem; text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── QUEUE MODE ──────────────────────────────────────────── */
+.queue-mode .sidebar { display: none; }
+.queue-mode .ai-panel.closed { display: none; }
+.queue-mode .topbar-search { display: none; }
+@media (min-width: 769px) { .queue-mode .topbar-search { display: flex; } }
+.queue-mode #ofstedBtn, .queue-mode #settingsBtn { display: none; }
+
+.queue-header { padding: .9rem 1.25rem .45rem; display: none; }
+.queue-mode .queue-header { display: block; }
+.queue-header h2 { font-size: 1.05rem; font-weight: 800; color: var(--gc-green); margin-bottom: .2rem; letter-spacing: -.025em; }
+.queue-header p  { font-size: .76rem; color: var(--text2); }
+
+.queue-progress-bar {
+  height: 4px; background: var(--bg4); border-radius: var(--r-full);
+  margin: .4rem 1.25rem .2rem; display: none; overflow: hidden;
+}
+.queue-mode .queue-progress-bar { display: block; }
+.queue-progress-fill {
+  height: 100%; border-radius: var(--r-full);
+  background: linear-gradient(90deg, var(--gc-green), #4ade80);
+  transition: width .6s var(--ease);
+}
+.queue-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1rem 1.1rem;
+  display: flex; align-items: center; gap: .9rem;
+  cursor: pointer; transition: all var(--duration) var(--ease);
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+.queue-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--t1); border-radius: var(--r-lg) 0 0 var(--r-lg);
+}
+.queue-card.acked::before { background: var(--gc-green); }
+.queue-card:hover { border-color: rgba(30,102,65,.25); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.queue-card:active { transform: scale(.99); }
+.queue-card.acked { border-color: rgba(30,102,65,.2); background: var(--gc-green-light); opacity: .8; }
+[data-theme="dark"] .queue-card.acked { background: rgba(30,102,65,.1); }
+.qc-num {
+  font-size: 1.4rem; font-weight: 800; color: var(--border2);
+  width: 30px; text-align: center; flex-shrink: 0; line-height: 1; letter-spacing: -.04em;
+}
+.queue-card.acked .qc-num { color: var(--gc-green); }
+.qc-body { flex: 1; min-width: 0; }
+.qc-title { font-size: .88rem; font-weight: 700; color: var(--text); line-height: 1.3; margin-bottom: .18rem; letter-spacing: -.01em; }
+.qc-cat { font-size: .68rem; color: var(--text3); font-weight: 600; }
+.qc-read-btn {
+  padding: .46rem 1rem; border-radius: var(--r-md);
+  background: var(--gc-green); color: #fff; border: none;
+  font-family: inherit; font-size: .78rem; font-weight: 700;
+  cursor: pointer; flex-shrink: 0;
+  transition: all var(--duration) var(--ease);
+  white-space: nowrap;
+}
+.qc-read-btn:hover { background: var(--gc-green-mid); }
+.qc-read-btn:active { transform: scale(.96); }
+.qc-done-icon { font-size: 1.35rem; flex-shrink: 0; }
+.queue-complete { text-align: center; padding: 3rem 2rem; display: none; }
+.queue-mode .queue-complete.show { display: block; }
+.qc-trophy { font-size: 3.5rem; margin-bottom: .75rem; }
+.qc-complete-title { font-size: 1.2rem; font-weight: 800; color: var(--gc-green); margin-bottom: .4rem; letter-spacing: -.03em; }
+.qc-complete-sub { font-size: .85rem; color: var(--text2); line-height: 1.6; }
+
+/* ── NAME PICKER OVERLAY ─────────────────────────────────── */
+
+
+/* ── ANIMATIONS ──────────────────────────────────────────── */
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.85)} }
+@keyframes dots    { 0%,80%,100%{transform:scale(0);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+  /* ── PIN LOGIN OVERLAY ─────────────────────────────────────────── */
+  #pinOverlay {
+    position:fixed;inset:0;background:rgba(10,10,10,.88);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    z-index:9000;display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  #pinOverlay.show { opacity:1;pointer-events:all; }
+  .pin-box {
+    background:var(--bg2,#1a1a1a);border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;padding:2rem 2.5rem;width:min(380px,92vw);
+    box-shadow:0 24px 64px rgba(0,0,0,.6);text-align:center;
+  }
+  .pin-box h2 { font-size:1.2rem;font-weight:700;margin:0 0 .25rem;color:var(--text,#fff); }
+  .pin-sub { font-size:.8rem;color:var(--text3,#888);margin:0 0 1.25rem;display:block; }
+  .pin-name-select {
+    width:100%;padding:.65rem 1rem;border-radius:10px;margin-bottom:1.25rem;
+    background:var(--bg3,#222);border:1px solid rgba(255,255,255,.12);
+    color:var(--text,#fff);font-size:.95rem;appearance:none;
+    font-family:inherit;cursor:pointer;
+  }
+  .pin-dots {
+    display:flex;gap:.75rem;justify-content:center;margin:0 0 1.5rem;
+  }
+  .pin-dot {
+    width:14px;height:14px;border-radius:50%;
+    background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);
+    transition:background .15s,border-color .15s;
+  }
+  .pin-dot.filled { background:var(--gc-green,#1e6641);border-color:var(--gc-green,#1e6641); }
+  .pin-pad {
+    display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;
+    max-width:240px;margin:0 auto 1.25rem;
+  }
+  .pin-key {
+    aspect-ratio:1;border-radius:12px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);color:var(--text,#fff);
+    font-size:1.4rem;font-weight:600;cursor:pointer;
+    transition:background .1s,transform .08s;
+    display:flex;align-items:center;justify-content:center;
+    font-family:inherit;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    user-select:none;-webkit-user-select:none;
+  }
+  .pin-key:active,.pin-key:hover { background:rgba(255,255,255,.18);transform:scale(.95); }
+  .pin-key.zero { grid-column:2; }
+  .pin-key.del  { font-size:1rem; }
+  .pin-msg { font-size:.8rem;min-height:1.2em;margin:.25rem 0;color:#e74c3c; }
+  .pin-setup-note {
+    font-size:.75rem;color:var(--text3,#888);margin-top:.75rem;
+    padding:.5rem .75rem;background:rgba(30,102,65,.15);border-radius:8px;
+    line-height:1.4;
+  }
+  .pin-confirm-row { display:flex;gap:.5rem;margin-top:.75rem; }
+  .pin-confirm-row button {
+    flex:1;padding:.65rem;border-radius:10px;border:none;
+    font-size:.88rem;font-weight:600;cursor:pointer;transition:background .15s;
+    font-family:inherit;
+  }
+  .pin-btn-confirm { background:var(--gc-green,#1e6641);color:#fff; }
+  .pin-btn-confirm:hover { background:#2a8a54; }
+  .topbar-logout {
+    margin-left:.5rem;padding:.35rem .75rem;border-radius:8px;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+    color:var(--text2,#ccc);font-size:.75rem;cursor:pointer;white-space:nowrap;
+    transition:background .15s;font-family:inherit;
+  }
+  .topbar-logout:hover { background:rgba(255,255,255,.14); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <button id="menuBtn" class="topbar-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+    <a class="topbar-logo" href="#">
+      <div class="logo-icon">🌿</div>
+      <div class="logo-words"><div class="logo-name" id="logoName">Greencoat Nursery</div><div class="logo-sub">Policy Hub</div></div>
+    </a>
+    <div class="topbar-divider"></div>
+    <div class="topbar-search" id="searchWrap">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search policies… (Ctrl+K)" autocomplete="off">
+      <button class="mic-btn" id="micBtn" onclick="toggleVoiceSearch()" title="Voice search">🎙</button>
+      <span class="search-clear" id="searchClear" onclick="clearSearch()">✕</span>
+    </div>
+    <button class="topbar-logout" id="logoutBtn" onclick="logoutStaff()" style="display:none" title="Log out and lock">🔒 Lock</button>
+    <div class="topbar-right">
+      <button class="queue-toggle" id="queueToggleBtn" onclick="toggleQueueMode()" style="display:none">📋 My Queue</button>
+      <button class="tb-btn" id="ofstedBtn" onclick="toggleOfstedMode()">🏫 Ofsted</button>
+      <button class="tb-btn" id="settingsBtn" onclick="toggleSettings()">⚙ Display</button>
+      <button class="tb-btn" onclick="toggleShortcuts()" title="Keyboard shortcuts">⌨</button>
+      <a class="tb-btn" href="admin.html">👩‍💼 Admin</a>
+      <button class="tb-btn ai-btn" onclick="toggleAI()"><div class="ai-pulse"></div> Ask AI</button>
+    </div>
+  </header>
+
+  <div class="mob-site-bar" id="mobSiteBar">
+    <button class="mob-site-pill active" id="msp-all" onclick="mobSetSite(null,this)">🏢 All Sites</button>
+    <button class="mob-site-pill" id="msp-sh"  onclick="mobSetSite('sparkhill',this)">📍 Sparkhill</button>
+    <button class="mob-site-pill" id="msp-bw"  onclick="mobSetSite('bearwood',this)">📍 Bearwood</button>
+    <button class="mob-site-pill" id="msp-ba"  onclick="mobSetSite('billesley',this)">📍 Billesley Ark</button>
+  </div>
+  <div class="mob-tier-bar" id="mobTierBar">
+    <button class="mob-tier-pill active" id="mtp-all" onclick="mobSetTier(null,this)">All Tiers</button>
+    <button class="mob-tier-pill t1" id="mtp-t1" onclick="mobSetTier(1,this)">🔴 Tier 1</button>
+    <button class="mob-tier-pill t2" id="mtp-t2" onclick="mobSetTier(2,this)">🟡 Tier 2</button>
+    <button class="mob-tier-pill t3" id="mtp-t3" onclick="mobSetTier(3,this)">🟢 Tier 3</button>
+  </div>
+
+  <div class="main">
+    <aside class="sidebar" id="sidebar">
+      <div class="staff-box">
+        <div class="staff-label">Staff member</div>
+        <select class="staff-select" id="staffSelect" onchange="requestStaffPinOrSwitch(this.value)"><option value="">— Select your name —</option></select>
+      </div>
+      <div class="progress-box" id="progressBox" style="display:none">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="56" height="56">
+            <circle class="ring-track" cx="28" cy="28" r="22" stroke-width="5"/>
+            <circle class="ring-fill" id="ringFill" cx="28" cy="28" r="22" stroke-width="5" stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+          </svg>
+          <div class="ring-label"><span class="ring-pct" id="ringPct">0%</span><span class="ring-word">done</span></div>
+        </div>
+        <div class="progress-info">
+          <div class="progress-name" id="progressName">—</div>
+          <div class="progress-sub" id="progressSub">0 of 111 acknowledged</div>
+        </div>
+      </div>
+      <nav class="nav-section" id="navSection">
+        <div class="nav-group-label">Filter by Tier</div>
+        <div class="nav-item active" onclick="setTier(null,this)" id="nav-all"><span class="nav-icon">📋</span> All Policies <span class="nav-count" id="nc-all">111</span></div>
+        <div class="nav-item" onclick="setTier(1,this)" id="nav-t1"><span class="nav-icon">🔴</span> Tier 1 — Essential <span class="nav-count" id="nc-t1">16</span></div>
+        <div class="nav-item" onclick="setTier(2,this)" id="nav-t2"><span class="nav-icon">🟡</span> Tier 2 — Common <span class="nav-count" id="nc-t2">34</span></div>
+        <div class="nav-item" onclick="setTier(3,this)" id="nav-t3"><span class="nav-icon">🟢</span> Tier 3 — Library <span class="nav-count" id="nc-t3">61</span></div>
+        <div class="nav-group-label" style="margin-top:.4rem">Filter by Site</div>
+        <div class="nav-item" onclick="setSite(null,this)" id="nav-all-s"><span class="nav-icon">🏢</span> All Sites</div>
+        <div class="nav-item" onclick="setSite('sparkhill',this)" id="nav-sh"><span class="nav-icon">📍</span> Sparkhill</div>
+        <div class="nav-item" onclick="setSite('bearwood',this)" id="nav-bw"><span class="nav-icon">📍</span> Bearwood</div>
+        <div class="nav-item" onclick="setSite('billesley',this)" id="nav-ba"><span class="nav-icon">📍</span> Billesley Ark</div>
+        <div class="nav-group-label" style="margin-top:.4rem">By Category</div>
+        <div id="catNav"></div>
+      </nav>
+    </aside>
+
+    <div class="content-area">
+      <div class="policy-list" id="policyContent">
+        <div class="queue-header" id="queueHeader">
+          <h2 id="queueHeaderTitle">Your Reading Queue</h2>
+          <p id="queueHeaderSub">Tier 1 — Essential policies only</p>
+        </div>
+        <div class="queue-progress-bar"><div class="queue-progress-fill" id="queueProgressFill"></div></div>
+        <div id="priorityBanner"></div>
+        <div id="searchCount" style="display:none;padding:.35rem 1.25rem .1rem;font-size:.75rem;color:var(--text3);font-weight:600"></div>
+        <div id="recentStrip" class="recent-strip" style="display:none"></div>
+        <div class="ofsted-panel" id="ofstedPanel">
+          <div class="ofsted-head">
+            <div class="ofsted-emoji" id="ofstedEmoji">🏫</div>
+            <div class="ofsted-info"><h3>Ofsted Readiness — Tier 1</h3><p id="ofstedSub">Select your name to see your readiness</p></div>
+            <div class="ofsted-score-num" id="ofstedScoreNum">—</div>
+            <button class="ca-btn" onclick="printOfstedReport()">🖨 Print</button>
+          </div>
+          <div class="ofsted-bars" id="ofstedBars"></div>
+        </div>
+        <div class="queue-complete" id="queueComplete">
+          <div class="qc-trophy">🏆</div>
+          <div class="qc-complete-title">All Tier 1 Policies Read!</div>
+          <div class="qc-complete-sub" id="queueCompleteMsg">You've completed all essential policies.<br>Your record is saved and ready for Ofsted.</div>
+          <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">
+            <button class="ca-btn primary" onclick="downloadCertificate()" style="padding:.6rem 1.25rem">📜 Download My Record</button>
+            <button class="ca-btn" onclick="exitQueueMode()" style="padding:.6rem 1.25rem">Browse All Policies</button>
+          </div>
+        </div>
+        <div id="queueList" style="display:none;flex-direction:column;gap:.65rem;padding:.5rem 1.25rem 1.5rem"></div>
+        <div id="policiesWrap"></div>
+      </div>
+    </div>
+
+    <div class="ai-panel closed" id="aiPanel">
+      <div class="ai-head">
+        <span class="ai-head-icon">🤖</span>
+        <div class="ai-head-info"><h3>Policy AI Assistant</h3><p>Gemini 3.1 Flash Lite · EYFS Rules</p></div>
+        <button class="ai-close-btn" onclick="toggleAI()">✕</button>
+      </div>
+      <div class="ai-messages" id="aiMessages">
+        <div class="ai-msg bot"><div class="ai-bubble">👋 Hi! I know all your policies, the latest UK EYFS statutory framework (including the 1:5 ratio for 2yos), and Ofsted criteria. Ask me anything!</div></div>
+      </div>
+      <div class="ai-typing" id="aiTyping"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="ai-suggestions" id="aiSuggestions">
+        <div class="sug-chip" onclick="askSuggestion(this.textContent)">🔥 Fire procedure Sparkhill</div>
+        <div class="sug-chip" onclick="askSuggestion(this.textContent)">🛡 Safeguarding disclosure steps</div>
+        <div class="sug-chip" onclick="askSuggestion(this.textContent)">📋 What must I read first?</div>
+      </div>
+      <div class="ai-input-row">
+        <textarea class="ai-textarea" id="aiInput" placeholder="Ask about any policy…" rows="1" oninput="autoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+        <button class="ai-send-btn" onclick="sendAI()">➤</button>
+      </div>
+      <div class="ai-disclaimer">AI responses are for guidance only. Always verify with your DSL.</div>
+    </div>
+  </div>
+</div>
+
+<div class="reader-overlay" id="readerOverlay" onclick="if(event.target===this)closeReader()">
+  <div class="reader-modal">
+    <div class="reader-head">
+      <div class="reader-top"><h2 class="reader-title" id="readerTitle">Policy Title</h2><button class="reader-close" onclick="closeReader()">✕</button></div>
+      <div class="reader-meta" id="readerMeta"></div>
+      <div class="reader-toolbar">
+        <button class="ca-btn" onclick="askAIAboutCurrent()">🤖 Ask AI</button>
+        <button class="ca-btn" onclick="openDocSearch()" title="Search within this policy (Ctrl+F)">🔍 Find</button>
+        <button class="ca-btn tb-secondary" id="certToolbarBtn" onclick="downloadCertificate()" style="display:none">📜 My Record</button>
+        <button class="ca-btn" onclick="dlCurrent()">⬇ Download</button>
+        <button class="ca-btn tb-secondary" onclick="shareCurrentPolicy()" title="Copy link to this policy">🔗 Share</button>
+        <button class="ca-btn tb-secondary" onclick="window.print()">🖨 Print</button>
+        <div class="font-size-ctrl tb-secondary" title="Adjust text size">
+          <button onclick="adjustReaderFont(-1)" aria-label="Smaller text">A-</button>
+          <button onclick="adjustReaderFont(0)" aria-label="Reset text size" title="Reset">A</button>
+          <button onclick="adjustReaderFont(1)" aria-label="Larger text">A+</button>
+        </div>
+        <span class="reading-time" id="readingTime"></span>
+      </div>
+    </div>
+    <div class="doc-search-bar" id="docSearchBar" style="display:none">
+      <input type="text" id="docSearchInput" placeholder="Search within this policy…" oninput="docSearchChange()" onkeydown="if(event.key==='Enter')docSearchNext()">
+      <span class="doc-search-results" id="docSearchResults"></span>
+      <div class="doc-search-nav"><button onclick="docSearchPrev()">▲</button><button onclick="docSearchNext()">▼</button></div>
+      <button class="ca-btn" onclick="clearDocSearch()">Clear</button>
+    </div>
+    <div class="reader-scroll-progress"><div class="reader-scroll-fill" id="readerScrollFill"></div></div>
+    <div class="reader-body" id="readerBody" onscroll="updateReadProgress()">
+      <div class="doc-loading"><div class="spinner"></div><p>Loading policy…</p></div>
+    </div>
+    <div class="reader-foot">
+      <div style="flex:1"><div class="ack-info" id="ackInfo">Read and understood this policy? Click to acknowledge.</div><div class="ack-date" id="ackDate"></div></div>
+      <button class="ca-btn" id="certBtn" onclick="downloadCertificate()" title="Download your acknowledgement record" style="display:none">📜 Certificate</button>
+      <button class="ca-btn" id="nextPolicyBtn" onclick="nextGuidedPolicy()" style="display:none;background:var(--gc-green);color:#fff;border-color:var(--gc-green)">Next Policy →</button>
+      <div class="font-size-ctrl" style="display:none" id="footerFontCtrl" title="Text size">
+        <button onclick="adjustReaderFont(-1)">A-</button>
+        <button onclick="adjustReaderFont(0)">A</button>
+        <button onclick="adjustReaderFont(1)">A+</button>
+      </div>
+      <button class="ack-btn" id="ackBtn" onclick="ackCurrent()">☐ Acknowledge</button>
+    </div>
+    <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+      <div class="settings-group-label">Account</div>
+      <button class="th-btn" style="width:100%;justify-content:flex-start;gap:.4rem" onclick="closeSettings();showChangePinFlow()">🔑 Change my PIN</button>
+    </div>
+  </div>
+</div>
+
+<div class="quiz-overlay" id="quizOverlay">
+  <div class="quiz-modal">
+    <div class="quiz-head"><div><div class="quiz-head-title">🧠 Knowledge Check</div><div class="quiz-head-sub" id="quizSub">Powered by Gemini</div></div><button class="reader-close" onclick="closeQuiz()">✕</button></div>
+    <div class="quiz-body" id="quizBody"><div class="doc-loading"><div class="spinner"></div><p>Generating questions…</p></div></div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-backdrop" onclick="closeSettings()"></div>
+  <div class="settings-panel">
+    <div class="settings-title">Display Settings</div>
+    <div class="settings-group"><div class="settings-group-label">Theme</div><div class="theme-btns"><button class="th-btn active" id="th-light" onclick="setTheme('light',this)">☀ Light</button><button class="th-btn" id="th-dark" onclick="setTheme('dark',this)">🌙 Dark</button></div></div>
+    <div class="settings-group"><div class="settings-group-label">Text Size</div><div class="size-btns"><button class="sz-btn" id="sz-small" onclick="setSize('small',this)">A–</button><button class="sz-btn active" id="sz-normal" onclick="setSize('normal',this)">A</button><button class="sz-btn" id="sz-large" onclick="setSize('large',this)">A+</button><button class="sz-btn" id="sz-xlarge" onclick="setSize('xlarge',this)">A⁺⁺</button></div></div>
+  </div>
+</div>
+
+
+
+<canvas class="confetti-canvas" id="confettiCanvas" style="display:none"></canvas>
+<div class="celebration-wrap" id="celebWrap" style="display:none">
+  <div class="celebration-card"><div style="font-size:2.5rem">🎉</div><h2 id="celebTitle">Tier 1 Complete!</h2><p id="celebMsg">All essential policies acknowledged</p></div>
+</div>
+
+<nav class="mob-nav" id="mobNav">
+  <button class="mn-btn" id="mn-queue" onclick="mobileNav('queue',this)"><span class="mn-icon">✅</span>My Queue</button>
+  <button class="mn-btn active" id="mn-browse" onclick="mobileNav('browse',this)"><span class="mn-icon">📋</span>Browse</button>
+  <button class="mn-btn" id="mn-search" onclick="mobileNav('search',this)"><span class="mn-icon">🔍</span>Search</button>
+  <button class="mn-btn" id="mn-ai" onclick="mobileNav('ai',this)"><span class="mn-icon">🤖</span>Ask AI</button>
+  <button class="mn-btn" id="mn-progress" onclick="mobileNav('progress',this)"><span class="mn-icon">📊</span>Progress</button>
+</nav>
+
+<div class="settings-overlay" id="shortcutsOverlay">
+  <div class="settings-backdrop" onclick="closeShortcuts()"></div>
+  <div class="settings-panel" style="width:280px">
+    <div class="settings-title">⌨ Keyboard Shortcuts</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.78rem">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Search</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">Ctrl+K</kbd></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Find in policy</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">Ctrl+F</kbd></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Close reader</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">Esc</kbd></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Next policy (guided)</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">→</kbd></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Acknowledge policy</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">Ctrl+A</kbd></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">Text size</span><kbd style="background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:.1rem .4rem;font-family:monospace">Ctrl +/−</kbd></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── LIVE DATA PLACEHOLDERS ───────────────────────────────────────────────
+let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
+const DEFAULT_STAFF = ['Ambreen Afzal','Anila Naz','Hadiya Tariq','Joanna Payne','Kiran Riaz','Kubir Hussain','Lawaiza Firdous','Momina Khatun','Muniba Zaman','Sadiyah Begum','Saira Nisa','Sidra Begum','Sunella Anjam','Taslim Yaqub','Taz Khan','Zahraa Rashid'];
+let STAFF = [...DEFAULT_STAFF];
+const DEFAULT_POLICIES = [
+  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Safeguarding_Policy_Feb2026.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
+  {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',desc:'Procedures for staff to report concerns, including qualifying disclosures, sexual harassment provisions, DSL-first escalation route.',adopted:'March 2026'},
+  {id:'llc',tier:1,title:'Low-Level Concerns Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concerns_Policy_Mar2026.docx',desc:'How to record and report low-level concerns about staff behaviour that do not meet the threshold for referral.',adopted:'March 2026'},
+  {id:'scc',tier:1,title:'Staff Code of Conduct',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Code_of_Conduct_Mar2026.docx',desc:'Professional standards expected of all staff, including conduct with children, families, colleagues and on social media.',adopted:'March 2026'},
+  {id:'os',tier:1,title:'Online Safety Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Online_Safety_Policy_Mar2026.docx',desc:'Risks of online harm including content, contact, conduct and commerce. DSL responsibilities, CEOP and IWF reporting.',adopted:'March 2026'},
+  {id:'ppb',tier:1,title:'Promoting Positive Behaviour Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Promoting_Positive_Behaviour_Policy_Mar2026.docx',desc:'Approaches to supporting children\'s behaviour positively. Named behaviour lead: Sidra Begum (Lead SENCo).',adopted:'March 2026'},
+  {id:'rec',tier:1,title:'Safer Recruitment, Selection and Suitability of Staff Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Safer_Recruitment_Policy_Mar2026.docx',desc:'Safer recruitment procedures including DBS checks, overseas criminal records checks (including multi-country), health questionnaires, right to work, disqualification checks and ongoing suitability.',adopted:'March 2026'},
+  {id:'acc',tier:1,title:'Accidents and First Aid Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Accidents_First_Aid_Policy_Mar2026.docx',desc:'All staff are paediatric first aid trained. Accident file locations, first aid box locations, and monthly checking schedule.',adopted:'March 2026'},
+  {id:'med',tier:1,title:'Medication Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Policy_Mar2026.docx',desc:'Administration of both prescription and non-prescription medication, parental consent requirements, and record-keeping procedures.',adopted:'March 2026'},
+  {id:'alg',tier:1,title:'Allergies and Allergic Reactions Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Allergies_Policy_Mar2026.docx',desc:'Identification, recording and management of allergies. Allergy register held in the kitchen and main room.',adopted:'March 2026'},
+  {id:'arr',tier:1,title:'Arrivals and Departures Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Arrivals_Departures_Policy_Mar2026.docx',desc:'Safe procedures for signing children in and out, authorised collection, password systems, and record-keeping.',adopted:'March 2026'},
+  {id:'lc',tier:1,title:'Late Collection and Non-Collection of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Late_Collection_Policy_Mar2026.docx',desc:'Grace period of 15 minutes before formal procedure initiates. Staff may call sooner. Late fee applied at management discretion.',adopted:'March 2026'},
+  {id:'mc',tier:1,title:'Missing Child from Nursery Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for on nursery premises, including search protocol, police notification.',adopted:'March 2026'},
+  {id:'el',tier:1,title:'Emergency Lockdown Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Emergency_Lockdown_Policy_Mar2026.docx',desc:'Procedure for full or partial lockdown. Drills held at least annually using non-alarming scenarios.',adopted:'March 2026'},
+  {id:'sc',tier:1,title:'Supervision of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Children_Policy_Mar2026.docx',desc:'Staffing arrangements, ratios and supervision expectations to ensure children\'s safety at all times on nursery premises.',adopted:'March 2026'},
+  {id:'cwb',tier:1,title:"Children's Wellbeing Policy",cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:"Policy covering promotion of children's emotional and physical wellbeing, resilience, positive relationships and practitioner responsibilities.",adopted:'March 2026'},
+  {id:'ie',tier:1,title:'Inclusion and Equality Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Inclusion_Equality_Policy_Mar2026.docx',desc:'Commitment to inclusive practice under the Equality Act 2010. Training at induction and through CPD.',adopted:'March 2026'},
+  {id:'sg_summ',tier:2,title:'Safeguarding Staff Summary Sheet',cat:'Safeguarding',sites:['all'],file:'Greencoat_Safeguarding_Staff_Summary_Feb2026.docx',desc:'Quick-reference visual guide: DSL contacts at all 3 sites, types of abuse, 5-step reporting procedure, Summary of Interaction process.',adopted:'February 2026'},
+  {id:'ict',tier:1,title:'Intimate Care and Toileting Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Intimate_Care_Toileting_Policy_Mar2026.docx',desc:'Merged policy covering nappy changing procedure, respectful intimate care principles, toilet training in line with DfE guidance (18-30 month window), room transition expectations, SEND adjustments, and safeguarding across all intimate care routines.',adopted:'March 2026'},
+  {id:'nappy',tier:2,title:'Nappy Changing Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Nappy_Changing_Policy_Mar2026.docx',desc:'Procedures for safe, dignified and hygienic nappy changing, including consent, recording and safeguarding considerations.',adopted:'March 2026'},
+  {id:'ric',tier:2,title:'Respectful Intimate Care Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Respectful_Intimate_Care_Policy_Mar2026.docx',desc:'Policy for delivering intimate care with dignity, consent and safeguarding awareness, including parental communication and record keeping.',adopted:'March 2026'},
+    {id:'sleep',tier:2,title:'Sleep Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sleep_Policy_Mar2026.docx',desc:'Safe sleep arrangements, monitoring procedures, positional preferences, risk reduction for SIDS.',adopted:'March 2026'},
+  {id:'infect',tier:2,title:'Infection Control Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Infection_Control_Policy_Mar2026.docx',desc:'Hygiene standards, handwashing procedures, oral health, management of infectious illnesses, and exclusion periods.',adopted:'March 2026'},
+  {id:'sick',tier:2,title:'Sickness and Illness Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sickness_Illness_Policy_Mar2026.docx',desc:'Recognition and management of children\'s illness on-site, exclusion guidance, record-keeping.',adopted:'March 2026'},
+  {id:'send',tier:2,title:'Special Educational Needs and Disabilities (SEND) Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_SEND_Policy_Mar2026.docx',desc:'Identification and support for children with SEND, graduated approach, EHCP, working with external agencies.',adopted:'March 2026'},
+  {id:'dp',tier:2,title:'Data Protection and Confidentiality Policy',cat:'Governance',sites:['all'],file:'Greencoat_Data_Protection_Policy_Mar2026.docx',desc:'GDPR compliance, lawful bases for processing, what personal data is held and why, and staff confidentiality obligations.',adopted:'March 2026'},
+  {id:'mob',tier:2,title:'Mobile Phone and Electronic Device Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Mobile_Phone_Electronic_Device_Policy_Mar2026.docx',desc:'Restrictions on personal mobile use in childcare areas, designated storage, professional use of devices.',adopted:'March 2026'},
+  {id:'sn',tier:2,title:'Social Networking Policy',cat:'Governance',sites:['all'],file:'Greencoat_Social_Networking_Policy_Mar2026.docx',desc:'Staff responsibilities when using social media personally and professionally, prohibition on posting images of children.',adopted:'March 2026'},
+  {id:'nutri',tier:2,title:'Nutrition and Mealtimes Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Nutrition_Mealtimes_Policy_Mar2026.docx',desc:'Nutritional standards for meals and snacks, mealtime environment, dietary needs and allergies.',adopted:'March 2026'},
+  {id:'packed',tier:2,title:'Packed Lunch Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Packed_Lunch_Policy_Mar2026.docx',desc:'Standards and guidance for packed lunches, prohibited items (nuts), storage, and parental communication.',adopted:'March 2026'},
+  {id:'out',tier:2,title:'Outdoor Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Outdoor_Play_Policy_Mar2026.docx',desc:'Daily outdoor play commitment, risk-benefit approach to outdoor learning, weather considerations.',adopted:'March 2026'},
+  {id:'set',tier:2,title:'Settling In Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Settling_In_Policy_Mar2026.docx',desc:'Graduated settling-in process, key person role, working with parents during transition.',adopted:'March 2026'},
+  {id:'kp',tier:1,title:'Key Person Policy',cat:'Children & Families',sites:['all'],file:'Greencoat_Key_Person_Policy_Mar2026.docx',desc:'Statutory EYFS key person requirements covering assignment, caseload, buddy system, transitions, safeguarding responsibilities and SEND integration.',adopted:'March 2026'},
+  {id:'trans',tier:2,title:'Transitions Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Transitions_Policy_Mar2026.docx',desc:'Supporting children through planned and unplanned transitions including room moves, change of key person.',adopted:'March 2026'},
+  {id:'pap',tier:2,title:'Parents as Partners Policy',cat:'Families',sites:['all'],file:'Greencoat_Parents_as_Partners_Policy_Mar2026.docx',desc:'Partnership approach with families, two-way information sharing, involving parents in learning.',adopted:'March 2026'},
+  {id:'comp',tier:2,title:'Complaints and Compliments Policy',cat:'Governance',sites:['all'],file:'Greencoat_Complaints_Compliments_Policy_Mar2026.docx',desc:'How to raise, record and resolve complaints. Timescales for response, escalation to Ofsted.',adopted:'March 2026'},
+  {id:'cctv_sh',tier:2,title:'CCTV Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_CCTV_Policy_Sparkhill_Mar2026.docx',desc:'14 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
+  {id:'cctv_bw',tier:2,title:'CCTV Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_CCTV_Policy_Bearwood_Mar2026.docx',desc:'8 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
+  {id:'supv_sh',tier:2,title:'Supervision Policy — Sparkhill',cat:'Staffing',sites:['sparkhill'],file:'Greencoat_Supervision_Policy_Sparkhill_Mar2026.docx',desc:'Six supervisions per year (every half term) trialling mini-supervision model.',adopted:'March 2026'},
+  {id:'supv_sm',tier:2,title:'Supervision Policy — Bearwood & Billesley Ark',cat:'Staffing',sites:['bearwood','billesley'],file:'Greencoat_Supervision_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Three supervisions per year for smaller two-person sites. Carried out by manager or deputy.',adopted:'March 2026'},
+  {id:'lac',tier:2,title:'Looked After Children Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Looked_After_Children_Policy_Mar2026.docx',desc:'Designated LAC persons: site DSLs. Individual education plans, virtual school heads.',adopted:'March 2026'},
+  {id:'sf',tier:2,title:'Separated Family Policy',cat:'Families',sites:['all'],file:'Greencoat_Separated_Family_Policy_Mar2026.docx',desc:'Handling parental responsibility, court orders, collection rights, information sharing.',adopted:'March 2026'},
+  {id:'school',tier:2,title:'School Collection Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_School_Collection_Policy_Mar2026.docx',desc:'Procedures for collecting children from school, authorised persons, signing-out records.',adopted:'March 2026'},
+  {id:'visit',tier:2,title:'Visits and Outings Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Policy_Mar2026.docx',desc:'Risk assessment for outings, ratios, permission, sticker ID system.',adopted:'March 2026'},
+  {id:'bite',tier:2,title:'Biting Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Biting_Policy_Mar2026.docx',desc:'Understanding biting as communication in young children, staff response, supporting the bitten child.',adopted:'March 2026'},
+  {id:'baby_sh',tier:2,title:'Caring for Babies and Toddlers Policy — Sparkhill',cat:'Health & Care',sites:['sparkhill'],file:'Greencoat_Caring_for_Babies_Policy_Sparkhill_Mar2026.docx',desc:'Baby room (max 6, ratio 1:3) and toddler room (max 20). Mobile cot for evacuation.',adopted:'March 2026'},
+  {id:'baby_ot',tier:2,title:'Caring for Babies and Toddlers Policy — Bearwood & Billesley Ark',cat:'Health & Care',sites:['bearwood','billesley'],file:'Greencoat_Caring_for_Babies_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Toddlers-only sites (no dedicated baby room). EYFS requirements for under-2s, ratio 1:3.',adopted:'March 2026'},
+  {id:'childreg',tier:2,title:'Child Registration Form',cat:'Governance',sites:['all'],file:'Greencoat_Child_Registration_Form_Mar2026.docx',desc:'Registration form capturing child and family details, emergency contacts, medical information.',adopted:'March 2026'},
+  {id:'attend',tier:2,title:'Attendance Policy',cat:'Governance',sites:['all'],file:'Greencoat_Attendance_Policy_Mar2026.docx',desc:'Expectations for regular attendance, absence notification procedures, follow-up for unexplained absences.',adopted:'March 2026'},
+  {id:'abs_children',tier:2,title:'Absence Policy (Children)',cat:'Governance',sites:['all'],file:'Greencoat_Absence_Policy_Children_Mar2026.docx',desc:'Procedures for reporting, monitoring and following up child absence including unexplained absence escalation to Day 10 welfare check, and safeguarding considerations.',adopted:'March 2026'},
+  {id:'fire_sh',tier:2,title:'Fire Safety Policy — Sparkhill',cat:'Health & Safety',sites:['sparkhill'],file:'Greencoat_Fire_Safety_Policy_Sparkhill_Mar2026.docx',desc:'Fire wardens: Zahra Rashid and Sidra Begum. Primary assembly: rear of own car park.',adopted:'March 2026'},
+  {id:'fire_bw',tier:2,title:'Fire Safety Policy — Bearwood',cat:'Health & Safety',sites:['bearwood'],file:'Greencoat_Fire_Safety_Policy_Bearwood_Mar2026.docx',desc:'Fire warden: Sadiyah Begum. Primary assembly: nursery land/car park.',adopted:'March 2026'},
+  {id:'fire_ba',tier:2,title:'Fire Safety Policy — Billesley Ark',cat:'Health & Safety',sites:['billesley'],file:'Greencoat_Fire_Safety_Policy_Billesley_Ark_Mar2026.docx',desc:'Fire warden: Sunella Anjam. Assembly point: Billesley Common playground via rear fire exit.',adopted:'March 2026'},
+  {id:'hs',tier:2,title:'Health and Safety — General Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Health_Safety_General_Policy_Mar2026.docx',desc:'General health and safety responsibilities, fridge and freezer temperature recording, food hygiene.',adopted:'March 2026'},
+  {id:'abs',tier:3,title:'Absence Management Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Absence_Management_Procedure_Mar2026.docx',desc:'Managing staff absence including return to work interviews, trigger points, occupational health referrals.',adopted:'March 2026'},
+  {id:'aiu',tier:3,title:'Acceptable Internet Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Acceptable_Internet_Use_Policy_Mar2026.docx',desc:'Appropriate use of nursery IT systems, password management, phishing awareness.',adopted:'March 2026'},
+  {id:'asr',tier:3,title:'Access, Storage and Retention of Records Policy',cat:'Governance',sites:['all'],file:'Greencoat_Access_Storage_Retention_Records_Policy_Mar2026.docx',desc:'How long different categories of records must be kept, parent and staff access rights.',adopted:'March 2026'},
+  {id:'adm_sh',tier:3,title:'Admissions Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_Admissions_Policy_Sparkhill_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places, and registration process. Sparkhill: max 62 children.',adopted:'March 2026'},
+  {id:'adm_bw',tier:3,title:'Admissions Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_Admissions_Policy_Bearwood_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Bearwood: max 32 children.',adopted:'March 2026'},
+  {id:'adm_ba',tier:3,title:'Admissions Policy — Billesley Ark',cat:'Governance',sites:['billesley'],file:'Greencoat_Admissions_Policy_Billesley_Ark_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Billesley Ark: max 24 children.',adopted:'March 2026'},
+  {id:'alc',tier:3,title:'Alcohol and Substance Misuse Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Alcohol_Substance_Misuse_Policy_Mar2026.docx',desc:'Prohibition on being under the influence at work, support available, and disciplinary consequences.',adopted:'March 2026'},
+  {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',desc:'Bribery Act 2010 compliance, what constitutes bribery, gifts and hospitality guidelines.',adopted:'March 2026'},
+  {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',desc:'Supporting children and families experiencing bereavement, staff guidance on language and response.',adopted:'March 2026'},
+  {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',desc:'Log template for recording CCTV system checks, access events, and Subject Access Requests.',adopted:'March 2026'},
+  {id:'cwb',tier:3,title:"Children's Well-being in the Nursery Policy",cat:'Child Development',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:'Promoting children\'s emotional health and wellbeing, attachment-based practice.',adopted:'March 2026'},
+  {id:'crp',tier:3,title:'Conflict Resolution with Parents and Aggressive Behaviour Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',desc:'De-escalation of parental conflict, zero tolerance of aggressive behaviour.',adopted:'March 2026'},
+  {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',desc:'Response to serious incidents including staff death, major injury, outbreak of disease.',adopted:'March 2026'},
+  {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',desc:'Protecting nursery systems and data from cyber threats, staff training, suspicious email reporting.',adopted:'March 2026'},
+  {id:'disc_beh',tier:3,title:'Dealing with Discriminatory Behaviour Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Dealing_with_Discriminatory_Behaviour_Policy_Mar2026.docx',desc:'How to identify and challenge discriminatory behaviour from staff, children, parents or visitors.',adopted:'March 2026'},
+  {id:'discip',tier:3,title:'Disciplinary Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Disciplinary_Procedure_Mar2026.docx',desc:'Formal disciplinary process including informal action, formal warnings, gross misconduct.',adopted:'March 2026'},
+  {id:'elo',tier:3,title:'Early Learning Opportunities Statement',cat:'Child Development',sites:['all'],file:'Greencoat_Early_Learning_Opportunities_Statement_Mar2026.docx',desc:'How Greencoat delivers the EYFS, our approach to planning and assessment.',adopted:'March 2026'},
+  {id:'env',tier:3,title:'Environmental Sustainability Policy',cat:'Governance',sites:['all'],file:'Greencoat_Environmental_Sustainability_Policy_Mar2026.docx',desc:'Commitment to sustainability in nursery operations, waste reduction, energy efficiency.',adopted:'March 2026'},
+  {id:'equip',tier:3,title:'Equipment and Resources Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Equipment_Resources_Policy_Mar2026.docx',desc:'Selection, maintenance, inspection and safe storage of nursery equipment and resources.',adopted:'March 2026'},
+  {id:'food_play',tier:3,title:'Food Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Food_Play_Policy_Mar2026.docx',desc:'Safe use of food in play and sensory activities, allergen awareness, hygiene.',adopted:'March 2026'},
+  {id:'gdpr',tier:3,title:'GDPR Privacy Notice',cat:'Governance',sites:['all'],file:'Greencoat_GDPR_Privacy_Notice_Mar2026.docx',desc:'Privacy notice for parents and staff covering what personal data is held, how it is used.',adopted:'March 2026'},
+  {id:'griev',tier:3,title:'Grievance Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Grievance_Procedure_Mar2026.docx',desc:'Informal and formal grievance process, timescales, investigation standards.',adopted:'March 2026'},
+  {id:'gun',tier:3,title:'Gun and Superhero Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Gun_Superhero_Play_Policy_Mar2026.docx',desc:'Managing superhero and weapon play in a developmentally appropriate way, safe boundaries.',adopted:'March 2026'},
+  {id:'harass',tier:3,title:'Harassment and Sexual Harassment Risk Assessment Template',cat:'Staffing',sites:['all'],file:'Greencoat_Harassment_Sexual_Harassment_Risk_Assessment_Mar2026.docx',desc:'Template for assessing risk of harassment and sexual harassment in the workplace.',adopted:'March 2026'},
+  {id:'hwp',tier:3,title:'Healthy Workplace Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Healthy_Workplace_Policy_Mar2026.docx',desc:'Promoting staff physical and mental health, occupational health support, adjustments for health conditions.',adopted:'March 2026'},
+  {id:'imm',tier:3,title:'Immunisation Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Policy_Mar2026.docx',desc:'Promoting immunisation in line with government health policy, recording vaccination status.',adopted:'March 2026'},
+  {id:'immd',tier:3,title:'Immunisation Disclaimer Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Disclaimer_Form_Mar2026.docx',desc:'Form for parents to complete if they decline recommended immunisations for their child.',adopted:'March 2026'},
+  {id:'inc_form',tier:3,title:'Incident Form',cat:'Health & Safety',sites:['all'],file:'Greencoat_Incident_Form_Mar2026.docx',desc:'Template for recording incidents, near misses, and hazards identified on nursery premises.',adopted:'March 2026'},
+  {id:'lone',tier:3,title:'Lone Working Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Lone_Working_Policy_Mar2026.docx',desc:'Ensuring no staff member works alone in a room or building, risk assessment for lone working scenarios.',adopted:'March 2026'},
+  {id:'llcf',tier:3,title:'Low-Level Concern Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concern_Form_Mar2026.docx',desc:'Template form for recording low-level concerns about staff behaviour, to be submitted to the DSL.',adopted:'March 2026'},
+  {id:'exw',tier:3,title:'Managing Extreme Weather Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Managing_Extreme_Weather_Policy_Mar2026.docx',desc:'Procedures for extreme heat, cold, storms and flooding. Sun safety, vitamin D guidance.',adopted:'March 2026'},
+  {id:'mh',tier:3,title:'Manual Handling Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Manual_Handling_Policy_Mar2026.docx',desc:'Safe manual handling techniques, training requirements, risk assessment for regular lifting tasks.',adopted:'March 2026'},
+  {id:'med_form',tier:3,title:'Medication Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Form_Mar2026.docx',desc:'Template form for parental consent to administer medication, dosage instructions, and administration record.',adopted:'March 2026'},
+  {id:'men',tier:3,title:'Menopause Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Menopause_Policy_Mar2026.docx',desc:'Supporting staff experiencing menopause symptoms, reasonable adjustments, confidential conversations.',adopted:'March 2026'},
+  {id:'miss_out',tier:3,title:'Missing Child from Outings Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_from_Outings_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for during an outing. Immediate search, police notification.',adopted:'March 2026'},
+  {id:'more',tier:3,title:'More Able and Talented Children Policy',cat:'Child Development',sites:['all'],file:'Greencoat_More_Able_Talented_Children_Policy_Mar2026.docx',desc:'Identifying and supporting more able children through challenge, enrichment, and specialist services.',adopted:'March 2026'},
+  {id:'mult',tier:3,title:'Multiple Birth Families Policy',cat:'Families',sites:['all'],file:'Greencoat_Multiple_Birth_Families_Policy_Mar2026.docx',desc:'Supporting families with twins, triplets and higher multiples, individual key persons, and transition planning.',adopted:'March 2026'},
+  {id:'nos',tier:3,title:'No Smoking and Vaping Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_No_Smoking_Vaping_Policy_Mar2026.docx',desc:'Absolute prohibition on smoking and vaping on nursery premises or in vehicles used for nursery purposes.',adopted:'March 2026'},
+  {id:'nop',tier:3,title:'Nursery Operational Plan',cat:'Governance',sites:['all'],file:'Greencoat_Nursery_Operational_Plan_Mar2026.docx',desc:'Reference document covering day-to-day operational standards including funded hours delivery, staffing ratios.',adopted:'March 2026'},
+  {id:'ora',tier:3,title:'Overall Approach to Risk Assessment',cat:'Health & Safety',sites:['all'],file:'Greencoat_Overall_Approach_Risk_Assessment_Mar2026.docx',desc:'Framework for identifying, assessing and managing risks in the nursery, including the risk-benefit approach.',adopted:'March 2026'},
+  {id:'perm',tier:3,title:'Permission Forms',cat:'Governance',sites:['all'],file:'Greencoat_Permission_Forms_Mar2026.docx',desc:'Standard permission forms for outings, photography, medical treatment, and emergency procedures.',adopted:'March 2026'},
+  {id:'pers',tier:3,title:'Personnel Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Personnel_Policy_Mar2026.docx',desc:'HR management framework covering employment terms, performance management, equal opportunities, and staff records.',adopted:'March 2026'},
+  {id:'phys',tier:3,title:'Physical Activity Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Physical_Activity_Policy_Mar2026.docx',desc:'Commitment to daily physical activity. PANCo: Sadiyah Begum, responsible for promoting active play.',adopted:'March 2026'},
+  {id:'preg',tier:3,title:'Pregnancy and Family Leave Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Policy_Mar2026.docx',desc:'Maternity, paternity, shared parental leave and adoption leave entitlements. Reflects Employment Rights Act 2025 changes.',adopted:'March 2026'},
+  {id:'qual',tier:3,title:'Quality Provision Policy',cat:'Governance',sites:['all'],file:'Greencoat_Quality_Provision_Policy_Mar2026.docx',desc:'Commitment to high-quality care and education, self-evaluation, quality improvement, and continuous development.',adopted:'March 2026'},
+  {id:'ref',tier:3,title:'Referral Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Referral_Form_Mar2026.docx',desc:'Template form for referring a safeguarding concern to Birmingham Children\'s Social Care or the LADO.',adopted:'March 2026'},
+  {id:'rtw',tier:3,title:'Return to Work Interview Record',cat:'Staffing',sites:['all'],file:'Greencoat_Return_to_Work_Interview_Record_Mar2026.docx',desc:'Template for return to work conversations following any period of absence, however short.',adopted:'March 2026'},
+  {id:'saf',tier:3,title:'Safety Checks',cat:'Health & Safety',sites:['all'],file:'Greencoat_Safety_Checks_Mar2026.docx',desc:'Regular safety check schedules for premises, equipment, utilities, and outdoor areas.',adopted:'March 2026'},
+  {id:'scr',tier:3,title:'Single Central Record (SCR)',cat:'Staffing',sites:['all'],file:'Greencoat_Single_Central_Record_Mar2026.docx',desc:'Template for recording all pre-employment checks (DBS, identity, right to work, qualifications) for each member of staff.',adopted:'March 2026'},
+  {id:'spc',tier:3,title:'Special Consideration for Employees Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Special_Consideration_Employees_Policy_Mar2026.docx',desc:'Reasonable adjustments and special consideration for employees with health conditions, disabilities, or personal circumstances.',adopted:'March 2026'},
+  {id:'sdt',tier:3,title:'Staff Development and Training Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Development_Training_Policy_Mar2026.docx',desc:'All staff hold Level 3+, several hold Level 5/6, Director holds Level 7 with PGCE/QTS. Commitment to ongoing CPD.',adopted:'March 2026'},
+  {id:'swb',tier:3,title:'Staff Well-being Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Wellbeing_Policy_Mar2026.docx',desc:'Well-being lead: Sadiyah Begum. Supervision frequency reflects site model. Zero tolerance of harassment.',adopted:'March 2026'},
+  {id:'soc',tier:3,title:'Staff Working with Their Own Children Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Working_with_Own_Children_Policy_Mar2026.docx',desc:'Managing conflicts of interest when staff members have children or close relatives attending the nursery.',adopted:'March 2026'},
+  {id:'stud',tier:3,title:'Student Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Student_Policy_Mar2026.docx',desc:'Welcoming and supporting students on placement, supervision requirements, DBS checks, conduct expectations.',adopted:'March 2026'},
+  {id:'sv',tier:3,title:'Supervision of Visitors Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Visitors_Policy_Mar2026.docx',desc:'Signing-in procedures, escorting visitors, contractor management, and ensuring visitors are never left unsupervised.',adopted:'March 2026'},
+  {id:'dum',tier:3,title:'Use of Dummies in Nursery Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Use_of_Dummies_Policy_Mar2026.docx',desc:'Guidance on use of dummies as comforters, hygiene requirements, speech development considerations, and parental agreement.',adopted:'March 2026'},
+  {id:'vola',tier:3,title:'Volunteer Agreement',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteer_Agreement_Mar2026.docx',desc:'Agreement covering volunteer tasks, expectations, DBS requirements, and safeguarding responsibilities.',adopted:'March 2026'},
+  {id:'volp',tier:3,title:'Volunteers Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteers_Policy_Mar2026.docx',desc:'Framework for welcoming volunteers. Designated officer: Taz Khan (Director). DBS, induction, supervision.',adopted:'March 2026'},
+  {id:'dse',tier:3,title:'Working with Display Screen Equipment Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Working_with_Display_Screen_Equipment_Policy_Mar2026.docx',desc:'DSE assessment requirements, eye test entitlements, workstation adjustments, and reporting symptoms.',adopted:'March 2026'},
+  {id:'yw',tier:3,title:'Young Worker Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Young_Worker_Policy_Mar2026.docx',desc:'Legal requirements and additional safeguards for staff under 18 or apprentices, including working hours, supervision.',adopted:'March 2026'},
+  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',desc:'Planning template for nursery outings including risk assessment, staffing ratios, parental consent, emergency contacts.',adopted:'March 2026'}
+];
+let POLICIES = [...DEFAULT_POLICIES];
+
+// ─── THEME & SETTINGS ─────────────────────────────────────────────────────
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t); localStorage.setItem('gc_theme', t);
+  document.querySelectorAll('.th-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('th-' + t); if (btn) btn.classList.add('active');
+}
+function setTheme(t, btn) { applyTheme(t); closeSettings(); }
+function applySize(s) {
+  document.documentElement.setAttribute('data-size', s); localStorage.setItem('gc_size', s);
+  document.querySelectorAll('.sz-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('sz-' + s); if (btn) btn.classList.add('active');
+}
+function setSize(s, btn) { applySize(s); }
+function toggleSettings() { document.getElementById('settingsOverlay').classList.toggle('open'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+
+// ─── STATE & IDENTITY ─────────────────────────────────────────────────────
+let currentStaff = '';
+let staffToken = localStorage.getItem('gc_staff_token');
+let acknowledged = new Set();
+let filterTier = null, filterCat = null, searchQ = '';
+let filterSite = localStorage.getItem('gc_lastSite') || null;
+let currentPolicy = null, readerOpen = false, aiOpen = false, ofstedMode = false;
+let chatHistory = [], recentlyViewed = [], collapsedTiers = new Set();
+let guidedMode = false;
+let queueMode = false;
+let quizCache = {};
+let preloadedQuiz = null;   // questions ready for the currently-open policy
+let preloadedQuizForId = null; // policy ID these questions belong to — guards against race condition
+let _loadDocController = null; // AbortController for the active loadDoc fetch
+let isPreloadingQuiz = false;
+let docSearchMatches = [], docSearchIndex = 0;
+
+if (!staffToken) {
+  staffToken = Math.random().toString(36).substring(2, 15);
+  localStorage.setItem('gc_staff_token', staffToken);
+}
+
+// ─── LIVE SYNC ────────────────────────────────────────────────────────────
+async function fetchLiveConfig() {
+  return Promise.resolve(); // All data is local — no server needed
+}
+
+async function trackActivity(storeName, key, value) {
+    if (!currentStaff) return;
+    try {
+        const logKey = `gc_activity_${currentStaff.replace(/\s+/g,'_')}`;
+        const log = JSON.parse(localStorage.getItem(logKey) || '[]');
+        log.push({
+            action: storeName,
+            key: key,
+            value: typeof value === 'object' ? JSON.stringify(value) : value,
+            timestamp: new Date().toISOString()
+        });
+        while (log.length > 500) log.shift();
+        localStorage.setItem(logKey, JSON.stringify(log));
+    } catch(e) { console.warn('trackActivity failed:', e); }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+async function init() {
+  await fetchLiveConfig(); 
+
+  applyTheme(localStorage.getItem('gc_theme') || 'light');
+  applySize(localStorage.getItem('gc_size') || 'normal');
+
+  buildStaffSelector();
+  buildCatNav();
+  updateCounts();
+  renderPriorityBanner();
+  renderRecent();
+  render();
+
+  applyReaderFont();
+  updateFooterFontCtrlVisibility();
+  // Restore site filter if saved
+  if (filterSite) {
+    const siteElMap = {sparkhill:'nav-sh', bearwood:'nav-bw', billesley:'nav-ba'};
+    const siteEl = document.getElementById(siteElMap[filterSite]);
+    if (siteEl) { setSite(filterSite, siteEl); }
+  }
+
+  document.addEventListener('keydown', e => {
+    // PIN keyboard support
+    const pinVisible = document.getElementById('pinOverlay')?.classList.contains('show');
+    if (pinVisible) {
+      if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
+      if (e.key === 'Backspace')  { e.preventDefault(); pinDel(); return; }
+      if (e.key === 'Escape')     { return; } // don't close overlay with Escape
+    }
+    if ((e.metaKey||e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); }
+    if (e.key === 'Escape') { closeReader(); closeQuiz(); closeSettings(); closeShortcuts(); }
+    if ((e.metaKey||e.ctrlKey) && e.key === 'a' && readerOpen) { e.preventDefault(); ackCurrent(); }
+    if ((e.metaKey||e.ctrlKey) && e.key === '+') { e.preventDefault(); adjustReaderFont(1); }
+    if ((e.metaKey||e.ctrlKey) && e.key === '-') { e.preventDefault(); adjustReaderFont(-1); }
+    if (e.key === 'ArrowRight' && readerOpen && guidedMode) { e.preventDefault(); nextGuidedPolicy(); }
+    if ((e.metaKey||e.ctrlKey) && e.key === 'f' && readerOpen) { e.preventDefault(); openDocSearch(); }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchQ = e.target.value;
+    document.getElementById('searchClear').classList.toggle('show', !!searchQ);
+    render();
+  });
+
+  // Handle Identity — handled by initPinAuth IIFE (PIN system)
+  // Auto-restore from localStorage without PIN is intentionally removed.
+  // The initPinAuth() function handles session restore and PIN gate on load.
+}
+
+// ─── NAME PICKER CONFIRM ────────────────────────────────────────────────
+// ─── STAFF MANAGEMENT ─────────────────────────────────────────────────────
+function buildStaffSelector() {
+  const sel = document.getElementById('staffSelect');
+  sel.innerHTML = '<option value="">— Select your name —</option>';
+  if (Array.isArray(STAFF)) {
+    STAFF.forEach(name => {
+      const opt = document.createElement('option'); opt.value = opt.textContent = name;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function loadAcks() {
+  if (!currentStaff) return;
+  const key = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
+  try {
+    acknowledged = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  } catch(e) {
+    // Corrupted storage — start fresh rather than crash
+    acknowledged = new Set();
+    console.warn('loadAcks: corrupted data reset', e);
+  }
+}
+
+function loadAcksFromStorage() {
+    if (!currentStaff) return false;
+    const key = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+        acknowledged = new Set(JSON.parse(stored));
+        updateProgressUI();
+        renderPriorityBanner();
+        if (queueMode) renderQueueList();
+        return true;
+    }
+    return false;
+}
+
+function checkCelebration() {
+    if (!currentStaff) return;
+    const totalAcked = acknowledged.size;
+    const milestones = [1, 5, 10, 25, 50, 75, 100, 114];
+    const milestoneKey = `gc_milestone_${currentStaff.replace(/\s+/g,'_')}`;
+    const lastMilestone = parseInt(localStorage.getItem(milestoneKey) || '0');
+    
+    let reachedMilestone = null;
+    for (let m of milestones) {
+        if (totalAcked >= m) reachedMilestone = m;
+        else break;
+    }
+    
+    if (reachedMilestone && reachedMilestone > lastMilestone) {
+        try { localStorage.setItem(milestoneKey, reachedMilestone); } catch(e) { /* quota full — show banner anyway */ }
+        
+        const banner = document.createElement('div');
+        banner.className = 'celebration-toast';
+        banner.innerHTML = `
+            <div style="background: var(--gc-green); color: white; border-radius: 16px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem;">🎉</span>
+                <div>
+                    <strong>${reachedMilestone === 114 ? '🏆 COMPLETIONIST! 🏆' : 'Milestone Achieved!'}</strong>
+                    <div style="font-size: 0.8rem;">${totalAcked} policy${totalAcked !== 1 ? 's' : ''} acknowledged!</div>
+                </div>
+            </div>
+        `;
+        banner.style.position = 'fixed';
+        banner.style.bottom = '2rem';
+        banner.style.left = '50%';
+        banner.style.transform = 'translateX(-50%)';
+        banner.style.zIndex = '9999';
+        document.body.appendChild(banner);
+        setTimeout(() => banner.remove(), 4000);
+        
+        trackActivity('milestone', `milestone_${reachedMilestone}`, { count: totalAcked });
+        if (typeof launchConfetti === 'function') launchConfetti();
+    }
+}
+
+function requestStaffPinOrSwitch(name) {
+  if (!name) { onStaffChange(''); return; }
+  // If this person already has an active session, allow switch without re-auth
+  const session = getPinSession();
+  if (session && session.name === name) { onStaffChange(name); return; }
+  // Otherwise reset dropdown and show PIN overlay for this person
+  const sel = document.getElementById('staffSelect');
+  if (sel) sel.value = '';
+  // Pre-fill name in overlay and show
+  showPinOverlay();
+  setTimeout(() => {
+    const pinSel = document.getElementById('pinNameSelect');
+    if (pinSel) { pinSel.value = name; onPinNameChange(name); }
+  }, 50);
+}
+
+function onStaffChange(name) {
+  currentStaff = name; localStorage.setItem('gc_lastStaff', name);
+  // Exit queue mode if staff changes
+  if (queueMode) exitQueueMode();
+  loadAcks(); updateProgressUI(); renderPriorityBanner(); render(); renderRecent();
+  if (ofstedMode) renderOfstedPanel();
+  const qBtn = document.getElementById('queueToggleBtn');
+  if (name) {
+    syncAcksFromServer(name);
+    loadChatHistory(name);
+    document.getElementById('progressBox').style.display = 'flex';
+    updateAISuggestions();
+    qBtn.style.display = 'flex';
+  } else {
+    document.getElementById('progressBox').style.display = 'none';
+    qBtn.style.display = 'none';
+    qBtn.classList.remove('active');
+  }
+}
+
+async function syncAcksFromServer(name) {
+    if (!name) return;
+    const key = `gc_acks_${name.replace(/\s+/g,'_')}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+        acknowledged = new Set(JSON.parse(stored));
+        updateProgressUI();
+        renderPriorityBanner();
+        if (queueMode) renderQueueList();
+    }
+    return true;
+}
+
+function updateProgressUI() {
+  const t1 = POLICIES.filter(p => p.tier === 1);
+  const t1done = t1.filter(p => acknowledged.has(p.id)).length;
+  const pct = t1.length ? Math.round(t1done / t1.length * 100) : 0;
+  const offset = (2 * Math.PI * 22) * (1 - pct / 100);
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+  document.getElementById('ringPct').textContent = pct + '%';
+  document.getElementById('progressName').textContent = currentStaff || '—';
+  const overall = POLICIES.filter(p => acknowledged.has(p.id)).length;
+  document.getElementById('progressSub').textContent = `Tier 1: ${t1done}/${t1.length} · All: ${overall}/${POLICIES.length}`;
+}
+
+// ─── NAV & FILTERS ────────────────────────────────────────────────────────
+function buildCatNav() {
+  const cats = [...new Set(POLICIES.map(p => p.cat || 'General'))].sort();
+  document.getElementById('catNav').innerHTML = cats.map(cat => {
+    const safeCat = (cat || '').replace(/'/g, "\\'");
+    const safeId = btoa(encodeURIComponent(cat || 'General')).replace(/[^a-zA-Z0-9]/g, '');
+    return `<div class="nav-item" onclick="setCat('${safeCat}',this)" id="cat-${safeId}"><span class="nav-icon">${catIcon(cat)}</span>${cat}<span class="nav-count">${POLICIES.filter(p=>(p.cat||'General')===cat).length}</span></div>`;
+  }).join('');
+}
+function catIcon(cat) {
+  const m = {'Safeguarding':'🛡','Health & Safety':'🏥','Child Safety':'🧒','Staffing':'👥','Governance':'📜','Health & Care':'💊','Families':'👨‍👩‍👧','Child Development':'🌱','Inclusion':'♿'};
+  for (const [k,v] of Object.entries(m)) if (cat.includes(k)) return v; return '📄';
+}
+function updateCounts() {
+  document.getElementById('nc-all').textContent = POLICIES.length;
+  document.getElementById('nc-t1').textContent  = POLICIES.filter(p=>p.tier===1).length;
+  document.getElementById('nc-t2').textContent  = POLICIES.filter(p=>p.tier===2).length;
+  document.getElementById('nc-t3').textContent  = POLICIES.filter(p=>p.tier===3).length;
+}
+function setTier(t, el) { filterTier = t; filterCat = null; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); render(); }
+function setSite(s, el) { filterSite = s; localStorage.setItem('gc_lastSite', s || ''); document.querySelectorAll('.nav-item[onclick^="setSite"]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); render(); updateSiteIndicator(s); }
+function updateSiteIndicator(site) {
+  const names = {sparkhill:'📍 Sparkhill', bearwood:'📍 Bearwood', billesley:'📍 Billesley Ark'};
+  let ind = document.getElementById('siteIndicator');
+  if (!ind) { ind = document.createElement('span'); ind.id = 'siteIndicator'; ind.style.cssText = 'background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:.2rem .55rem;font-size:.7rem;color:#fff;font-weight:700'; const tb = document.querySelector('.topbar-divider'); tb.parentNode.insertBefore(ind, tb.nextSibling); }
+  if (site && names[site]) { ind.textContent = names[site]; ind.style.display = 'inline'; } else { ind.style.display = 'none'; }
+}
+function setCat(c, el) { filterCat = filterCat === c ? null : c; filterTier = null; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); if (filterCat) el.classList.add('active'); render(); }
+function clearSearch() { document.getElementById('searchInput').value = ''; searchQ = ''; document.getElementById('searchClear').classList.remove('show'); render(); }
+
+function filtered() {
+  return POLICIES.filter(p => {
+    if (!p) return false;
+    const pTier = parseInt(p.tier) || 3;
+    const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
+    const pCat = p.cat || 'General';
+    const pTitle = p.title || '';
+    const pDesc = p.desc || '';
+
+    if (filterTier && pTier !== parseInt(filterTier)) return false;
+    if (filterSite && !pSites.includes('all') && !pSites.includes(filterSite)) return false;
+    if (filterCat  && pCat !== filterCat) return false;
+    if (searchQ) { 
+      const q = searchQ.toLowerCase(); 
+      return pTitle.toLowerCase().includes(q) || pDesc.toLowerCase().includes(q) || pCat.toLowerCase().includes(q); 
+    }
+    return true;
+  });
+}
+
+// ─── RENDERING ────────────────────────────────────────────────────────────
+function render() {
+  const wrap = document.getElementById('policiesWrap');
+  const list = filtered();
+  // Search result count
+  const countEl = document.getElementById('searchCount');
+  if (countEl) { countEl.textContent = searchQ ? `${list.length} result${list.length!==1?'s':''} for "${searchQ}"` : ''; countEl.style.display = searchQ ? 'block' : 'none'; }
+  if (!list.length) { wrap.innerHTML = `<div class="empty-state"><div class="es-icon">🔍</div><h3>No policies found</h3><p>Try adjusting your filters or search term.</p><button class="ca-btn" style="margin-top:.75rem" onclick="filterCat=null;filterTier=null;clearSearch()">✕ Clear all filters</button></div>`; return; }
+  const tiers = [...new Set(list.map(p => p.tier))].sort();
+  wrap.innerHTML = tiers.map(tier => {
+    const tierPolicies = list.filter(p => p.tier === tier);
+    const collapsed = collapsedTiers.has(tier);
+    const tierLabel = {1:'Tier 1 — Essential',2:'Tier 2 — Common',3:'Tier 3 — Library'}[tier];
+    const tierCls   = ['t1b','t2b','t3b'][tier-1];
+    const done      = tierPolicies.filter(p => acknowledged.has(p.id)).length;
+    return `<div class="tier-section" id="tier-${tier}">
+      <div class="tier-header" onclick="toggleTier(${tier})"><span class="tier-badge ${tierCls}">${['Tier 1','Tier 2','Tier 3'][tier-1]}</span><span class="tier-title">${tierLabel}</span><span class="tier-meta">${done}/${tierPolicies.length} read</span><span class="tier-toggle ${collapsed?'collapsed':''}">▾</span></div>
+      ${collapsed ? '' : tierPolicies.map(p => renderCard(p)).join('')}</div>`;
+  }).join('');
+}
+
+function toggleTier(t) { if (collapsedTiers.has(t)) collapsedTiers.delete(t); else collapsedTiers.add(t); render(); }
+
+function renderCard(p) {
+  const acked = acknowledged.has(p.id);
+  const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
+  const siteHtml = pSites.includes('all') ? '<span class="card-site site-sparkhill">All sites</span>' : pSites.map(s => `<span class="card-site ${s==='sparkhill'?'site-sparkhill':s==='bearwood'?'site-bearwood':'site-billesley'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`).join('');
+  const titleHtml = searchQ ? (p.title||'').replace(new RegExp(`(${searchQ.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark style="background:var(--gc-yellow);color:#1a1a1a;border-radius:2px">$1</mark>') : (p.title||'');
+  const urgentBadge = p.tier === 1 && !acked ? '<span style="background:#fee2e2;color:var(--t1);font-size:.58rem;font-weight:800;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em">Required</span>' : '';
+  const estTime = p.desc ? Math.max(3, Math.ceil((p.desc.split(' ').length * 12) / 200)) + ' min' : '';
+  return `<div class="policy-card ${acked?'acked':''}" onclick="openReader('${p.id}')">
+    <div class="card-top"><div class="card-ack-icon">${acked ? '✓' : ''}</div><div class="card-title">${titleHtml}</div></div>
+    <div class="card-tags"><span class="card-cat">${p.cat||'General'}</span>${siteHtml}${urgentBadge}${estTime ? `<span style="margin-left:auto;font-size:.6rem;color:var(--text3)">~${estTime}</span>` : ''}</div>
+    ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
+    <div class="card-actions"><button class="ca-btn primary" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button><button class="ca-btn" onclick="event.stopPropagation();dlFile('${p.file}')">⬇ Download</button><button class="ca-btn" onclick="event.stopPropagation();askAIAbout('${p.id}')">🤖 Ask AI</button><button class="ca-btn yellow" onclick="event.stopPropagation();quickSummary('${p.id}',this)">⚡ Summary</button></div>
+  </div>`;
+}
+
+function renderPriorityBanner() {
+  const banner = document.getElementById('priorityBanner');
+  if (!currentStaff) { banner.innerHTML = ''; return; }
+  const t1 = POLICIES.filter(p => p.tier === 1);
+  const done = t1.filter(p => acknowledged.has(p.id)).length;
+  const pct  = t1.length ? Math.round(done / t1.length * 100) : 100;
+  if (pct === 100) {
+    banner.innerHTML = `<div class="priority-banner done"><span class="pb-icon">✅</span><div class="pb-text"><h3>All Tier 1 Policies Complete</h3><p>Excellent work — you've read all ${t1.length} essential policies.</p></div><div class="pb-pct">${pct}%</div></div>`;
+  } else {
+    const next = t1.filter(p => !acknowledged.has(p.id))[0];
+    if(next) banner.innerHTML = `<div class="priority-banner tier1"><span class="pb-icon">📌</span><div class="pb-text"><h3>${t1.length-done} Essential ${t1.length-done===1?'Policy':'Policies'} Outstanding</h3><p>Next: <strong onclick="openReader('${next.id}')" style="cursor:pointer;text-decoration:underline">${next.title}</strong></p></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0"><div class="pb-pct">${pct}%</div><button class="ca-btn primary" onclick="startGuidedMode()" style="font-size:.7rem;padding:.3rem .75rem;white-space:nowrap">▶ Start Reading</button></div></div>`;
+  }
+}
+
+function renderRecent() {
+  const strip = document.getElementById('recentStrip');
+  if (!recentlyViewed.length) { strip.style.display = 'none'; return; }
+  strip.style.display = 'flex';
+  strip.innerHTML = `<span class="recent-label">Recent:</span>` + recentlyViewed.slice(0,5).map(id => `<span class="recent-chip" onclick="openReader('${id}')">${(POLICIES.find(x=>x.id===id)?.title||'').slice(0,28)}…</span>`).join('');
+}
+function addToRecent(id) { recentlyViewed = [id, ...recentlyViewed.filter(x => x !== id)].slice(0, 6); renderRecent(); }
+
+// ─── READER & ACKNOWLEDGE ─────────────────────────────────────────────────
+function openReader(id) {
+  const p = POLICIES.find(x => x.id === id); if (!p) return;
+  currentPolicy = p; readerOpen = true; addToRecent(id);
+  document.getElementById('readerTitle').textContent = p.title;
+  preloadedQuiz = null;
+  preloadedQuizForId = null;
+  isPreloadingQuiz = false;
+  document.getElementById('readerOverlay').classList.add('open');
+  const tierCls = ['t1b','t2b','t3b'][p.tier-1];
+  document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}`;
+  updateReaderAckBtn(); closeDocSearch(); loadDoc(p);
+}
+
+function updateReaderAckBtn() {
+  if (!currentPolicy) return;
+  const ackBtn = document.getElementById('ackBtn');
+  if (!currentStaff) { ackBtn.disabled = true; ackBtn.textContent = '☐ Acknowledge'; return; }
+  ackBtn.disabled = false;
+  const acked = acknowledged.has(currentPolicy.id);
+  const btn = document.getElementById('ackBtn');
+  btn.textContent = acked ? '✓ Acknowledged' : '☐ Acknowledge'; btn.className = 'ack-btn' + (acked ? ' acked' : '');
+  const dt = localStorage.getItem(`gc_ack_date_${currentPolicy.id}_${currentStaff?.replace(/\s+/g,'_')}`);
+  document.getElementById('ackDate').textContent = acked && dt ? `Acknowledged ${dt}` : '';
+  // Show "Next Policy" button in guided mode or after acking
+  const nextBtn = document.getElementById('nextPolicyBtn');
+  const remaining = POLICIES.filter(p => p.tier === 1 && !acknowledged.has(p.id));
+  const showNext = (guidedMode || queueMode) && remaining.length > 0;
+  nextBtn.style.display = showNext ? 'flex' : 'none';
+  nextBtn.textContent = remaining.length > 0 ? `Next (${remaining.length} left) →` : 'All done! ✓';
+  // Show cert button once staff has acknowledged something
+  const hasAny = acknowledged.size > 0 && currentStaff;
+  document.getElementById('certBtn').style.display = hasAny ? 'flex' : 'none';
+  if (document.getElementById('certToolbarBtn')) document.getElementById('certToolbarBtn').style.display = hasAny ? 'flex' : 'none';
+  // Update ack info text
+  const infoEl = document.getElementById('ackInfo');
+  if (infoEl) infoEl.textContent = acked ? 'Policy acknowledged ✓ — your progress has been saved.' : (queueMode ? '📋 Read this policy then tap Acknowledge.' : 'Read and understood this policy? Click to acknowledge.');
+}
+
+function closeReader() { document.getElementById('readerOverlay').classList.remove('open'); readerOpen = false; currentPolicy = null; closeDocSearch(); if (guidedMode) { guidedMode = false; showToast('Guided mode paused — tap ▶ Start Reading to continue', 'info'); } if (queueMode) { renderQueueList(); } }
+function startGuidedMode() {
+  const queue = POLICIES.filter(p => p.tier === 1 && !acknowledged.has(p.id));
+  if (!queue.length) { showToast('All Tier 1 policies already read! 🎉', 'ok'); return; }
+  if (!currentStaff) { showToast('Select your name first', 'err'); return; }
+  guidedMode = true;
+  showToast(`Guided mode: ${queue.length} policies to go`, 'ok');
+  openReader(queue[0].id);
+}
+function nextGuidedPolicy() {
+  const remaining = POLICIES.filter(p => p.tier === 1 && !acknowledged.has(p.id));
+  if (!remaining.length) {
+    guidedMode = false;
+    closeReader();
+    if (queueMode) renderQueueList();
+    showToast('🎉 All Tier 1 policies complete!', 'ok');
+    return;
+  }
+  openReader(remaining[0].id);
+}
+
+async function loadDoc(p) {
+  // Cancel any previous in-flight fetch so rapid switching never shows stale content
+  if (_loadDocController) _loadDocController.abort();
+  _loadDocController = new AbortController();
+  const signal = _loadDocController.signal;
+  const body = document.getElementById('readerBody');
+  body.innerHTML = '<div class="doc-loading"><div class="spinner"></div><p>Loading policy…</p></div>';
+  document.getElementById('readingTime').textContent = '';
+  try {
+    const res = await fetch(p.file, { signal }); if (!res.ok) throw new Error('File not found');
+    const result = await mammoth.convertToHtml({ arrayBuffer: await res.arrayBuffer() });
+    body.innerHTML = `<div class="doc-content" id="docContent">${result.value}</div>`;
+    // Wrap tables for mobile horizontal scroll
+    body.querySelectorAll('#docContent table').forEach(t => {
+      if (!t.parentElement.classList.contains('table-wrap')) {
+        const w = document.createElement('div'); w.className = 'table-wrap';
+        t.parentNode.insertBefore(w, t); w.appendChild(t);
+      }
+    });
+    const words = body.textContent.split(/\s+/).length;
+    document.getElementById('readingTime').textContent = `~${Math.ceil(words/200)} min read`;
+    // Pre-generate quiz in background while staff reads
+    preloadedQuiz = null;
+    preloadQuiz(p, false);
+  } catch(e) {
+    // Ignore AbortError — user navigated away before fetch completed
+    if (e?.name === 'AbortError') return;
+    body.innerHTML = `<div class="no-file"><h3>📄 Policy document</h3><p>${p.title}</p><p style="margin-top:.75rem;font-size:.78rem;color:var(--text3)">The document file wasn't found in the portal folder. You can still download it below.</p><button class="ca-btn primary" style="margin-top:1rem" onclick="dlFile('${p.file}')">⬇ Download ${p.file}</button></div>`;
+  }
+}
+
+function dlCurrent() { if (currentPolicy) dlFile(currentPolicy.file); }
+function shareCurrentPolicy() {
+  if (!currentPolicy) return;
+  const url = `${location.origin}${location.pathname}?policy=${currentPolicy.id}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard ✓', 'ok'));
+  } else {
+    prompt('Copy this link:', url);
+  }
+}
+function dlFile(file) { const a = document.createElement('a'); a.href = file; a.download = file; a.click(); }
+
+// ─── IN-DOC SEARCH ────────────────────────────────────────────────────────
+function openDocSearch() { document.getElementById('docSearchBar').style.display = 'flex'; document.getElementById('docSearchInput').focus(); }
+function closeDocSearch() { document.getElementById('docSearchBar').style.display = 'none'; clearDocSearch(); }
+function clearDocSearch() {
+  document.getElementById('docSearchInput').value = ''; document.getElementById('docSearchResults').textContent = '';
+  docSearchMatches = []; docSearchIndex = 0;
+  const content = document.getElementById('docContent');
+  if (content) { content.querySelectorAll('.doc-highlight').forEach(el => el.replaceWith(document.createTextNode(el.textContent))); content.normalize(); }
+}
+function docSearchChange() {
+  const q = document.getElementById('docSearchInput').value.trim(); clearDocSearch(); document.getElementById('docSearchInput').value = q;
+  if (!q) return;
+  docSearchMatches = highlightDocText(q); docSearchIndex = 0; updateDocSearchNav();
+}
+function highlightDocText(q) {
+  const content = document.getElementById('docContent'); if (!content) return [];
+  const matches = []; const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null);
+  const nodes = []; let node; while ((node = walker.nextNode())) nodes.push(node);
+  nodes.forEach(node => {
+    const text = node.textContent; const lower = text.toLowerCase(); const ql = q.toLowerCase(); let pos = lower.indexOf(ql);
+    if (pos < 0) return;
+    const frag = document.createDocumentFragment(); let last = 0;
+    while (pos >= 0) {
+      if (pos > last) frag.appendChild(document.createTextNode(text.slice(last, pos)));
+      const mark = document.createElement('mark'); mark.className = 'doc-highlight'; mark.textContent = text.slice(pos, pos + q.length);
+      frag.appendChild(mark); matches.push(mark); last = pos + q.length; pos = lower.indexOf(ql, last);
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag, node);
+  });
+  return matches;
+}
+function updateDocSearchNav() {
+  const res = document.getElementById('docSearchResults');
+  if (!docSearchMatches.length) { res.textContent = 'No results'; return; }
+  res.textContent = `${docSearchIndex + 1} of ${docSearchMatches.length}`;
+  docSearchMatches.forEach((m, i) => m.classList.toggle('current', i === docSearchIndex));
+  docSearchMatches[docSearchIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function docSearchNext() { if (docSearchMatches.length) { docSearchIndex = (docSearchIndex + 1) % docSearchMatches.length; updateDocSearchNav(); } }
+function docSearchPrev() { if (docSearchMatches.length) { docSearchIndex = (docSearchIndex - 1 + docSearchMatches.length) % docSearchMatches.length; updateDocSearchNav(); } }
+
+// ─── AI PANEL ─────────────────────────────────────────────────────────────
+function toggleAI() {
+  aiOpen = !aiOpen;
+  document.getElementById('aiPanel').classList.toggle('closed', !aiOpen);
+  if (aiOpen) { document.getElementById('aiInput').focus(); updateAISuggestions(); }
+}
+function updateAISuggestions() {
+  const el = document.getElementById('aiSuggestions'); if (!el) return;
+  const unread = POLICIES.filter(p => p.tier === 1 && !acknowledged.has(p.id)).slice(0, 2);
+  let chips = [];
+  if (currentStaff && unread.length > 0) {
+    chips.push(`📋 Summarise "${unread[0].title.slice(0,35)}…"`);
+    if (unread[1]) chips.push(`❓ Key points from ${unread[1].title.slice(0,30)}…`);
+    chips.push('🏫 What will Ofsted ask me?');
+  } else if (currentPolicy) {
+    chips.push(`❓ What are the key points?`);
+    chips.push(`🏫 How does this relate to Ofsted?`);
+    chips.push(`📝 Quiz me on this policy`);
+  } else {
+    chips.push('🔥 Fire procedure Sparkhill');
+    chips.push('🛡 Safeguarding disclosure steps');
+    chips.push('📋 What must I read first?');
+  }
+  el.innerHTML = chips.map(c => `<div class="sug-chip" onclick="askSuggestion(this.textContent)">${c}</div>`).join('');
+}
+function askSuggestion(text) { if (!aiOpen) toggleAI(); document.getElementById('aiInput').value = text; sendAI(); }
+function askAIAbout(id) { const p = POLICIES.find(x => x.id === id); if (p) { if (!aiOpen) toggleAI(); document.getElementById('aiInput').value = `Give me the key points from the "${p.title}" policy.`; window._contextPolicy = p.title; sendAI(); } }
+function askAIAboutCurrent() { if (currentPolicy) { if (!aiOpen) toggleAI(); document.getElementById('aiInput').value = `Explain the key points of the "${currentPolicy.title}".`; window._contextPolicy = currentPolicy.title; sendAI(); } }
+
+async function loadChatHistory(name) {
+  // Reset chat on staff change — server-side chat history retrieval can be added later
+  chatHistory = [];
+  const msgs = document.getElementById('aiMessages');
+  if (msgs) {
+    msgs.innerHTML = `<div class="ai-msg bot"><div class="ai-bubble">👋 Hi${name ? ', ' + name.split(' ')[0] : ''}! I know all your policies, the latest UK EYFS statutory framework, and Ofsted criteria. Ask me anything!</div></div>`;
+  }
+}
+
+async function sendAI() {
+  const input = document.getElementById('aiInput'); const text = input.value.trim(); if (!text) return;
+  addAIMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  input.value = ''; input.style.height = '';
+  document.getElementById('aiTyping').classList.add('show'); document.getElementById('aiSuggestions').style.display = 'none';
+
+  let pText = null;
+  let catalog = null;
+  const docEl = document.getElementById('docContent');
+
+  if (readerOpen && docEl && currentPolicy) {
+    pText = docEl.innerText;
+  } else {
+    // No document open — send lightweight catalog of all policy titles + descriptions
+    catalog = POLICIES.map(p => `- **${p.title}**: ${p.desc}`).join('\n');
+  }
+
+  const aiController = new AbortController();
+  const aiTimeout = setTimeout(() => aiController.abort(), 30000); // 30s timeout
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      signal: aiController.signal,
+      body: JSON.stringify({
+        messages: chatHistory.slice(-16),
+        staffName: currentStaff || 'Unknown',
+        currentPolicy: (readerOpen && currentPolicy) ? currentPolicy.title : (window._contextPolicy || null),
+        policyText: pText,
+        policyCatalog: catalog
+      })
+    });
+    window._contextPolicy = null;
+    const data = await res.json();
+    document.getElementById('aiTyping').classList.remove('show');
+    const reply = data.reply || 'Sorry, I could not get a response. Please try again.';
+    chatHistory.push({ role: 'assistant', content: reply });
+    addAIMessage('bot', reply);
+    if (currentStaff) trackActivity('aichat', Date.now().toString(), { policy: currentPolicy?.title||'General', question: text, answer: reply, date: new Date().toISOString() });
+  } catch(e) {
+    document.getElementById('aiTyping').classList.remove('show');
+    const msg = e?.name === 'AbortError'
+      ? 'Request timed out. Please check your connection and try again.'
+      : 'Connection error. Please check your internet and try again.';
+    addAIMessage('bot', msg);
+  } finally {
+    clearTimeout(aiTimeout);
+  }
+}
+
+function addAIMessage(role, text) {
+  const msgs = document.getElementById('aiMessages'); const div = document.createElement('div'); div.className = `ai-msg ${role}`;
+  div.innerHTML = `<div class="ai-bubble">${text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>').replace(/^[-•]\s+(.+)$/gm, '• $1').replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}</div>`;
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+function autoResize(el) { el.style.height = ''; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
+
+async function quickSummary(id, btn) {
+  const p = POLICIES.find(x => x.id === id); if (!p) return;
+  const card = btn.closest('.policy-card'); let existing = card.querySelector('.summary-popup');
+  if (existing) { existing.remove(); btn.textContent = '⚡ Summary'; btn.disabled = false; return; }
+
+  btn.textContent = '⏳'; btn.disabled = true;
+  try {
+    let policyText = ''; try { const resDoc = await fetch(p.file); if (resDoc.ok) { const buf = await resDoc.arrayBuffer(); const raw = await mammoth.extractRawText({ arrayBuffer: buf }); policyText = raw.value; } } catch(e) {}
+    const res = await fetch('/api/ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: `Give a 3-bullet summary of the "${p.title}" for a nursery staff member. Each bullet max 12 words. Start each with a relevant emoji.` }], staffName: currentStaff || 'Unknown', currentPolicy: p.title, policyText: policyText })
+    });
+    const data = await res.json();
+    const replyText = (data.reply || '').trim();
+    if (!replyText) throw new Error('Empty summary response');
+    const popup = document.createElement('div'); popup.className = 'summary-popup'; popup.innerHTML = replyText.replace(/\n/g, '<br>'); card.appendChild(popup);
+    if (currentStaff) trackActivity('summary', p.id, { summary: data.reply, date: new Date().toISOString() });
+  } catch { showToast('Summary unavailable', 'err'); }
+  btn.textContent = '⚡ Summary'; btn.disabled = false;
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────
+let quizPolicy = null, quizQuestions = [], quizAnswers = [], quizScore = 0;
+// ── QUIZ: Background preload + pass/fail gate ─────────────────────────
+
+async function preloadQuiz(policy, isRetry) {
+  if (isPreloadingQuiz && !isRetry) return;
+  isPreloadingQuiz = true;
+  preloadedQuiz = null;
+  try {
+    const docEl = document.getElementById('docContent');
+    const policyText = docEl ? docEl.innerText.slice(0, 8000) : '';
+    const seed = isRetry ? ` RETRY seed:${Date.now()}` : '';
+    const prompt = `Generate exactly 3 multiple-choice questions to test a nursery staff member's understanding of this policy: "${policy.title}".${seed} Focus on scenarios, responsibilities and correct procedures. Questions must be answerable from the policy text.`;
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        staffName: currentStaff || 'Unknown',
+        jsonMode: true,
+        currentPolicy: policy.title,
+        policyText
+      })
+    });
+    const data = await res.json();
+    const raw = (data.reply || '').replace(/```json|```/g, '').trim();
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch(e) { parsed = null; }
+    // Handle both {questions:[...]} and bare array
+    const qs = parsed?.questions || (Array.isArray(parsed) ? parsed : null);
+    if (qs && qs.length >= 3) {
+      const valid = [];
+      for (const q of qs) {
+        let correctIdx = q.correct;
+        if (typeof correctIdx === 'string') correctIdx = parseInt(correctIdx, 10);
+        if (q.question && Array.isArray(q.options) && q.options.length >= 3 &&
+            typeof correctIdx === 'number' && correctIdx >= 0 && correctIdx < q.options.length &&
+            q.explanation) {
+          valid.push(q);
+        }
+      }
+      if (valid.length >= 3) {
+        preloadedQuiz = valid.slice(0, 3);
+        preloadedQuizForId = policy.id;
+      }
+    }
+  } catch(e) {
+    preloadedQuiz = null;
+    preloadedQuizForId = null;
+  } finally {
+    isPreloadingQuiz = false;
+  }
+}
+
+async function ackCurrent() {
+  if (!currentPolicy) return;
+  if (!currentStaff) { showToast('Select your name first', 'err'); return; }
+  const p = currentPolicy;
+
+  // Already acknowledged — just confirm
+  if (acknowledged.has(p.id)) { showToast('Already acknowledged ✓', 'ok'); return; }
+
+  // Not yet acknowledged — gate with quiz
+  if (preloadedQuiz && preloadedQuiz.length >= 3 && preloadedQuizForId === p.id) {
+    // Quiz ready and confirmed for this policy — open it
+    openQuizForAck(p);
+  } else if (isPreloadingQuiz) {
+    showToast('Generating your knowledge check… please wait a moment', 'info');
+  } else {
+    // Preload failed or hasn't started — try again now
+    showToast('Preparing knowledge check…', 'info');
+    await preloadQuiz(p, false);
+    if (preloadedQuiz && preloadedQuiz.length >= 3) {
+      openQuizForAck(p);
+    } else {
+      // Quiz generation unavailable — offer direct acknowledge as fallback
+      const bypass = confirm(
+        'Knowledge check unavailable right now (AI service may be busy).\n\n' +
+        'Do you still want to acknowledge this policy?\n\n' +
+        'By confirming, you confirm you have read and understood: ' + p.title
+      );
+      if (bypass) doDirectAcknowledge(p);
+    }
+  }
+}
+
+function openQuizForAck(policy) {
+  quizPolicy = policy;
+  quizQuestions = preloadedQuiz;
+  quizAnswers = [];
+  quizScore = 0;
+  document.getElementById('quizSub').textContent = policy.title;
+  document.getElementById('quizOverlay').classList.add('open');
+  renderQuiz();
+}
+
+function renderQuiz() {
+  document.getElementById('quizBody').innerHTML =
+    quizQuestions.map((q, qi) =>
+      `<div class="quiz-q" id="qq-${qi}">
+        <div class="quiz-qtext">${qi+1}. ${q.question}</div>
+        <div class="quiz-options">${q.options.map((opt, oi) =>
+          `<button class="quiz-opt" onclick="answerQuiz(${qi},${oi})" id="qo-${qi}-${oi}">${opt}</button>`
+        ).join('')}</div>
+        <div class="quiz-result" id="qr-${qi}" style="display:none"></div>
+      </div>`
+    ).join('') + '<div id="quizFinal" style="display:none"></div>';
+}
+
+function answerQuiz(qi, oi) {
+  const q = quizQuestions[qi];
+  q.options.forEach((_, i) => {
+    const b = document.getElementById(`qo-${qi}-${i}`);
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    if (i === oi && oi !== q.correct) b.classList.add('wrong');
+  });
+  const correct = oi === q.correct;
+  if (correct) quizScore++;
+  quizAnswers.push({ qi, oi, correct });
+  const res = document.getElementById(`qr-${qi}`);
+  res.style.display = 'block';
+  res.className = 'quiz-result ' + (correct ? 'ok' : 'bad');
+  res.textContent = (correct ? '✓ ' : '✗ ') + q.explanation;
+  if (quizAnswers.length === quizQuestions.length) setTimeout(showQuizResult, 700);
+}
+
+function showQuizResult() {
+  const total = quizQuestions.length;
+  const pct = Math.round(quizScore / total * 100);
+  const passed = pct >= 66; // 2/3 or better
+
+  // Track the attempt
+  if (currentStaff) {
+    trackActivity('quiz', `${quizPolicy.id}:${Date.now()}`, {
+      score: quizScore, total, pct, passed,
+      date: new Date().toISOString(), policy: quizPolicy.id
+    });
+  }
+
+  const fin = document.getElementById('quizFinal');
+  fin.style.display = 'block';
+
+  if (passed) {
+    fin.innerHTML = `
+      <div class="quiz-score-box">
+        <div class="quiz-score-num good">✓ ${quizScore}/${total}</div>
+        <div class="quiz-score-msg">${pct === 100 ? 'Perfect score! You know this policy inside out.' : 'Good understanding. You\'re ready to acknowledge this policy.'}</div>
+        <div class="quiz-score-actions">
+          <button class="ca-btn primary" onclick="doAcknowledge()">✓ Acknowledge Policy</button>
+        </div>
+      </div>`;
+  } else {
+    // FAIL — wipe quiz and preload fresh questions in background
+    preloadedQuiz = null;
+    preloadQuiz(quizPolicy, true);
+    fin.innerHTML = `
+      <div class="quiz-score-box">
+        <div class="quiz-score-num retry">✗ ${quizScore}/${total}</div>
+        <div class="quiz-score-msg" style="color:#dc2626">You scored ${quizScore} out of ${total}. Review the policy carefully and then tap Acknowledge to try again with fresh questions.</div>
+        <div class="quiz-score-actions">
+          <button class="ca-btn" onclick="closeQuiz(); setTimeout(()=>{ const info=document.getElementById('ackInfo'); if(info) info.textContent='New questions ready — tap Acknowledge to try again.'; document.getElementById('ackBtn')?.scrollIntoView({behavior:'smooth',block:'center'}); },400)">Close &amp; Review</button>
+        </div>
+      </div>`;
+  }
+
+  fin.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function doDirectAcknowledge(p) {
+  if (!p || !currentStaff) return;
+  acknowledged.add(p.id);
+  localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
+  localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+  updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
+  if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
+  render();
+  if (queueMode) renderQueueList();
+  showToast('✓ Acknowledged', 'ok');
+  checkCelebration();
+  trackActivity('read', p.id, { readAt: new Date().toISOString(), direct: true });
+}
+
+async function doAcknowledge() {
+  if (!quizPolicy) return;
+  const p = quizPolicy;
+  closeQuiz();
+
+  acknowledged.add(p.id);
+  localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
+  localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+
+  updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
+  if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
+  render();
+  if (queueMode) renderQueueList();
+
+  const remAfterAck = POLICIES.filter(pol => pol.tier === 1 && !acknowledged.has(pol.id)).length;
+  if (guidedMode && remAfterAck > 0) {
+    showToast(`✓ Acknowledged — ${remAfterAck} Tier 1 left`, 'ok');
+    // Auto-advance to next policy after brief pause so user sees the confirmation
+    setTimeout(() => nextGuidedPolicy(), 1200);
+  } else if (guidedMode && remAfterAck === 0) {
+    showToast('🎉 All Tier 1 complete!', 'ok');
+    guidedMode = false;
+  } else {
+    showToast('✓ Acknowledged', 'ok');
+  }
+  checkCelebration();
+  trackActivity('read', p.id, { readAt: new Date().toISOString() });
+}
+
+function closeQuiz() {
+  if (quizAnswers.length > 0 && quizAnswers.length < (quizQuestions.length || 3)) {
+    showToast('Quiz closed — your answers were not saved', 'info');
+  }
+  document.getElementById('quizOverlay').classList.remove('open');
+  quizPolicy = null; quizAnswers = []; quizScore = 0;
+}
+
+// ─── OFSTED READINESS ─────────────────────────────────────────────────────
+function toggleOfstedMode() {
+  if (queueMode) { showToast('Exit queue mode to access Ofsted view', 'info'); return; }
+  ofstedMode = !ofstedMode; const panel = document.getElementById('ofstedPanel'); const btn = document.getElementById('ofstedBtn'); if (ofstedMode) { panel.classList.add('show'); renderOfstedPanel(); btn.classList.add('active'); } else { panel.classList.remove('show'); btn.classList.remove('active'); } }
+function renderOfstedPanel() {
+  const t1 = POLICIES.filter(p => p.tier === 1); const done = t1.filter(p => acknowledged.has(p.id)).length; const pct = t1.length ? Math.round(done / t1.length * 100) : 100;
+  const cls = pct === 100 ? 'green' : pct >= 60 ? 'amber' : 'red'; const icon = pct === 100 ? '🟢' : pct >= 60 ? '🟡' : '🔴'; const lbl = pct === 100 ? 'Ready for inspection' : pct >= 60 ? 'Progressing' : 'Action needed';
+  const panel = document.getElementById('ofstedPanel'); panel.className = `ofsted-panel show ${cls}`; document.getElementById('ofstedEmoji').textContent = icon; document.getElementById('ofstedScoreNum').textContent = pct + '%'; document.getElementById('ofstedSub').textContent = currentStaff ? `${currentStaff} — ${done}/${t1.length} Tier 1 read · ${lbl}` : lbl;
+  document.getElementById('ofstedBars').innerHTML = t1.map(p => { const acked = acknowledged.has(p.id); const col = acked ? 'var(--gc-green)' : 'var(--t1)'; return `<div class="ob-row"><div class="ob-label" title="${p.title}">${p.title.length>44?p.title.slice(0,42)+'…':p.title}</div><div class="ob-track"><div class="ob-fill" style="width:${acked?100:0}%;background:${col}"></div></div><div class="ob-pct" style="color:${col}">${acked?'✓':'–'}</div></div>`; }).join('');
+}
+function printOfstedReport() { const t1 = POLICIES.filter(p => p.tier === 1); const done = t1.filter(p => acknowledged.has(p.id)).length; const pct = t1.length ? Math.round(done / t1.length * 100) : 100; const w = window.open('', '_blank'); w.document.write(`<!DOCTYPE html><html><head><title>Greencoat Ofsted Readiness</title><style>body{font-family:Georgia,serif;padding:2rem;max-width:800px;margin:0 auto}h1{color:#2B6B3A;border-bottom:3px solid #2B6B3A;padding-bottom:.5rem}table{width:100%;border-collapse:collapse;margin-top:1rem}th{background:#2B6B3A;color:#fff;padding:.5rem .75rem;text-align:left;font-size:.8rem}td{padding:.5rem .75rem;border-bottom:1px solid #ddd;font-size:.85rem}.score{font-size:3rem;font-weight:bold;color:${pct===100?'#16a34a':pct>=60?'#d97706':'#dc2626'}}@media print{button{display:none}}</style></head><body><h1>Greencoat Nursery CIC — Ofsted Readiness Report</h1><p><strong>Staff:</strong> ${currentStaff||'Not selected'} &nbsp;|&nbsp; <strong>Date:</strong> ${new Date().toLocaleDateString('en-GB')}</p><div class="score">${pct}%</div><p>${done} of ${t1.length} Tier 1 policies acknowledged</p><table><thead><tr><th>Policy</th><th style="text-align:center">Status</th></tr></thead><tbody>${t1.map(p => `<tr><td>${p.title}</td><td style="text-align:center;color:${acknowledged.has(p.id)?'#16a34a':'#dc2626'}">${acknowledged.has(p.id)?'✓ Read':'✗ Outstanding'}</td></tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`); w.document.close(); }
+
+// ─── MISC ─────────────────────────────────────────────────────────────────
+function showCelebration(title, msg) { document.getElementById('celebTitle').textContent = title; document.getElementById('celebMsg').textContent = msg; document.getElementById('celebWrap').style.display = 'flex'; document.getElementById('confettiCanvas').style.display = 'block'; launchConfetti(); setTimeout(() => { document.getElementById('celebWrap').style.display = 'none'; document.getElementById('confettiCanvas').style.display = 'none'; }, 5000); }
+function launchConfetti() { const canvas = document.getElementById('confettiCanvas'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; const ctx = canvas.getContext('2d'); const colors = ['#2B6B3A','#F5C518','#4CAF6A','#ffffff','#a8d5b5']; const pieces = Array.from({length:120}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height, r: Math.random()*6+4, d: Math.random()*100+40, color: colors[Math.floor(Math.random()*colors.length)], tilt: Math.random()*10-10, ta: 0, tai: Math.random()*.07+.05 })); let angle = 0; function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); angle += .01; pieces.forEach(p => { p.ta += p.tai; p.y += (Math.cos(angle+p.d)+3+p.r/2)*.85; p.x += Math.sin(angle)*1.5; p.tilt = Math.sin(p.ta)*15; ctx.beginPath(); ctx.lineWidth = p.r/2; ctx.strokeStyle = p.color; ctx.moveTo(p.x+p.tilt+p.r/4, p.y); ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4); ctx.stroke(); }); if (pieces.some(p => p.y < canvas.height)) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height); } draw(); }
+function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
+let toastTimer; function showToast(msg, type='') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show${type?' '+type:''}`; clearTimeout(toastTimer); const dur = msg.length > 60 ? 5000 : 3000; toastTimer = setTimeout(() => t.classList.remove('show'), dur); }
+function mobSetSite(site, el) { filterSite = site; const map = {null:'nav-all-s', sparkhill:'nav-sh', bearwood:'nav-bw', billesley:'nav-ba'}; document.querySelectorAll('[id^="nav-all-s"],[id="nav-sh"],[id="nav-bw"],[id="nav-ba"]').forEach(n => n.classList.remove('active')); const sideEl = document.getElementById(map[site]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-site-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
+function mobSetTier(tier, el) { filterTier = tier; filterCat = null; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); const map = {null:'nav-all', 1:'nav-t1', 2:'nav-t2', 3:'nav-t3'}; const sideEl = document.getElementById(map[tier]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-tier-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
+let recognition = null, isListening = false;
+function toggleVoiceSearch() { if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { showToast('Voice search not supported here', 'err'); return; } if (isListening) { recognition?.stop(); return; } const SR = window.SpeechRecognition || window.webkitSpeechRecognition; recognition = new SR(); recognition.lang = 'en-GB'; recognition.onstart = () => { isListening = true; document.getElementById('micBtn').classList.add('listening'); showToast('🎙 Listening…', 'info'); }; recognition.onresult = e => { const t = e.results[0][0].transcript; document.getElementById('searchInput').value = t; searchQ = t; document.getElementById('searchClear').classList.add('show'); render(); }; recognition.onend = () => { isListening = false; document.getElementById('micBtn').classList.remove('listening'); }; recognition.onerror = () => { isListening = false; document.getElementById('micBtn').classList.remove('listening'); showToast('Voice search failed', 'err'); }; recognition.start(); }
+
+function downloadCertificate() {
+  if (!currentStaff) { showToast('Select your name first', 'err'); return; }
+  if (acknowledged.size === 0) { showToast('Acknowledge at least one policy before downloading your certificate', 'err'); return; }
+  const ackedPolicies = POLICIES.filter(p => acknowledged.has(p.id)).sort((a,b) => a.tier - b.tier);
+  const t1 = POLICIES.filter(p => p.tier === 1);
+  const t1done = ackedPolicies.filter(p => p.tier === 1).length;
+  const today = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  const rows = ackedPolicies.map(p => {
+    const dt = localStorage.getItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`) || '—';
+    const tierLabel = {1:'Tier 1 — Essential', 2:'Tier 2 — Common', 3:'Tier 3 — Library'}[p.tier];
+    return `<tr><td>${p.title}</td><td>${tierLabel}</td><td>${p.cat}</td><td style="color:#16a34a;font-weight:700">${dt}</td></tr>`;
+  }).join('');
+  const outstanding = POLICIES.filter(p => p.tier === 1 && !acknowledged.has(p.id));
+  const outRows = outstanding.map(p => `<li>${p.title}</li>`).join('');
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Pop-up blocked — please allow pop-ups for this site and try again', 'err'); return; }
+  w.document.write(`<!DOCTYPE html><html><head><title>Policy Acknowledgement Record — ${currentStaff}</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #1a2e1e; }
+  .header { display: flex; align-items: center; gap: 1.5rem; border-bottom: 3px solid #2B6B3A; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+  .logo { width: 60px; height: 60px; background: #2B6B3A; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #F5C518; font-size: 1.8rem; flex-shrink: 0; }
+  h1 { color: #2B6B3A; margin: 0; font-size: 1.5rem; }
+  .sub { color: #6a9475; font-size: .9rem; }
+  .score-box { background: #e8f5ec; border: 2px solid #2B6B3A; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 2rem; }
+  .score-item { text-align: center; }
+  .score-num { font-size: 2.5rem; font-weight: bold; color: #2B6B3A; line-height: 1; }
+  .score-label { font-size: .8rem; color: #7a9882; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 1rem; }
+  th { background: #2B6B3A; color: #fff; padding: .5rem .75rem; text-align: left; font-size: .75rem; }
+  td { padding: .45rem .75rem; border-bottom: 1px solid #d8e8dc; }
+  tr:nth-child(even) td { background: #f7faf8; }
+  .outstanding { background: #fff5f5; border: 2px solid #dc2626; border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1.5rem; }
+  .outstanding h3 { color: #dc2626; margin: 0 0 .5rem; font-size: .9rem; }
+  .outstanding ul { margin: 0; padding-left: 1.25rem; font-size: .82rem; }
+  .sig-box { margin-top: 2.5rem; border-top: 1px solid #d8e8dc; padding-top: 1.5rem; display: flex; gap: 3rem; }
+  .sig-line { border-bottom: 1px solid #1a2e1e; width: 200px; margin-top: .5rem; height: 24px; }
+  .sig-label { font-size: .75rem; color: #7a9882; margin-top: .25rem; }
+  @media print { button { display: none !important; } }
+</style></head><body>
+<div class="header">
+  <div class="logo">🌿</div>
+  <div>
+    <h1>Policy Acknowledgement Record</h1>
+    <div class="sub">Greencoat Nursery CIC · Generated: ${today}</div>
+  </div>
+</div>
+<div class="score-box">
+  <div class="score-item"><div class="score-num">${currentStaff}</div><div class="score-label">Staff Member</div></div>
+  <div class="score-item"><div class="score-num" style="color:${t1done===t1.length?'#16a34a':'#dc2626'}">${t1done}/${t1.length}</div><div class="score-label">Tier 1 (Ofsted-Critical)</div></div>
+  <div class="score-item"><div class="score-num">${ackedPolicies.length}/${POLICIES.length}</div><div class="score-label">Total Policies</div></div>
+  <div class="score-item"><div class="score-num">${Math.round(ackedPolicies.length/POLICIES.length*100)}%</div><div class="score-label">Overall Progress</div></div>
+</div>
+${ackedPolicies.length > 0 ? `
+<h2 style="color:#2B6B3A;font-size:1rem;margin-bottom:.5rem">✓ Acknowledged Policies</h2>
+<table><thead><tr><th>Policy Title</th><th>Tier</th><th>Category</th><th>Date Acknowledged</th></tr></thead><tbody>${rows}</tbody></table>` : '<p style="color:#7a9882">No policies acknowledged yet.</p>'}
+${outstanding.length > 0 ? `
+<div class="outstanding"><h3>⚠️ Outstanding Tier 1 Policies (${outstanding.length})</h3><ul>${outRows}</ul></div>` : '<p style="color:#16a34a;margin-top:1.5rem;font-weight:bold">✅ All Tier 1 policies acknowledged — Ofsted ready!</p>'}
+<div class="sig-box">
+  <div><div class="sig-label">Staff signature</div><div class="sig-line"></div><div class="sig-label">${currentStaff}</div></div>
+  <div><div class="sig-label">Manager signature</div><div class="sig-line"></div><div class="sig-label">Date: ${today}</div></div>
+</div>
+<div style="margin-top:2rem;text-align:center"><button onclick="window.print()" style="padding:.65rem 1.5rem;background:#2B6B3A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem">🖨 Print this Record</button></div>
+</body></html>`);
+  w.document.close();
+}
+
+// ─── QUEUE MODE ─────────────────────────────────────────────────────────────
+function toggleQueueMode() {
+  if (queueMode) exitQueueMode();
+  else enterQueueMode();
+}
+
+function enterQueueMode() {
+  if (!currentStaff) { showToast('Select your name first', 'err'); return; }
+  queueMode = true;
+  document.querySelector('.app').classList.add('queue-mode');
+  document.getElementById('queueToggleBtn').classList.add('active');
+  document.getElementById('queueToggleBtn').style.display = 'flex';
+  document.getElementById('queueList').style.display = 'flex';
+  document.getElementById('policiesWrap').style.display = 'none';
+  document.getElementById('priorityBanner').style.display = 'none';
+  document.getElementById('recentStrip').style.display = 'none';
+  renderQueueList();
+}
+
+function exitQueueMode() {
+  queueMode = false;
+  document.querySelector('.app').classList.remove('queue-mode');
+  document.getElementById('queueToggleBtn').classList.remove('active');
+  document.getElementById('queueList').style.display = 'none';
+  document.getElementById('queueComplete').classList.remove('show');
+  document.getElementById('policiesWrap').style.display = 'block';
+  document.getElementById('priorityBanner').style.display = 'block';
+  render();
+  renderRecent();
+  renderPriorityBanner();
+}
+
+function renderQueueList() {
+  const t1 = POLICIES.filter(p => p.tier === 1);
+  const done = t1.filter(p => acknowledged.has(p.id)).length;
+  const pct = t1.length ? Math.round(done / t1.length * 100) : 100;
+  
+  // Update progress bar
+  document.getElementById('queueProgressFill').style.width = pct + '%';
+  
+  // Update header
+  const remaining = t1.length - done;
+  document.getElementById('queueHeaderTitle').textContent = remaining > 0 
+    ? `${remaining} Essential ${remaining === 1 ? 'Policy' : 'Policies'} Left`
+    : 'All Done! 🎉';
+  document.getElementById('queueHeaderSub').textContent = remaining > 0
+    ? `${done} of ${t1.length} Tier 1 policies acknowledged · Ofsted critical`
+    : `All ${t1.length} Tier 1 policies acknowledged`;
+
+  // Show complete screen if all done
+  const completeEl = document.getElementById('queueComplete');
+  const listEl = document.getElementById('queueList');
+  if (done === t1.length) {
+    completeEl.classList.add('show');
+    listEl.style.display = 'none';
+    document.getElementById('queueCompleteMsg').innerHTML = `${currentStaff.split(' ')[0]}, you've completed all ${t1.length} essential policies.<br>Your record is saved and ready for Ofsted.`;
+    return;
+  }
+  completeEl.classList.remove('show');
+  listEl.style.display = 'flex';
+
+  // Render cards — unread first, read at bottom
+  const unread = t1.filter(p => !acknowledged.has(p.id));
+  const read = t1.filter(p => acknowledged.has(p.id));
+  const ordered = [...unread, ...read];
+  
+  listEl.innerHTML = ordered.map((p, i) => {
+    const acked = acknowledged.has(p.id);
+    const num = acked ? '✓' : (i + 1 - read.length <= 0 ? '✓' : i + 1 - (i >= unread.length ? unread.length : 0));
+    const displayNum = acked ? '✓' : (unread.indexOf(p) + 1);
+    return `<div class="queue-card ${acked ? 'acked' : ''}" onclick="${acked ? '' : `openReader('${p.id}')`}">
+      <div class="qc-num">${acked ? '✓' : displayNum}</div>
+      <div class="qc-body">
+        <div class="qc-title">${p.title}</div>
+        <div class="qc-cat">${p.cat}${p.sites && !p.sites.includes('all') ? ' · ' + p.sites.map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(', ') : ''}</div>
+      </div>
+      ${acked 
+        ? '<div class="qc-done-icon">✅</div>'
+        : `<button class="qc-read-btn" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+// ─── READER FONT SIZE ────────────────────────────────────────────────────────
+let readerFontIdx = parseInt(localStorage.getItem('gc_readerFontIdx') || '2');
+function applyReaderFont() {
+  const sizes = [0.82, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
+  document.documentElement.style.setProperty('--reader-font-size', sizes[readerFontIdx] + 'rem');
+}
+function updateFooterFontCtrlVisibility() {
+  const footerCtrl = document.getElementById('footerFontCtrl');
+  if (!footerCtrl) return;
+  footerCtrl.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+}
+window.addEventListener('resize', updateFooterFontCtrlVisibility);
+
+function updateReadProgress() {
+  const body = document.getElementById('readerBody');
+  if (!body) return;
+  const pct = body.scrollTop / (body.scrollHeight - body.clientHeight) * 100;
+  const fill = document.getElementById('readerScrollFill');
+  if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+}
+function adjustReaderFont(dir) {
+  const sizes = [0.82, 0.9, 1.0, 1.1, 1.2, 1.35, 1.5];
+  if (dir === 0) readerFontIdx = 2;
+  else readerFontIdx = Math.max(0, Math.min(sizes.length - 1, readerFontIdx + dir));
+  localStorage.setItem('gc_readerFontIdx', readerFontIdx);
+  applyReaderFont();
+}
+
+function toggleShortcuts() { document.getElementById("shortcutsOverlay").classList.toggle("open"); }
+function closeShortcuts() { document.getElementById("shortcutsOverlay").classList.remove("open"); }
+
+// Deep link support: ?policy=id opens that policy directly
+const _urlParams = new URLSearchParams(window.location.search);
+const _deepPolicy = _urlParams.get('policy');
+if (_deepPolicy) {
+  const _origInit = init;
+  init = async function() {
+    await _origInit();
+    const _p = POLICIES.find(x => x.id === _deepPolicy);
+    if (_p) { setTimeout(() => openReader(_deepPolicy), 300); }
+  };
+}
+init();
+
+// ── PIN LOGIN SYSTEM ──────────────────────────────────────────────────
+let pinBuffer  = '';
+let pinPhase   = 'enter';
+let pinAttempts = 0;   // 'enter' | 'setup' | 'confirm'
+let pinFirst  = '';        // holds first entry during confirm phase
+const PIN_SESSION_HOURS = 8;
+const PIN_STORAGE_PREFIX = 'gc_pin_';
+const PIN_SESSION_KEY    = 'gc_pin_session';
+
+function getPinKey(name) { return PIN_STORAGE_PREFIX + name.replace(/\s+/g,'_'); }
+
+function getPinSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem(PIN_SESSION_KEY) || 'null');
+    if (!s) return null;
+    if (Date.now() - s.ts > PIN_SESSION_HOURS * 3600000) { localStorage.removeItem(PIN_SESSION_KEY); return null; }
+    return s;
+  } catch(e) { return null; }
+}
+
+function setPinSession(name) {
+  try { localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name, ts: Date.now() })); }
+  catch(e) { console.warn('setPinSession failed (private browsing?)', e); }
+}
+
+function clearPinSession() {
+  try { localStorage.removeItem(PIN_SESSION_KEY); }
+  catch(e) { /* silent — session already invalid */ }
+}
+
+function showPinOverlay() {
+  const overlay = document.getElementById('pinOverlay');
+  // Populate name dropdown
+  const sel = document.getElementById('pinNameSelect');
+  sel.innerHTML = '<option value="">— Select your name —</option>';
+  STAFF.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+  pinBuffer = '';
+  pinPhase = 'enter';
+  pinAttempts = 0;
+  const pad = document.getElementById('pinPad');
+  if (pad) pad.style.pointerEvents = '';
+  const nameEl = document.getElementById('pinNameSelect');
+  if (nameEl) nameEl.disabled = false;
+  renderPinDots();
+  document.getElementById('pinMsg').textContent = '';
+  document.getElementById('pinSetupNote').style.display = 'none';
+  document.getElementById('pinConfirmRow').style.display = 'none';
+  document.getElementById('pinTitle').textContent = 'Welcome to the Policy Hub';
+  document.getElementById('pinSub').textContent = 'Select your name and enter your PIN';
+  overlay.classList.add('show');
+}
+
+function hidePinOverlay() {
+  document.getElementById('pinOverlay').classList.remove('show');
+}
+
+function renderPinDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('pd' + i).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+function onPinNameChange(name) {
+  pinBuffer = '';
+  pinPhase = 'enter';
+  pinAttempts = 0;
+  renderPinDots();
+  document.getElementById('pinMsg').textContent = '';
+  document.getElementById('pinPad').style.pointerEvents = '';
+  document.getElementById('pinNameSelect').disabled = false;
+  document.getElementById('pinSetupNote').style.display = 'none';
+  document.getElementById('pinConfirmRow').style.display = 'none';
+  if (!name) return;
+  // Check admin-set PIN first, then self-set
+  let hasPin = false;
+  try { const ap = JSON.parse(localStorage.getItem('gc_staff_pins')||'{}'); if(ap[name]) hasPin=true; } catch(e){}
+  if (!hasPin) hasPin = !!localStorage.getItem(getPinKey(name));
+  if (hasPin) {
+    document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
+  } else {
+    pinPhase = 'setup';
+    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+    document.getElementById('pinSetupNote').style.display = 'block';
+  }
+}
+
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  const name = document.getElementById('pinNameSelect').value;
+  if (!name) { document.getElementById('pinMsg').textContent = 'Please select your name first.'; return; }
+  pinBuffer += digit;
+  renderPinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => processPinEntry(name), 120);
+  }
+}
+
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  renderPinDots();
+  document.getElementById('pinMsg').textContent = '';
+}
+
+function processPinEntry(name) {
+  // Check admin-set PIN first (gc_staff_pins), then self-set (gc_pin_[name])
+  function getEffectivePin(n) {
+    try {
+      const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
+      if (adminPins[n]) return adminPins[n];
+    } catch(e) {}
+    return localStorage.getItem(getPinKey(n)) || null;
+  }
+  const storedPin = getEffectivePin(name);
+
+  if (pinPhase === 'enter') {
+    if (!storedPin) { // no PIN set — shouldn't reach here but handle gracefully
+      pinPhase = 'setup';
+      pinBuffer = '';
+      renderPinDots();
+      document.getElementById('pinSetupNote').style.display = 'block';
+      document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+      return;
+    }
+    if (pinBuffer === storedPin) {
+      pinAttempts = 0;
+      pinSuccess(name);
+    } else {
+      pinAttempts++;
+      pinBuffer = '';
+      renderPinDots();
+      if (pinAttempts >= 5) {
+        document.getElementById('pinPad').style.pointerEvents = 'none';
+        // Keep name select ENABLED — another user on shared device must still be able to log in
+        let secs = 30;
+        const msgEl = document.getElementById('pinMsg');
+        msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
+        const countdown = setInterval(() => {
+          secs--;
+          if (secs <= 0) {
+            clearInterval(countdown);
+            pinAttempts = 0;
+            document.getElementById('pinPad').style.pointerEvents = '';
+            msgEl.textContent = '';
+          } else {
+            msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
+          }
+        }, 1000);
+      } else {
+        document.getElementById('pinMsg').textContent = `Incorrect PIN. ${5 - pinAttempts} attempt${5 - pinAttempts !== 1 ? 's' : ''} remaining.`;
+      }
+    }
+  } else if (pinPhase === 'setup') {
+    // First entry — move to confirm
+    pinFirst = pinBuffer;
+    pinBuffer = '';
+    renderPinDots();
+    pinPhase = 'confirm';
+    document.getElementById('pinSetupNote').style.display = 'none';
+    document.getElementById('pinConfirmRow').style.display = 'flex';
+    document.getElementById('pinSub').textContent = 'Enter your PIN again to confirm';
+    document.getElementById('pinMsg').textContent = '';
+  } else if (pinPhase === 'confirm') {
+    // 4th digit entered — show Set PIN button (user taps to commit)
+    document.getElementById('pinConfirmRow').style.display = 'flex';
+  }
+}
+
+function pinConfirmNew() {
+  const name = document.getElementById('pinNameSelect').value;
+  if (pinBuffer.length < 4) { document.getElementById('pinMsg').textContent = 'Please enter all 4 digits first.'; return; }
+  if (pinBuffer !== pinFirst) {
+    document.getElementById('pinMsg').textContent = "PINs don't match. Try again.";
+    pinBuffer = ''; pinFirst = ''; pinPhase = 'setup';
+    renderPinDots();
+    document.getElementById('pinConfirmRow').style.display = 'none';
+    document.getElementById('pinSetupNote').style.display = 'block';
+    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+    return;
+  }
+  localStorage.setItem(getPinKey(name), pinBuffer);
+  pinSuccess(name);
+}
+
+function showChangePinFlow() {
+  if (!currentStaff) { showToast('Please log in first', 'err'); return; }
+  showPinOverlay();
+  // Pre-select the current user and put into setup mode
+  setTimeout(() => {
+    const sel = document.getElementById('pinNameSelect');
+    if (sel) { sel.value = currentStaff; }
+    pinBuffer = '';
+    pinPhase = 'setup';
+    renderPinDots();
+    document.getElementById('pinSetupNote').style.display = 'block';
+    document.getElementById('pinConfirmRow').style.display = 'none';
+    document.getElementById('pinMsg').textContent = '';
+    document.getElementById('pinSub').textContent = `Set a new PIN for ${currentStaff.split(' ')[0]}`;
+    document.getElementById('pinTitle').textContent = 'Change your PIN';
+    // Disable name select — they can only change their own PIN here
+    document.getElementById('pinNameSelect').disabled = true;
+  }, 60);
+}
+
+function pinSuccess(name) {
+  // If admin has set a PIN, remove any stale self-set PIN to avoid ghost fallback
+  try {
+    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
+    if (adminPins[name]) localStorage.removeItem(getPinKey(name));
+  } catch(e) {}
+  setPinSession(name);
+  hidePinOverlay();
+  // Set the staff dropdown to match
+  const sel = document.getElementById('staffSelect');
+  if (sel) { sel.value = name; }
+  onStaffChange(name);
+  // Show logout button
+  document.getElementById('logoutBtn').style.display = 'inline-flex';
+}
+
+function logoutStaff() {
+  clearPinSession();
+  currentStaff = '';
+  // Update dropdown
+  const sel = document.getElementById('staffSelect');
+  if (sel) sel.value = '';
+  document.getElementById('progressBox').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'none';
+  acknowledged = new Set();
+  chatHistory = [];
+  updateProgressUI();
+  render();
+  showPinOverlay();
+}
+
+// ── On page load: check session ──────────────────────────────────────
+(function initPinAuth() {
+  const session = getPinSession();
+  if (session && STAFF.includes(session.name)) {
+    // Valid session — auto-login
+    setTimeout(() => {
+      const sel = document.getElementById('staffSelect');
+      if (sel) sel.value = session.name;
+      onStaffChange(session.name);
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+    }, 100);
+  } else {
+    showPinOverlay();
+  }
+})();
+
+// ── Session expiry: check every 30 min ─────────────────────────
+setInterval(() => {
+  if (currentStaff && !getPinSession()) {
+    logoutStaff();
+    showToast('Session expired — please log back in', 'info');
+  }
+}, 30 * 60 * 1000);
+
+</script>
+
+<!-- ── PIN LOGIN OVERLAY ──────────────────────────────────────────── -->
+<div id="pinOverlay">
+  <div class="pin-box">
+    <h2 id="pinTitle">Welcome to the Policy Hub</h2>
+    <p class="pin-sub" id="pinSub">Select your name and enter your PIN</p>
+    <select class="pin-name-select" id="pinNameSelect" onchange="onPinNameChange(this.value)">
+      <option value="">— Select your name —</option>
+    </select>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad" id="pinPad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key zero" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-msg" id="pinMsg"></div>
+    <div id="pinSetupNote" class="pin-setup-note" style="display:none">
+      First time? Create a 4-digit PIN you'll remember — it keeps your progress private.
+    </div>
+    <div class="pin-confirm-row" id="pinConfirmRow" style="display:none">
+      <button class="pin-btn-confirm" onclick="pinConfirmNew()">Set PIN</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
