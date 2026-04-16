@@ -25,9 +25,11 @@
   --border3: rgba(255,255,255,.18);
 
   /* Accents */
-  --teal:    #14b8a6;
-  --teal-d:  #0d9488;
-  --teal-lt: rgba(20,184,166,.1);
+  --teal:     #14b8a6;
+  --teal-d:   #0d9488;
+  --teal-lt:  rgba(20,184,166,.1);
+  --accent:   #14b8a6;
+  --gc-green: #10b981;
 
   /* Tier / status */
   --t1: #ef4444; --t1-bg: rgba(239,68,68,.1);   --t1-border: rgba(239,68,68,.2);
@@ -644,6 +646,7 @@ body {
 // ── AUTH ─────────────────────────────────────────────────────────────────
 const ADMIN_USER = 'admin';
 let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
+let toastTimer;
 
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
@@ -800,10 +803,14 @@ async function saveGlobalConfig() {
     if (!res.ok) throw new Error('Server error ' + res.status);
     // Also save locally as backup
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
+    localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
+    localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
     showToast('Live portal updated ✓', 'success');
   } catch(e) {
     // Fallback to localStorage only
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
+    localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
+    localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
     showToast('Saved locally (server sync failed: ' + e.message + ')', 'info');
   }
 }
@@ -823,16 +830,20 @@ async function loadGlobalConfig() {
     try {
       const savedStaff = JSON.parse(localStorage.getItem('gc_admin_staff') || 'null');
       if (Array.isArray(savedStaff) && savedStaff.length > 0) STAFF = savedStaff;
+      const savedPolicies = JSON.parse(localStorage.getItem('gc_admin_policies') || 'null');
+      if (Array.isArray(savedPolicies) && savedPolicies.length > 0) POLICIES = savedPolicies;
+      const savedConfig = JSON.parse(localStorage.getItem('gc_admin_config') || 'null');
+      if (savedConfig && typeof savedConfig === 'object') Object.assign(CONFIG, savedConfig);
     } catch(e2) {}
   }
 }
 
 
-function restoreDefaults() {
+async function restoreDefaults() {
   if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 118 Greencoat policies and default staff list.")) return;
   POLICIES = [...DEFAULT_POLICIES];
   STAFF = [...DEFAULT_STAFF];
-  saveGlobalConfig();
+  await saveGlobalConfig();
   renderPolicyTable();
   renderStaffList();
   buildCatFilter();
@@ -964,10 +975,10 @@ async function loadCompliance() {
     // localStorage fallback
     const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
     const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
       let acks = [];
       try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
       let activity = [];
       try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
       return { name, acknowledged: acks, activity };
@@ -977,10 +988,10 @@ async function loadCompliance() {
     // localStorage fallback
     const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
     const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
       let acks = [];
       try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
       let activity = [];
       try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
       return { name, acknowledged: acks, activity };
@@ -1088,10 +1099,10 @@ async function loadHeatmap() {
     // localStorage fallback
     const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
     const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
       let acks = [];
       try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
       let activity = [];
       try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
       return { name, acknowledged: acks, activity };
@@ -1101,10 +1112,10 @@ async function loadHeatmap() {
     // localStorage fallback
     const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
     const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\\s+/g,'_');
+      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
       let acks = [];
       try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\\s+/g,'_');
+      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
       let activity = [];
       try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
       return { name, acknowledged: acks, activity };
@@ -1177,7 +1188,7 @@ function renderCompliance(compData) {
     const t1 = policies.filter(p => p.tier === 1);
     const t1done = t1.filter(p => acks.has(p.id)).length;
     const barCol = pct >= 80 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
-    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=\"detail_${s.name.replace(/\s+/g,'_')}\"><div style=\"padding:.5rem .75rem;color:var(--text3);font-size:.8rem\">Loading…</div></td></tr>')">
+    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=&quot;detail_${s.name.replace(/\s+/g,'_')}&quot;><div style=&quot;padding:.5rem .75rem;color:var(--text3);font-size:.8rem&quot;>Loading…</div></td></tr>')">
       <td style="padding:.5rem .75rem;font-weight:500">${s.name}</td>
       <td style="text-align:center;padding:.5rem .75rem">${acks.size}/${total}</td>
       <td style="text-align:center;padding:.5rem .75rem">${t1done}/${t1.length}</td>
@@ -1357,5 +1368,4 @@ function resetAllPins() {
 
 </script>
 </body>
-</html
->
+</html>
