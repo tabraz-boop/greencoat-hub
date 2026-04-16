@@ -2569,6 +2569,10 @@ async function preloadQuiz(policy, isRetry) {
         policyText = raw.value;
       }
     } catch(e) {}
+    // If document failed to load, use the policy description as minimum context
+    if (policyText.trim().length < 100 && policy.desc) {
+      policyText = `Policy: ${policy.title}\nCategory: ${policy.cat}\nDescription: ${policy.desc}`;
+    }
     const seed = isRetry ? ` RETRY seed:${Date.now()}` : '';
     const prompt = `Generate exactly 3 multiple-choice questions EXCLUSIVELY about the "${policy.title}". Policy ID: ${policy.id}.${seed} IMPORTANT: Every question must be directly and only answerable from the policy text provided. Do NOT ask generic safeguarding, ratio or EYFS questions — questions must be specific to this policy's subject matter, procedures and staff responsibilities.`;
     const res = await fetch('/api/ai', {
@@ -2634,8 +2638,15 @@ async function ackCurrent() {
       openQuizForAck(p);
     } else {
       // AI unavailable — try static fallback questions before offering bypass
-      const fallback = getFallbackQuiz(p);
-      if (fallback && fallback.length >= 3) {
+      const rawFallback = getFallbackQuiz(p);
+      // Normalise both formats: AI uses {question,correct,explanation}, FALLBACK_QUIZZES uses {q,answer}
+      const fallback = (rawFallback || []).map(q => ({
+        question:    q.question ?? q.q,
+        options:     q.options,
+        correct:     typeof q.correct === 'number' ? q.correct : (q.answer ?? 0),
+        explanation: q.explanation || 'Refer to the policy document for full details.'
+      }));
+      if (fallback.length >= 3) {
         preloadedQuiz = fallback;
         preloadedQuizForId = p.id;
         openQuizForAck(p);
@@ -3230,10 +3241,7 @@ function showChangePinFlow() {
 function pinSuccess(name) {
   // If admin has set a PIN, remove any stale self-set PIN to avoid ghost fallback
   try {
-    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}',
-  {id:'lia_cctv', tier:3, title:'CCTV Legitimate Interests Assessment (LIA)', cat:'Governance', sites:['all'], file:'Greencoat_LIA_CCTV_Mar2026.docx', desc:'Legal basis for operating CCTV across Greencoat sites — three-part test: purpose, necessity, balance.'},
-  {id:'dpia_audio', tier:3, title:'Data Protection Impact Assessment — Audio Recording (Sparkhill)', cat:'Governance', sites:['sparkhill'], file:'Greencoat_DPIA_Audio_Sparkhill_Mar2026.docx', desc:'DPIA covering audio-capable cameras in Sparkhill playrooms. Required under UK GDPR for high-risk processing.'},
-  {id:'sop', tier:2, title:'Standard Operating Procedures (Managers & Admin)', cat:'Governance', sites:['all'], file:'Greencoat_Standard_Operating_Procedures_Mar2026.docx', desc:'Management reference document: role responsibility matrix, escalation flowcharts, key timescales and checklists across all operational areas.'});
+    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
     if (adminPins[name]) localStorage.removeItem(getPinKey(name));
   } catch(e) {}
   setPinSession(name);
