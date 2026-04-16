@@ -607,9 +607,8 @@ body {
   <div id="pinTableWrap"></div>
 
   </div>
-</div>
 
-<div class="modal-overlay" id="policyModal">
+<div class="modal-overlay" id="policyModal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-hd"><h3 id="modalTitle">Edit policy</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
     <div class="modal-body">
@@ -1305,7 +1304,7 @@ function renderPinTable() {
   staffList.forEach((name, i) => {
     const pin = pins[name] || '0000';
     const isDefault = pin === '0000';
-    const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--bg3)';
+    const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--card2)';
     html += `<tr style="background:${fill}">
       <td style="padding:.6rem .75rem;font-weight:600">${name}</td>
       <td style="text-align:center;padding:.6rem .75rem">

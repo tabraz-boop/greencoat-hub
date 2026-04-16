@@ -88,9 +88,9 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     // ── Waterfall model rotation ─────────────────────────────────────
     // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
     const modelsToTry = [
-      'gemini-3.1-flash-lite-preview', // Primary: fastest, most cost-efficient Gemini 3 series
-      'gemini-2.0-flash-lite',         // Secondary: stable high-RPD free tier
-      'gemini-2.5-flash'               // Last resort: smarter but rate-limited
+      'gemini-2.0-flash-lite',   // Primary: fastest, most cost-efficient
+      'gemini-2.0-flash',        // Secondary: stable
+      'gemini-2.5-flash',        // Last resort: most capable
     ];
 
     let reply = null;
@@ -148,27 +148,9 @@ CRITICAL RULES YOU MUST NEVER BREAK:
       } catch(e) { continue; } // Network error — try next model
     }
 
-    // ── Fallback quiz when all models unavailable ─────────────────────
-    if (!reply && body.jsonMode) {
-      reply = JSON.stringify({ questions: [
-        { question: "What should you do first if you have a safeguarding concern?",
-          options: ["Write it in your diary", "Tell a parent", "Speak to the DSL immediately", "Wait until tomorrow"],
-          correct: 2,
-          explanation: "The DSL must always be informed immediately — do not delay or wait." },
-        { question: "What is the correct staff-to-child ratio for 2-year-olds?",
-          options: ["1:3", "1:4", "1:5", "1:8"],
-          correct: 2,
-          explanation: "The statutory EYFS ratio for 2-year-olds is 1:5. It is NOT 1:4." },
-        { question: "Where should you record a safeguarding concern at Greencoat?",
-          options: ["In a personal notebook", "On the Summary of Interaction form", "By email to a colleague", "On the child's learning log"],
-          correct: 1,
-          explanation: "All safeguarding concerns must be recorded on the Summary of Interaction form and placed on the child's file." }
-      ]});
-      console.warn("All models unavailable — serving static fallback quiz");
-    }
-
     if (!reply) {
-      throw new Error('All Gemini models are currently unavailable or rate-limited. Please try again later.');
+      // Let the client fall back to its own policy-specific offline quiz questions
+      throw new Error('AI quiz generation unavailable — please try again shortly.');
     }
 
     return cors(json({ ok: true, reply }));
