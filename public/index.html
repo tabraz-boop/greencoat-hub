@@ -2586,6 +2586,7 @@ async function preloadQuiz(policy, isRetry) {
         policyText
       })
     });
+    if (!res.ok) throw new Error(`AI server error ${res.status}`);
     const data = await res.json();
     const raw = (data.reply || '').replace(/```json|```/g, '').trim();
     let parsed;
@@ -2598,7 +2599,7 @@ async function preloadQuiz(policy, isRetry) {
         let correctIdx = q.correct;
         if (typeof correctIdx === 'string') correctIdx = parseInt(correctIdx, 10);
         if (q.question && Array.isArray(q.options) && q.options.length >= 3 &&
-            typeof correctIdx === 'number' && correctIdx >= 0 && correctIdx < q.options.length &&
+            Number.isInteger(correctIdx) && correctIdx >= 0 && correctIdx < q.options.length &&
             q.explanation) {
           valid.push(q);
         }

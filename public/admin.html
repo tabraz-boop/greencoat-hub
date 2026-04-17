@@ -641,6 +641,7 @@ body {
 </div>
 
 <div class="toast" id="toast"></div>
+</div><!-- /adminApp -->
 
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────
@@ -1153,6 +1154,13 @@ function showToast(msg, type='info') {
 }
 
 document.addEventListener('keydown', e => { if (e.key==='Enter' && document.getElementById('loginScreen').style.display!=='none') doLogin(); });
+
+// Surface any unhandled JS errors as visible toasts so they don't silently swallow
+window.addEventListener('error', ev => {
+  const msg = (ev.message || 'Unknown JS error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
+  console.error('Admin error:', ev.error || ev.message);
+  try { showToast('⚠ ' + msg, 'error'); } catch(e) {}
+});
 
 
 function renderCompliance(compData) {
