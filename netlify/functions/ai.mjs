@@ -89,8 +89,8 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
     const modelsToTry = [
       'gemini-3.1-flash-lite-preview',   // Primary: fastest, most cost-efficient
-      'gemini-2.0-flash',        // Secondary: stable
-      'gemini-2.5-flash',        // Last resort: most capable
+      'gemini-2.5-flash',        // Secondary: stable
+      'gemini-2.5-pro',          // Last resort: most capable
     ];
 
     let reply = null;
