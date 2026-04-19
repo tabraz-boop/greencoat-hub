@@ -98,15 +98,19 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     for (const model of modelsToTry) {
       try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const ctrl = new AbortController();
+      const tId = setTimeout(() => ctrl.abort(), 20000);
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: ctrl.signal,
         body: JSON.stringify({
           system_instruction: { parts: [{ text: sysText }] },
           contents: contents,
           generationConfig: config
         })
       });
+      clearTimeout(tId);
 
         if (resp.ok) {
           const data = await resp.json();
@@ -177,4 +181,4 @@ function cors(response) {
   return r;
 }
 
-export const config = { path: "/api/ai" };
+export const config = { path: "/api/ai", timeout: 26 };

@@ -127,23 +127,24 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(20,184,166,.25);
   transition: all var(--duration) var(--ease);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .btn-full:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(20,184,166,.4); }
 .btn-full:active { transform: scale(.98); }
 
 /* ── APP ─────────────────────────────────────────────────── */
 .admin-app { display: none; flex-direction: column; min-height: 100vh; }
+.admin-app.show { display: flex; }
 
 /* ── TOPBAR ──────────────────────────────────────────────── */
 .topbar {
-  background: rgba(10,10,10,.9);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: #0d0d0d;
   border-bottom: 1px solid var(--border);
   padding: 0 1.5rem; height: 56px;
   display: flex; align-items: center; gap: .85rem;
-  position: sticky; top: 0; z-index: 200;
+  position: sticky; top: 0; z-index: 100;
   box-shadow: 0 1px 0 var(--border);
+  overflow: hidden;
 }
 .topbar-logo { display: flex; align-items: center; gap: .6rem; }
 .topbar-mark {
@@ -169,6 +170,7 @@ body {
   cursor: pointer; transition: all var(--duration) var(--ease);
   display: flex; align-items: center; gap: .32rem;
   text-decoration: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .tbtn:hover { border-color: var(--border3); color: var(--text); background: rgba(255,255,255,.04); }
 .tbtn:active { transform: scale(.97); }
@@ -183,7 +185,8 @@ body {
 /* ── TABS ────────────────────────────────────────────────── */
 .tabs {
   background: var(--bg2); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: flex; gap: .15rem; overflow-x: auto;
+  padding: 0 1.5rem; display: flex; gap: .15rem;
+  overflow-x: auto; overflow-y: visible;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
@@ -193,6 +196,7 @@ body {
   white-space: nowrap; transition: all var(--duration) var(--ease);
   background: none; border-top: none; border-left: none; border-right: none;
   font-family: inherit; letter-spacing: -.01em;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
@@ -242,7 +246,7 @@ body {
 }
 .filter-sel:focus { border-color: var(--teal); }
 .filter-sel option { background: #141414; }
-.tbl-wrap { overflow-x: auto; border-radius: var(--r-md); border: 1px solid var(--border); }
+.tbl-wrap { overflow-x: auto; border-radius: var(--r-md); border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
 .policy-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .policy-table th {
   text-align: left; padding: .52rem .75rem;
@@ -272,6 +276,7 @@ body {
   font-family: inherit; font-size: .7rem; font-weight: 700;
   cursor: pointer; border: 1px solid transparent;
   transition: all var(--duration) var(--ease); white-space: nowrap;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .act-btn:active { transform: scale(.96); }
 .btn-edit { background: var(--teal-lt); color: var(--teal); border-color: rgba(20,184,166,.25); }
@@ -323,6 +328,7 @@ body {
   background: none; border: none; color: var(--text3);
   cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
   transition: color var(--duration); display: flex; align-items: center;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .chip-del:hover { color: var(--t1); }
 .add-staff-row { display: flex; gap: .55rem; }
@@ -373,6 +379,7 @@ body {
   cursor: pointer; color: var(--text3); font-size: .88rem;
   display: flex; align-items: center; justify-content: center;
   transition: all var(--duration) var(--ease);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .modal-close:hover { background: rgba(255,255,255,.08); color: var(--text); }
 .modal-body { padding: 1.1rem 1.4rem; }
@@ -400,6 +407,7 @@ body {
   font-family: inherit; font-size: .8rem; font-weight: 700;
   cursor: pointer; transition: all var(--duration) var(--ease);
   display: inline-flex; align-items: center; gap: .32rem;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .btn:active { transform: scale(.97); }
 .btn-primary {
@@ -609,6 +617,8 @@ body {
   <div id="pinTableWrap"></div>
 
   </div>
+</div><!-- /panels -->
+</div><!-- /adminApp -->
 
 <div class="modal-overlay" id="policyModal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -638,10 +648,7 @@ body {
   </div>
 </div>
 
-</div>
-
 <div class="toast" id="toast"></div>
-</div><!-- /adminApp -->
 
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────
@@ -656,7 +663,7 @@ async function doLogin() {
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     err.style.display = 'none';
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').style.display = 'flex';
+    document.getElementById('adminApp').classList.add('show');
     init().catch(e => console.error('Init error:', e));
   } else {
     err.style.display = 'block';
@@ -665,7 +672,7 @@ async function doLogin() {
 }
 function doLogout() {
   document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('adminApp').style.display = 'none';
+  document.getElementById('adminApp').classList.remove('show');
   document.getElementById('loginPass').value = '';
 }
 
