@@ -136,14 +136,13 @@ body {
 
 /* ── TOPBAR ──────────────────────────────────────────────── */
 .topbar {
-  background: rgba(10,10,10,.9);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: #0d0d0d;
   border-bottom: 1px solid var(--border);
   padding: 0 1.5rem; height: 56px;
   display: flex; align-items: center; gap: .85rem;
-  position: sticky; top: 0; z-index: 200;
+  position: sticky; top: 0; z-index: 100;
   box-shadow: 0 1px 0 var(--border);
+  overflow: hidden;
 }
 .topbar-logo { display: flex; align-items: center; gap: .6rem; }
 .topbar-mark {
@@ -183,7 +182,8 @@ body {
 /* ── TABS ────────────────────────────────────────────────── */
 .tabs {
   background: var(--bg2); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: flex; gap: .15rem; overflow-x: auto;
+  padding: 0 1.5rem; display: flex; gap: .15rem;
+  overflow-x: auto; overflow-y: visible;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
@@ -609,6 +609,8 @@ body {
   <div id="pinTableWrap"></div>
 
   </div>
+</div><!-- /panels -->
+</div><!-- /adminApp -->
 
 <div class="modal-overlay" id="policyModal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -638,10 +640,7 @@ body {
   </div>
 </div>
 
-</div>
-
 <div class="toast" id="toast"></div>
-</div><!-- /adminApp -->
 
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────
