@@ -190,7 +190,7 @@ body {
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
-  padding: .7rem .95rem;
+  padding: .7rem .95rem; min-height: 44px;
   font-size: .78rem; font-weight: 600; color: var(--text2);
   cursor: pointer; border-bottom: 2px solid transparent;
   white-space: nowrap; transition: all var(--duration) var(--ease);
@@ -272,11 +272,12 @@ body {
 
 /* ── ACTION BUTTONS ──────────────────────────────────────── */
 .act-btn {
-  padding: .2rem .55rem; border-radius: var(--r-sm);
+  padding: .4rem .75rem; min-height: 44px; border-radius: var(--r-sm);
   font-family: inherit; font-size: .7rem; font-weight: 700;
   cursor: pointer; border: 1px solid transparent;
   transition: all var(--duration) var(--ease); white-space: nowrap;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  display: inline-flex; align-items: center;
 }
 .act-btn:active { transform: scale(.96); }
 .btn-edit { background: var(--teal-lt); color: var(--teal); border-color: rgba(20,184,166,.25); }
