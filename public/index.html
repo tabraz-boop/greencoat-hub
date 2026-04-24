@@ -1883,15 +1883,6 @@ function loginStaff(name) {
   showToast(`Welcome, ${name}!`, 'ok');
 }
 
-function logoutStaff() {
-  currentStaff = '';
-  chatHistory = [];
-  acknowledged.clear();
-  document.querySelector('.staff-select').value = '';
-  render();
-  showToast('Logged out', 'info');
-}
-
 function loadAcknowledged() {
   if (!currentStaff) { acknowledged = new Set(); return; }
   try {
@@ -2803,7 +2794,6 @@ function doDirectAcknowledge(p) {
   if (!p || !currentStaff) return;
   acknowledged.add(p.id);
   saveAcknowledged();
-  localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
   if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
@@ -2812,7 +2802,6 @@ function doDirectAcknowledge(p) {
   showToast('✓ Acknowledged', 'ok');
   checkCelebration();
   trackActivity('read', p.id, { readAt: new Date().toISOString(), direct: true });
-  syncAcksToServer();
   logActivityToServer('read', p.id, null, p.id, p.title);
 }
 
@@ -2823,7 +2812,6 @@ async function doAcknowledge() {
 
   acknowledged.add(p.id);
   saveAcknowledged();
-  localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
 
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
@@ -2834,7 +2822,6 @@ async function doAcknowledge() {
   const remAfterAck = POLICIES.filter(pol => pol.tier === 1 && !acknowledged.has(pol.id)).length;
   if (guidedMode && remAfterAck > 0) {
     showToast(`✓ Acknowledged — ${remAfterAck} Tier 1 left`, 'ok');
-    // Auto-advance to next policy after brief pause so user sees the confirmation
     setTimeout(() => nextGuidedPolicy(), 1200);
   } else if (guidedMode && remAfterAck === 0) {
     showToast('🎉 All Tier 1 complete!', 'ok');
@@ -2844,7 +2831,6 @@ async function doAcknowledge() {
   }
   checkCelebration();
   trackActivity('read', p.id, { readAt: new Date().toISOString() });
-  syncAcksToServer();
   logActivityToServer('read', p.id, null, p.id, p.title);
 }
 
