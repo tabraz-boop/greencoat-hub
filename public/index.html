@@ -2484,20 +2484,23 @@ function askAIAboutCurrent() { if (currentPolicy) { if (!aiOpen) toggleAI(); doc
 
 async function loadChatHistory(name) {
   chatHistory = [];
-  // Restore recent chat from localStorage for this staff member
-  if (name) {
-    try {
-      const logKey = `gc_activity_${name.replace(/\s+/g,'_')}`;
-      const log = JSON.parse(localStorage.getItem(logKey) || '[]');
-      const recentChats = log.filter(e => e.action === 'aichat').slice(-3);
-      if (recentChats.length > 0) {
-        // Silently pre-load last few exchanges into chatHistory for context
-        recentChats.forEach(c => {
-          chatHistory.push({ role: 'user', content: c.key || '' });
-          if (c.value) chatHistory.push({ role: 'assistant', content: typeof c.value === 'string' && c.value.startsWith('{') ? JSON.parse(c.value).answer || c.value : c.value });
-        });
-      }
-    } catch(e) { chatHistory = []; }
+  if (!name) return;
+  try {
+    const logKey = `gc_activity_${name.replace(/\s+/g,'_')}`;
+    const log = JSON.parse(localStorage.getItem(logKey) || '[]');
+    const recentChats = log.filter(e => e.action === 'aichat').slice(-3);
+    if (recentChats.length > 0) {
+      recentChats.forEach(c => {
+        chatHistory.push({ role: 'user', content: c.key || '' });
+        // c.value is the raw AI response text, not wrapped in {answer: ...}
+        if (c.value) {
+          chatHistory.push({ role: 'assistant', content: c.value });
+        }
+      });
+    }
+  } catch(e) {
+    chatHistory = [];
+    console.warn('loadChatHistory failed:', e);
   }
   const msgs = document.getElementById('aiMessages');
   if (msgs) {
