@@ -2802,6 +2802,7 @@ function showQuizResult() {
 function doDirectAcknowledge(p) {
   if (!p || !currentStaff) return;
   acknowledged.add(p.id);
+  saveAcknowledged();
   localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
@@ -2821,6 +2822,7 @@ async function doAcknowledge() {
   closeQuiz();
 
   acknowledged.add(p.id);
+  saveAcknowledged();
   localStorage.setItem(`gc_acks_${currentStaff.replace(/\s+/g,'_')}`, JSON.stringify([...acknowledged]));
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
 
