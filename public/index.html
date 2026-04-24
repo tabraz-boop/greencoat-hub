@@ -1869,6 +1869,48 @@ let staffToken = localStorage.getItem('gc_staff_token');
 let acknowledged = new Set();
 let filterTier = null, filterCat = null, searchQ = '';
 let filterSite = localStorage.getItem('gc_lastSite') || null;
+
+// ─── AUTHENTICATION ──────────────────────────────────────────────────────
+function loginStaff(name) {
+  if (!name || typeof name !== 'string') return;
+  currentStaff = name.trim();
+  loadAcknowledged();
+  loadChatHistory(name);
+  updateCounts();
+  render();
+  showToast(`Welcome, ${name}!`, 'ok');
+}
+
+function logoutStaff() {
+  currentStaff = '';
+  chatHistory = [];
+  acknowledged.clear();
+  document.querySelector('.staff-select').value = '';
+  render();
+  showToast('Logged out', 'info');
+}
+
+function loadAcknowledged() {
+  if (!currentStaff) { acknowledged = new Set(); return; }
+  try {
+    const ackKey = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
+    const saved = JSON.parse(localStorage.getItem(ackKey) || '[]');
+    acknowledged = new Set(saved);
+  } catch(e) {
+    acknowledged = new Set();
+    console.warn('loadAcknowledged failed:', e);
+  }
+}
+
+function saveAcknowledged() {
+  if (!currentStaff) return;
+  try {
+    const ackKey = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
+    localStorage.setItem(ackKey, JSON.stringify([...acknowledged]));
+    syncAcksToServer();
+  } catch(e) { console.warn('saveAcknowledged failed:', e); }
+}
+
 let currentPolicy = null, readerOpen = false, aiOpen = false, ofstedMode = false;
 let chatHistory = [], recentlyViewed = [], collapsedTiers = new Set();
 let guidedMode = false;
