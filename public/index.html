@@ -1156,7 +1156,9 @@ body {
     <aside class="sidebar" id="sidebar">
       <div class="staff-box">
         <div class="staff-label">Staff member</div>
-        <select class="staff-select" id="staffSelect" onchange="requestStaffPinOrSwitch(this.value)"><option value="">— Select your name —</option></select>
+        <select class="staff-select" id="staffSelect" onchange="loginStaff(this.value)">
+  <option value="">Select staff member...</option>
+</select>
       </div>
       <div class="progress-box" id="progressBox" style="display:none">
         <div class="ring-wrap">
