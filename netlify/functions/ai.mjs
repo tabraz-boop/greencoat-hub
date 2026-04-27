@@ -88,9 +88,9 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     // ── Waterfall model rotation ─────────────────────────────────────
     // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
     const modelsToTry = [
-      'gemini-3.1-flash-lite-preview',   // Primary: fastest, most cost-efficient
-      'gemini-2.5-flash',        // Secondary: stable
-      'gemini-2.5-pro',          // Last resort: most capable
+      'gemini-3.1-flash-lite-preview',   // Primary: fastest, cost-efficient, perfect for structured tasks
+      'gemini-3.1-flash',                // Secondary: faster, improved reasoning
+      'gemini-3.0-flash',                // Fallback: stable, proven
     ];
 
     let reply = null;

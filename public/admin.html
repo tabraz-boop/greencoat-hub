@@ -1062,7 +1062,7 @@ async function loadAiQuestions() {
           const entries = JSON.parse(localStorage.getItem(k) || '[]');
           for (const e of entries) {
             if (e.action === 'aichat') {
-              allChats.push({ staff: staffName, question: e.key, policy: e.value, date: e.timestamp || e.date || '' });
+              allChats.push({ staff: staffName, question: e.key || '', policy: '', date: e.timestamp || e.date || '' });
             }
           }
         } catch(e) {}
@@ -1183,10 +1183,10 @@ function renderCompliance(compData) {
   const fullComp = compData.filter(s => s.acknowledged.length === total);
 
   compStats.innerHTML = `
-    <div class="comp-stat"><div class="comp-stat-num">${avgPct}%</div><div class="comp-stat-label">Avg compliance</div></div>
-    <div class="comp-stat"><div class="comp-stat-num">${staffWithAcks.length}/${compData.length}</div><div class="comp-stat-label">Staff started</div></div>
-    <div class="comp-stat"><div class="comp-stat-num">${fullComp.length}</div><div class="comp-stat-label">Fully compliant</div></div>
-    <div class="comp-stat"><div class="comp-stat-num">${total}</div><div class="comp-stat-label">Total policies</div></div>`;
+    <div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">Avg compliance</div></div>
+    <div class="stat-card"><div class="stat-num">${staffWithAcks.length}/${compData.length}</div><div class="stat-label">Staff started</div></div>
+    <div class="stat-card"><div class="stat-num">${fullComp.length}</div><div class="stat-label">Fully compliant</div></div>
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total policies</div></div>`;
 
   if (!compData.length) { compCard.innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No staff data found.</p>'; return; }
 
@@ -1317,9 +1317,6 @@ function renderPinTable() {
   const wrap = document.getElementById('pinTableWrap');
   if (!wrap) return;
   const pins = getAdminPins();
-  const staff = typeof DEFAULT_POLICIES !== 'undefined'
-    ? (window.CURRENT_STAFF || DEFAULT_STAFF)
-    : DEFAULT_STAFF;
 
   let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
