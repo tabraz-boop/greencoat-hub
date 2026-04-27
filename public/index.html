@@ -2542,7 +2542,7 @@ async function sendAI() {
     addAIMessage('bot', reply);
     const replySnippet = reply.slice(0, 500);
     if (currentStaff) logActivityToServer('aichat', text.slice(0, 200), replySnippet, currentPolicy?.id||null, currentPolicy?.title||'General');
-    trackActivity('aichat', Date.now().toString(), { policy: currentPolicy?.title||'General', question: text.slice(0,200), answer: replySnippet, date: new Date().toISOString() });
+    trackActivity('aichat', text.slice(0, 200), replySnippet);
   } catch(e) {
     document.getElementById('aiTyping').classList.remove('show');
     const msg = e?.name === 'AbortError'

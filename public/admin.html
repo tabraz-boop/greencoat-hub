@@ -1062,7 +1062,7 @@ async function loadAiQuestions() {
           const entries = JSON.parse(localStorage.getItem(k) || '[]');
           for (const e of entries) {
             if (e.action === 'aichat') {
-              allChats.push({ staff: staffName, question: e.key, policy: e.value, date: e.timestamp || e.date || '' });
+              allChats.push({ staff: staffName, question: e.key || '', policy: '', date: e.timestamp || e.date || '' });
             }
           }
         } catch(e) {}
