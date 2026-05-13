@@ -5,1380 +5,1195 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Greencoat — Admin Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════════════════════
-   GREENCOAT ADMIN HUB — PREMIUM DARK DESIGN SYSTEM v3
-   Vercel · Linear · Radix dark mode aesthetic
-═══════════════════════════════════════════════════════════ */
-
 :root {
-  /* Surfaces */
-  --bg:    #0a0a0a;
-  --bg2:   #111111;
-  --card:  #141414;
-  --card2: #1a1a1a;
+  --bg:#080808; --bg2:#0f0f0f; --bg3:#141414; --bg4:#1c1c1c; --bg5:#222;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --text:#f0f0ee; --text2:#a0a09c; --text3:#55554f;
+  --teal:#14b8a6; --teal-d:#0d9488; --teal-lt:rgba(20,184,166,.12);
+  --red:#ef4444; --red-lt:rgba(239,68,68,.12);
+  --amber:#f59e0b; --amber-lt:rgba(245,158,11,.12);
+  --green:#10b981; --green-lt:rgba(16,185,129,.12);
+  --t1:#ef4444; --t1-bg:rgba(239,68,68,.1); --t1-border:rgba(239,68,68,.22);
+  --t2:#f59e0b; --t2-bg:rgba(245,158,11,.1); --t2-border:rgba(245,158,11,.22);
+  --t3:#10b981; --t3-bg:rgba(16,185,129,.1); --t3-border:rgba(16,185,129,.22);
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-full:999px;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.5),0 4px 16px rgba(0,0,0,.4);
+  --shadow-md:0 2px 8px rgba(0,0,0,.6),0 16px 40px rgba(0,0,0,.5);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.7),0 40px 80px rgba(0,0,0,.6);
+  --ease:cubic-bezier(.16,1,.3,1); --dur:160ms;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-text-size-adjust:100%}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:var(--r-full)}
 
-  /* Borders */
-  --border:  rgba(255,255,255,.07);
-  --border2: rgba(255,255,255,.12);
-  --border3: rgba(255,255,255,.18);
+/* AUTH */
+#auth-wrap{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#auth-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-xl);padding:40px 36px;width:100%;max-width:380px;box-shadow:var(--shadow-lg);text-align:center}
+.auth-icon{font-size:2rem;margin-bottom:16px}
+#auth-card h1{font-size:1.35rem;font-weight:800;margin-bottom:6px}
+.auth-sub{color:var(--text3);font-size:.8125rem;margin-bottom:24px}
+#auth-input{width:100%;padding:11px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--r-md);color:var(--text);font-size:1rem;font-family:inherit;outline:none;transition:border-color var(--dur) var(--ease);margin-bottom:8px;letter-spacing:2px;text-align:center}
+#auth-input:focus{border-color:var(--teal)}
+#auth-input.shake{animation:shake .5s var(--ease)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+#auth-error{color:var(--red);font-size:.8125rem;min-height:18px;margin-bottom:10px}
+#auth-btn{width:100%;padding:11px;background:var(--teal);color:#000;font-weight:700;font-size:.9375rem;font-family:inherit;border:none;border-radius:var(--r-md);cursor:pointer;transition:background var(--dur) var(--ease)}
+#auth-btn:hover{background:var(--teal-d)}
+#auth-btn:disabled{opacity:.5;cursor:not-allowed}
 
-  /* Accents */
-  --teal:     #14b8a6;
-  --teal-d:   #0d9488;
-  --teal-lt:  rgba(20,184,166,.1);
-  --accent:   #14b8a6;
-  --gc-green: #10b981;
+/* TOP BAR */
+#top-bar{position:sticky;top:0;z-index:100;height:52px;background:rgba(8,8,8,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px}
+.tb-logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9375rem;flex-shrink:0}
+.tb-logo-icon{width:28px;height:28px;border-radius:7px;background:var(--teal-lt);display:flex;align-items:center;justify-content:center;font-size:14px}
+.tb-divider{color:var(--text3)}
+.tb-spacer{flex:1}
+#last-refreshed{color:var(--text3);font-size:.75rem}
+.tb-btn{padding:5px 11px;border-radius:var(--r-md);font-size:.8125rem;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all var(--dur) var(--ease);white-space:nowrap}
+.tb-btn:hover{background:var(--bg4);color:var(--text)}
+.tb-btn:disabled{opacity:.4;cursor:not-allowed}
+.tb-btn.danger{color:var(--red);border-color:rgba(239,68,68,.3)}
+.tb-btn.danger:hover{background:var(--red-lt)}
 
-  /* Tier / status */
-  --t1: #ef4444; --t1-bg: rgba(239,68,68,.1);   --t1-border: rgba(239,68,68,.2);
-  --t2: #f59e0b; --t2-bg: rgba(245,158,11,.1);  --t2-border: rgba(245,158,11,.2);
-  --t3: #10b981; --t3-bg: rgba(16,185,129,.1);  --t3-border: rgba(16,185,129,.2);
+/* HERO */
+#hero{display:grid;grid-template-columns:repeat(4,1fr);background:var(--border);gap:1px;border-bottom:1px solid var(--border)}
+.hero-stat{background:var(--bg2);padding:14px 18px}
+.hv{font-size:1.875rem;font-weight:800;line-height:1;color:var(--text)}
+.hv.red{color:var(--red)}.hv.amber{color:var(--amber)}.hv.green{color:var(--green)}.hv.teal{color:var(--teal)}
+.hl{font-size:.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.hs{font-size:.72rem;color:var(--text3);margin-top:2px}
 
-  /* Text */
-  --text:  #f2f2f0;
-  --text2: #a8a8a4;
-  --text3: #5a5a58;
-  --white: #ffffff;
+/* TABS */
+#tab-nav{position:sticky;top:52px;z-index:90;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 18px;overflow-x:auto;gap:0}
+.tab-btn{padding:11px 14px;background:none;border:none;font-size:.8375rem;font-weight:500;font-family:inherit;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all var(--dur) var(--ease)}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal)}
+.tab-panel{display:none;padding:18px}
+.tab-panel.active{display:block}
 
-  /* Geometry */
-  --radius: 14px;
-  --r-sm:   8px;
-  --r-md:   12px;
-  --r-lg:   16px;
-  --r-xl:   20px;
-  --r-full: 999px;
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar-r{margin-left:auto;display:flex;gap:8px}
+.count-lbl{color:var(--text3);font-size:.8125rem}
 
-  /* Shadows */
-  --sh:    0 4px 24px rgba(0,0,0,.5);
-  --sh-sm: 0 1px 4px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.3);
-  --sh-lg: 0 12px 48px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.4);
+/* TABLE */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;overflow-x:auto}
+.dt{width:100%;border-collapse:collapse;font-size:.8375rem}
+.dt thead th{background:var(--bg3);padding:9px 13px;text-align:left;font-weight:600;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap}
+.dt thead th.sort{cursor:pointer;user-select:none}
+.dt thead th.sort:hover{color:var(--text2)}
+.dt tbody tr{border-bottom:1px solid var(--border);transition:background var(--dur)}
+.dt tbody tr:last-child{border-bottom:none}
+.dt tbody tr:hover{background:var(--bg3)}
+.dt tbody tr.dim{opacity:.45}
+.dt td{padding:9px 13px;vertical-align:middle;color:var(--text2)}
+.dt td.nc{color:var(--text);font-weight:500}
+.dt td.red{color:var(--red)}.dt td.amber{color:var(--amber)}.dt td.muted{color:var(--text3);font-size:.8rem}
+.dt td.ac{white-space:nowrap}
+.empty-td{text-align:center;color:var(--text3);padding:32px 13px !important}
 
-  /* Motion */
-  --ease: cubic-bezier(.16,1,.3,1);
-  --duration: 150ms;
-}
+/* BADGES */
+.pct{display:inline-flex;align-items:center;justify-content:center;min-width:46px;padding:2px 8px;font-size:.8125rem;font-weight:700;border-radius:var(--r-full)}
+.pct.g{background:var(--green-lt);color:var(--green)}
+.pct.a{background:var(--amber-lt);color:var(--amber)}
+.pct.r{background:var(--red-lt);color:var(--red)}
 
-*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+.tb{display:inline-flex;align-items:center;justify-content:center;width:24px;height:18px;font-size:.68rem;font-weight:700;border-radius:5px}
+.tb.t1{background:var(--t1-bg);color:var(--t1);border:1px solid var(--t1-border)}
+.tb.t2{background:var(--t2-bg);color:var(--t2);border:1px solid var(--t2-border)}
+.tb.t3{background:var(--t3-bg);color:var(--t3);border:1px solid var(--t3-border)}
 
-body {
-  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
-  background: var(--bg); color: var(--text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+.pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:var(--r-full);font-size:.75rem;font-weight:600}
+.pill.g{background:var(--green-lt);color:var(--green)}
+.pill.a{background:var(--amber-lt);color:var(--amber)}
+.pill.r{background:var(--red-lt);color:var(--red)}
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: var(--r-full); }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+.role-tag{display:inline-block;padding:1px 7px;border-radius:var(--r-full);font-size:.72rem;font-weight:500;background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px}
+.dot.g{background:var(--green)}.dot.r{background:var(--red)}
 
-/* ── LOGIN ───────────────────────────────────────────────── */
-.login-screen {
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh;
-  background: radial-gradient(ellipse at 50% -20%, rgba(20,184,166,.07) 0%, transparent 60%);
-}
-.login-box {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: var(--r-xl);
-  padding: 2.25rem 2rem;
-  width: 100%; max-width: 360px;
-  box-shadow: var(--sh-lg);
-}
-.login-logo { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.75rem; }
-.login-mark {
-  width: 42px; height: 42px;
-  background: linear-gradient(135deg, var(--teal-d), var(--teal));
-  border-radius: var(--r-md); display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem; color: #fff;
-  box-shadow: 0 4px 16px rgba(20,184,166,.3);
-}
-.login-org { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; line-height: 1.2; }
-.login-sub { font-size: .62rem; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; }
-.login-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: .2rem; }
-.login-desc  { font-size: .8rem; color: var(--text2); margin-bottom: 1.4rem; line-height: 1.5; }
-.form-group { margin-bottom: .9rem; }
-.form-group label {
-  display: block; font-size: .68rem; font-weight: 700; color: var(--text2);
-  text-transform: uppercase; letter-spacing: .08em; margin-bottom: .38rem;
-}
-.form-input {
-  width: 100%; padding: .6rem .85rem;
-  border-radius: var(--r-md); border: 1px solid var(--border2);
-  background: rgba(255,255,255,.04); color: var(--text);
-  font-family: inherit; font-size: .88rem; outline: none;
-  transition: all var(--duration) var(--ease);
-}
-.form-input:focus {
-  border-color: var(--teal);
-  box-shadow: 0 0 0 3px rgba(20,184,166,.15);
-  background: rgba(255,255,255,.06);
-}
-.login-err { font-size: .75rem; color: var(--t1); margin-bottom: .75rem; display: none; }
-.btn-full {
-  width: 100%; padding: .65rem;
-  border-radius: var(--r-md); border: none;
-  background: linear-gradient(135deg, var(--teal-d), var(--teal));
-  color: #fff; font-family: inherit; font-size: .9rem; font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(20,184,166,.25);
-  transition: all var(--duration) var(--ease);
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.btn-full:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(20,184,166,.4); }
-.btn-full:active { transform: scale(.98); }
+/* BUTTONS */
+.btn{padding:7px 13px;border-radius:var(--r-md);font-size:.8125rem;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--border2);background:var(--bg4);color:var(--text2);transition:all var(--dur) var(--ease);white-space:nowrap}
+.btn:hover{background:var(--bg5);color:var(--text)}
+.btn.primary{background:var(--teal);color:#000;border-color:transparent;font-weight:700}
+.btn.primary:hover{background:var(--teal-d)}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.xs{padding:3px 8px;font-size:.75rem;border-radius:var(--r-sm)}
+.btn.teal{color:var(--teal);border-color:rgba(20,184,166,.3)}
+.btn.teal:hover{background:var(--teal-lt)}
+.btn.warn{color:var(--amber);border-color:rgba(245,158,11,.3)}
+.btn.warn:hover{background:var(--amber-lt)}
+.btn.danger{color:var(--red);border-color:rgba(239,68,68,.3)}
+.btn.danger:hover{background:var(--red-lt)}
 
-/* ── APP ─────────────────────────────────────────────────── */
-.admin-app { display: none; flex-direction: column; min-height: 100vh; }
-.admin-app.show { display: flex; }
+/* INPUTS */
+select,input[type=text],input[type=email],input[type=date],input[type=password],textarea{background:var(--bg4);color:var(--text);border:1px solid var(--border2);border-radius:var(--r-md);padding:8px 11px;font-size:.875rem;font-family:inherit;outline:none;width:100%;transition:border-color var(--dur) var(--ease)}
+select:focus,input:focus,textarea:focus{border-color:var(--teal)}
+select option{background:var(--bg4)}
+textarea{resize:vertical}
+input[readonly]{opacity:.6;cursor:not-allowed}
 
-/* ── TOPBAR ──────────────────────────────────────────────── */
-.topbar {
-  background: #0d0d0d;
-  border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; height: 56px;
-  display: flex; align-items: center; gap: .85rem;
-  position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 1px 0 var(--border);
-  overflow: hidden;
-}
-.topbar-logo { display: flex; align-items: center; gap: .6rem; }
-.topbar-mark {
-  width: 30px; height: 30px;
-  background: linear-gradient(135deg, var(--teal-d), var(--teal));
-  border-radius: var(--r-sm); display: flex; align-items: center;
-  justify-content: center; font-size: .9rem; color: #fff; font-weight: 700;
-  box-shadow: 0 2px 8px rgba(20,184,166,.25);
-}
-.topbar-title { font-size: .9rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
-.topbar-badge {
-  font-size: .58rem; padding: .14rem .48rem;
-  border-radius: var(--r-full);
-  background: rgba(239,68,68,.12); color: #fca5a5;
-  border: 1px solid var(--t1-border); font-weight: 800;
-  text-transform: uppercase; letter-spacing: .08em;
-}
-.topbar-right { margin-left: auto; display: flex; align-items: center; gap: .4rem; }
-.tbtn {
-  padding: .35rem .8rem; border-radius: var(--r-sm);
-  border: 1px solid var(--border2); background: transparent;
-  color: var(--text2); font-family: inherit; font-size: .74rem; font-weight: 600;
-  cursor: pointer; transition: all var(--duration) var(--ease);
-  display: flex; align-items: center; gap: .32rem;
-  text-decoration: none;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.tbtn:hover { border-color: var(--border3); color: var(--text); background: rgba(255,255,255,.04); }
-.tbtn:active { transform: scale(.97); }
-.status-live {
-  background: rgba(16,185,129,.1); color: #6ee7b7;
-  border: 1px solid rgba(16,185,129,.2);
-  padding: .36rem .8rem; border-radius: var(--r-full);
-  font-size: .7rem; font-weight: 700;
-  display: flex; align-items: center; gap: .35rem;
-}
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:56px 16px 24px;overflow-y:auto}
+#modal-box{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-xl);width:100%;max-width:700px;box-shadow:var(--shadow-lg);flex-shrink:0}
+#modal-header{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);gap:12px}
+#modal-title{font-size:.9375rem;font-weight:700;flex:1}
+#modal-close{width:26px;height:26px;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r-full);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;color:var(--text2);flex-shrink:0;transition:all var(--dur)}
+#modal-close:hover{background:var(--bg5);color:var(--text)}
+#modal-body{padding:20px;max-height:calc(100vh - 180px);overflow-y:auto}
 
-/* ── TABS ────────────────────────────────────────────────── */
-.tabs {
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem; display: flex; gap: .15rem;
-  overflow-x: auto; overflow-y: visible;
-}
-.tabs::-webkit-scrollbar { display: none; }
-.tab {
-  padding: .7rem .95rem; min-height: 44px;
-  font-size: .78rem; font-weight: 600; color: var(--text2);
-  cursor: pointer; border-bottom: 2px solid transparent;
-  white-space: nowrap; transition: all var(--duration) var(--ease);
-  background: none; border-top: none; border-left: none; border-right: none;
-  font-family: inherit; letter-spacing: -.01em;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.tab:hover { color: var(--text); }
-.tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+/* FORMS */
+.mform{display:flex;flex-direction:column;gap:13px}
+.fr{display:flex;flex-direction:column;gap:5px}
+.fr label{font-size:.8rem;font-weight:600;color:var(--text2)}
+.fr .hint{font-size:.75rem;color:var(--text3)}
+.chkgrp{display:flex;flex-direction:column;gap:7px}
+.chkgrp label{display:flex;align-items:center;gap:8px;font-size:.875rem;font-weight:400;color:var(--text2);cursor:pointer}
+.chkgrp input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal);cursor:pointer}
+.factions{display:flex;gap:9px;padding-top:4px}
 
-/* ── PANELS ──────────────────────────────────────────────── */
-.panels { flex: 1; padding: 1.5rem; }
-.panel { display: none; }
-.panel.active { display: block; }
+/* DETAIL MODAL */
+.dmeta{background:var(--bg4);border-radius:var(--r-lg);padding:14px;margin-bottom:18px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}
+.mgrid>div{display:flex;flex-direction:column;gap:2px}
+.mgrid label{font-size:.7rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.mgrid span{font-size:.875rem;color:var(--text)}
+.dsec{margin-bottom:22px}
+.dsec h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.dsec h4.t1{color:var(--t1)}.dsec h4.t2{color:var(--t2)}.dsec h4.t3{color:var(--t3)}
+.ack-y{color:var(--green);font-size:.8rem;font-weight:600}
+.ack-n{color:var(--text3);font-size:.8rem}
 
-.section-hd {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
-}
-.section-hd h2 { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -.025em; }
-.section-hd p  { font-size: .76rem; color: var(--text2); margin-top: .15rem; }
+/* CHAT ENTRIES */
+.chat-entry{background:var(--bg4);border-radius:var(--r-md);padding:11px 13px;margin-bottom:8px}
+.chat-q{font-weight:500;color:var(--text);font-size:.875rem;margin-bottom:3px}
+.chat-a{font-size:.8125rem;color:var(--text2);margin-bottom:5px;line-height:1.5}
+.chat-ts{font-size:.72rem;color:var(--text3)}
 
-/* ── CARDS ───────────────────────────────────────────────── */
-.card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.25rem; margin-bottom: .9rem;
-  box-shadow: var(--sh-sm);
-}
-.card-title {
-  font-weight: 700; font-size: .84rem; color: var(--text); margin-bottom: .75rem;
-  display: flex; align-items: center; gap: .5rem; letter-spacing: -.01em;
-}
+/* ALERT BANNER */
+.alert-banner{display:flex;align-items:center;gap:9px;padding:9px 13px;margin-bottom:14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-md);font-size:.8125rem;color:var(--red)}
 
-/* ── TABLE ───────────────────────────────────────────────── */
-.table-controls { display: flex; gap: .65rem; margin-bottom: .9rem; flex-wrap: wrap; }
-.search-input {
-  flex: 1; min-width: 200px; padding: .42rem .85rem;
-  border-radius: var(--r-md); border: 1px solid var(--border2);
-  background: rgba(255,255,255,.04); color: var(--text);
-  font-family: inherit; font-size: .82rem; outline: none;
-  transition: all var(--duration) var(--ease);
-}
-.search-input:focus {
-  border-color: var(--teal); background: rgba(255,255,255,.06);
-  box-shadow: 0 0 0 3px rgba(20,184,166,.12);
-}
-.filter-sel {
-  padding: .42rem .75rem; border-radius: var(--r-md);
-  border: 1px solid var(--border2); background: rgba(255,255,255,.04);
-  color: var(--text); font-family: inherit; font-size: .8rem;
-  outline: none; cursor: pointer;
-  transition: border-color var(--duration);
-}
-.filter-sel:focus { border-color: var(--teal); }
-.filter-sel option { background: #141414; }
-.tbl-wrap { overflow-x: auto; border-radius: var(--r-md); border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
-.policy-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
-.policy-table th {
-  text-align: left; padding: .52rem .75rem;
-  color: var(--text3); font-size: .64rem; text-transform: uppercase;
-  letter-spacing: .1em; font-weight: 700;
-  border-bottom: 1px solid var(--border); white-space: nowrap;
-  background: var(--card2);
-}
-.policy-table td { padding: .58rem .75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text2); }
-.policy-table tr:last-child td { border-bottom: none; }
-.policy-table tr:hover td { background: rgba(255,255,255,.02); }
-.policy-table td:first-child { font-weight: 600; color: var(--text); max-width: 280px; }
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:56px 20px;color:var(--text3)}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
 
-/* ── TIER BADGES ─────────────────────────────────────────── */
-.tier-badge {
-  padding: .12rem .48rem; border-radius: var(--r-full);
-  font-size: .62rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .04em; white-space: nowrap; border: 1px solid;
-}
-.t1b { background: var(--t1-bg); color: #fca5a5; border-color: var(--t1-border); }
-.t2b { background: var(--t2-bg); color: #fcd34d; border-color: var(--t2-border); }
-.t3b { background: var(--t3-bg); color: #6ee7b7; border-color: var(--t3-border); }
+/* SECTION HEADING */
+.sh{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:18px 0 9px}
 
-/* ── ACTION BUTTONS ──────────────────────────────────────── */
-.act-btn {
-  padding: .4rem .75rem; min-height: 44px; border-radius: var(--r-sm);
-  font-family: inherit; font-size: .7rem; font-weight: 700;
-  cursor: pointer; border: 1px solid transparent;
-  transition: all var(--duration) var(--ease); white-space: nowrap;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  display: inline-flex; align-items: center;
-}
-.act-btn:active { transform: scale(.96); }
-.btn-edit { background: var(--teal-lt); color: var(--teal); border-color: rgba(20,184,166,.25); }
-.btn-edit:hover { background: var(--teal); color: #fff; }
-.btn-del  { background: var(--t1-bg); color: #fca5a5; border-color: var(--t1-border); }
-.btn-del:hover  { background: var(--t1); color: #fff; }
+/* TOAST */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);z-index:9999;background:var(--bg4);color:var(--text);border:1px solid var(--border2);padding:9px 16px;border-radius:var(--r-full);font-size:.875rem;font-weight:500;box-shadow:var(--shadow-md);transition:transform .28s var(--ease),opacity .28s;opacity:0;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#toast.success{border-color:rgba(16,185,129,.4);color:var(--green)}
+#toast.error{border-color:rgba(239,68,68,.4);color:var(--red)}
 
-/* ── COMPLIANCE STATS ────────────────────────────────────── */
-.comp-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: .75rem; margin-bottom: 1.1rem;
-}
-.stat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 1rem; text-align: center;
-  transition: all var(--duration) var(--ease); box-shadow: var(--sh-sm);
-}
-.stat-card:hover { border-color: var(--border3); transform: translateY(-1px); }
-.stat-num { font-size: 2rem; font-weight: 800; color: var(--teal); line-height: 1; letter-spacing: -.05em; }
-.stat-label { font-size: .7rem; color: var(--text3); margin-top: .3rem; }
+/* LOADER */
+#loader-overlay{position:fixed;inset:0;z-index:400;background:rgba(8,8,8,.7);display:flex;align-items:center;justify-content:center}
+.loader{width:34px;height:34px;border:3px solid var(--border2);border-top-color:var(--teal);border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-.comp-bar-wrap { display: flex; align-items: center; gap: .6rem; }
-.comp-bar { flex: 1; height: 5px; background: rgba(255,255,255,.06); border-radius: var(--r-full); overflow: hidden; }
-.comp-bar-fill { height: 100%; border-radius: var(--r-full); transition: width .6s var(--ease); }
-.pct-label { font-size: .7rem; font-weight: 700; color: var(--text2); width: 36px; text-align: right; flex-shrink: 0; }
-
-.staff-comp-row {
-  display: flex; align-items: center; gap: .75rem;
-  padding: .6rem 0; border-bottom: 1px solid var(--border);
-}
-.staff-comp-row:last-child { border-bottom: none; }
-.staff-name-col { width: 140px; font-size: .82rem; font-weight: 700; color: var(--text); flex-shrink: 0; }
-.tier-bars { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; align-items: center; }
-.tier-bar-group { display: flex; flex-direction: column; gap: .18rem; }
-.tier-bar-label { font-size: .58rem; color: var(--text3); }
-.overall-pct { font-size: 1rem; font-weight: 800; width: 48px; text-align: right; flex-shrink: 0; letter-spacing: -.03em; }
-
-/* ── STAFF CHIPS ─────────────────────────────────────────── */
-.staff-chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .9rem; }
-.staff-chip {
-  display: flex; align-items: center; gap: .4rem;
-  padding: .3rem .7rem; border-radius: var(--r-full);
-  background: var(--card2); border: 1px solid var(--border2);
-  font-size: .8rem; color: var(--text);
-  transition: all var(--duration) var(--ease);
-}
-.staff-chip:hover { border-color: var(--border3); }
-.chip-del {
-  background: none; border: none; color: var(--text3);
-  cursor: pointer; font-size: .8rem; line-height: 1; padding: 0;
-  transition: color var(--duration); display: flex; align-items: center;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.chip-del:hover { color: var(--t1); }
-.add-staff-row { display: flex; gap: .55rem; }
-.add-staff-input {
-  flex: 1; padding: .48rem .85rem; border-radius: var(--r-md);
-  border: 1px solid var(--border2); background: rgba(255,255,255,.04);
-  color: var(--text); font-family: inherit; font-size: .84rem; outline: none;
-  transition: all var(--duration) var(--ease);
-}
-.add-staff-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(20,184,166,.12); }
-
-/* ── SETTINGS GRID ───────────────────────────────────────── */
-.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: .85rem; }
-.setting-group {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.1rem;
-}
-.setting-group h3 {
-  font-size: .84rem; font-weight: 700; color: var(--text); margin-bottom: .9rem;
-  padding-bottom: .55rem; border-bottom: 1px solid var(--border); letter-spacing: -.015em;
-}
-
-/* ── MODAL ───────────────────────────────────────────────── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.75); z-index: 900;
-  align-items: center; justify-content: center;
-  padding: 1.5rem;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-}
-.modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-.modal {
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: var(--r-xl); width: 100%; max-width: 520px;
-  max-height: 90vh; overflow-y: auto;
-  box-shadow: var(--sh-lg); animation: slideUp .2s var(--ease);
-}
-@keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
-.modal-hd {
-  padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.modal-hd h3 { font-size: 1rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
-.modal-close {
-  background: none; border: 1px solid var(--border2);
-  border-radius: var(--r-sm); width: 27px; height: 27px;
-  cursor: pointer; color: var(--text3); font-size: .88rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--duration) var(--ease);
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.modal-close:hover { background: rgba(255,255,255,.08); color: var(--text); }
-.modal-body { padding: 1.1rem 1.4rem; }
-.modal-ft {
-  padding: .8rem 1.4rem; border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: .5rem;
-}
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: .8rem; }
-.form-col { margin-bottom: .8rem; }
-.form-col label, .form-row label {
-  display: block; font-size: .66rem; font-weight: 700; color: var(--text2);
-  text-transform: uppercase; letter-spacing: .08em; margin-bottom: .32rem;
-}
-.form-col .form-input, .form-row .form-input { width: 100%; }
-.checkbox-group { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .32rem; }
-.checkbox-label {
-  display: flex; align-items: center; gap: .32rem;
-  font-size: .78rem; color: var(--text2); cursor: pointer;
-}
-.checkbox-label input { accent-color: var(--teal); }
-
-/* ── BUTTONS ─────────────────────────────────────────────── */
-.btn {
-  padding: .42rem .9rem; border-radius: var(--r-md); border: none;
-  font-family: inherit; font-size: .8rem; font-weight: 700;
-  cursor: pointer; transition: all var(--duration) var(--ease);
-  display: inline-flex; align-items: center; gap: .32rem;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-}
-.btn:active { transform: scale(.97); }
-.btn-primary {
-  background: var(--teal); color: #fff;
-  box-shadow: 0 2px 10px rgba(20,184,166,.2);
-}
-.btn-primary:hover { background: var(--teal-d); box-shadow: 0 4px 16px rgba(20,184,166,.3); }
-.btn-ghost {
-  background: rgba(255,255,255,.05); color: var(--text2);
-  border: 1px solid var(--border2);
-}
-.btn-ghost:hover { background: rgba(255,255,255,.09); color: var(--text); }
-
-/* ── TOAST ───────────────────────────────────────────────── */
-.toast {
-  position: fixed; bottom: 1.5rem; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  padding: .55rem 1.1rem; border-radius: var(--r-md);
-  font-size: .8rem; font-weight: 700; color: #fff;
-  opacity: 0; transition: all .25s var(--ease);
-  z-index: 9999; pointer-events: none; white-space: nowrap;
-  box-shadow: var(--sh);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.success { background: var(--t3); }
-.toast.error   { background: var(--t1); }
-.toast.info    { background: var(--teal-d); }
-
-/* ── SPINNER ─────────────────────────────────────────────── */
-.spinner {
-  width: 18px; height: 18px; border: 2px solid var(--border2);
-  border-top-color: var(--teal); border-radius: 50%;
-  animation: spin .7s linear infinite; display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.hidden { display: none !important; }
-
-/* ── HEATMAP ─────────────────────────────────────────────── */
-.heatmap-scroll { overflow-x: auto; }
-.heatmap-table { border-collapse: separate; border-spacing: 2px; font-size: .65rem; min-width: 600px; }
-.heatmap-table th {
-  padding: .32rem .5rem; text-align: center; color: var(--text3);
-  font-weight: 600; white-space: nowrap;
-  position: sticky; top: 0; background: var(--bg); z-index: 10;
-}
-.heatmap-table td.staff-name {
-  font-size: .74rem; font-weight: 700; color: var(--text);
-  white-space: nowrap; padding: .3rem .65rem;
-  position: sticky; left: 0; background: var(--bg2); z-index: 5;
-}
-.hm-cell { width: 18px; height: 18px; border-radius: 3px; cursor: pointer; transition: transform .1s; }
-.hm-cell:hover { transform: scale(1.4); z-index: 20; position: relative; }
-.hm-cell.done { background: var(--t3); }
-.hm-cell.miss { background: rgba(239,68,68,.25); }
-.hm-cell.t1   { outline: 2px solid rgba(239,68,68,.5); }
-
-/* ── OFSTED SCORE CARD ───────────────────────────────────── */
-.ofsted-score-card {
-  border-radius: var(--r-lg); padding: 1.1rem; margin-bottom: 1.1rem;
-  display: flex; align-items: center; gap: 1.1rem; border: 1px solid;
-}
-.ofsted-score-card.green { border-color: rgba(16,185,129,.25); background: var(--t3-bg); }
-.ofsted-score-card.amber { border-color: rgba(245,158,11,.25);  background: var(--t2-bg); }
-.ofsted-score-card.red   { border-color: var(--t1-border);       background: var(--t1-bg); }
-.ofs-num { font-size: 2.75rem; font-weight: 800; line-height: 1; flex-shrink: 0; letter-spacing: -.05em; }
-.ofsted-score-card.green .ofs-num { color: var(--t3); }
-.ofsted-score-card.amber .ofs-num { color: var(--t2); }
-.ofsted-score-card.red   .ofs-num { color: var(--t1); }
-.ofs-text h3 { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
-.ofs-text p  { font-size: .76rem; color: var(--text2); margin-top: .2rem; line-height: 1.5; }
+/* RESPONSIVE */
+@media(max-width:700px){#hero{grid-template-columns:repeat(2,1fr)}.dt{font-size:.78rem}}
+@media(max-width:480px){#hero{grid-template-columns:1fr 1fr}#auth-card{padding:26px 18px}}
 </style>
 </head>
 <body>
 
-<div class="login-screen" id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo"><div class="login-mark">G</div><div><div class="login-org">Greencoat Nursery CIC</div><div class="login-sub">Admin Console</div></div></div>
-    <h2 class="login-title">Sign in</h2>
-    <p class="login-desc">Authorised personnel only</p>
-    <div id="loginErr" class="login-err">Incorrect username or password.</div>
-    <div class="form-group"><label>Username</label><input type="text" id="loginUser" class="form-input" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="loginPass" class="form-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-full" onclick="doLogin()">Sign in →</button>
+<!-- AUTH -->
+<div id="auth-wrap">
+  <div id="auth-card">
+    <div class="auth-icon">🌿</div>
+    <h1>Admin Console</h1>
+    <p class="auth-sub">Greencoat Nursery CIC &mdash; Director access only</p>
+    <input id="auth-input" type="password" placeholder="Admin password" autocomplete="current-password">
+    <div id="auth-error"></div>
+    <button id="auth-btn">Sign in</button>
   </div>
 </div>
 
-<div class="admin-app" id="adminApp">
-  <div class="topbar">
-    <div class="topbar-logo"><div class="topbar-mark">G</div><div><div class="topbar-title">Policy Hub Admin</div></div></div>
-    <span class="topbar-badge">Admin</span>
-    <div class="topbar-right">
-      <span class="status-live" style="margin-right:1rem;">🟢 Live Auto-Sync Active</span>
-      <a class="tbtn" href="index.html" target="_blank">↗ View Portal</a>
-      <button class="tbtn" onclick="doLogout()">Sign out</button>
+<!-- APP -->
+<div id="app" hidden>
+  <header id="top-bar">
+    <div class="tb-logo">
+      <div class="tb-logo-icon">🌿</div>
+      <span>Greencoat Admin</span>
+      <span class="tb-divider">·</span>
+      <span style="color:var(--text3);font-size:.8rem;font-weight:400">Director Console</span>
+    </div>
+    <div class="tb-spacer"></div>
+    <span id="last-refreshed"></span>
+    <button id="refresh-btn" class="tb-btn">↻ Refresh</button>
+    <button id="export-compliance-btn" class="tb-btn">↓ Compliance CSV</button>
+    <button id="export-pfa-btn" class="tb-btn">↓ PFA CSV</button>
+    <button id="logout-btn" class="tb-btn danger">Sign out</button>
+  </header>
+
+  <div id="hero">
+    <div class="hero-stat">
+      <div class="hv teal" id="h-compliance">—</div>
+      <div class="hl">Tier 1 Compliant</div>
+      <div class="hs">all essential policies acknowledged</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hv red" id="h-overdue">—</div>
+      <div class="hl">Overdue Tier 1</div>
+      <div class="hs">missing one or more essential policies</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hv amber" id="h-inactive">—</div>
+      <div class="hl">Inactive 14 Days</div>
+      <div class="hs">no portal activity in 2 weeks</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hv" id="h-pfa">—</div>
+      <div class="hl">PFA Alerts</div>
+      <div class="hs">expired or expiring within 60 days</div>
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('policies',this)">📋 Policies</button>
-    <button class="tab" onclick="switchTab('staff',this)">👥 Staff</button>
-    <button class="tab" onclick="switchTab('compliance',this)">📊 Compliance</button>
-    <button class="tab" onclick="switchTab('aiquestions',this)">🤖 AI Questions</button>
-    <button class="tab" onclick="switchTab('settings',this)">⚙ Settings</button>
-    <button class="tab" onclick="switchTab('heatmap',this)">🗂 Heatmap</button>
-    <button class="tab" onclick="switchTab('pins',this)">🔑 Staff PINs</button>
-  </div>
+  <nav id="tab-nav">
+    <button class="tab-btn active" data-tab="compliance">Compliance Grid</button>
+    <button class="tab-btn" data-tab="staff">Staff</button>
+    <button class="tab-btn" data-tab="policies">Policies</button>
+    <button class="tab-btn" data-tab="pfa">PFA Certs</button>
+    <button class="tab-btn" data-tab="expiry">Expiry Watch</button>
+    <button class="tab-btn" data-tab="activity">Activity Feed</button>
+  </nav>
 
-  <div class="panels">
-    <div class="panel active" id="panel-policies">
-      <div class="section-hd">
-        <div><h2>Policy Library</h2><p id="policyCount">Loading…</p></div>
-        <button class="btn btn-primary" onclick="openAddModal()">+ Add Policy</button>
-      </div>
-      <div class="table-controls">
-        <input type="text" class="search-input" id="searchPolicies" placeholder="Search policies…" oninput="renderPolicyTable()">
-        <select class="filter-sel" id="filterTier" onchange="renderPolicyTable()"><option value="">All tiers</option><option value="1">Tier 1 — Essential</option><option value="2">Tier 2 — Common</option><option value="3">Tier 3 — Library</option></select>
-        <select class="filter-sel" id="filterCat" onchange="renderPolicyTable()"><option value="">All categories</option></select>
-      </div>
-      <div class="tbl-wrap">
-        <table class="policy-table">
-          <thead><tr><th>Title</th><th>Tier</th><th>Category</th><th>Sites</th><th>Adopted</th><th>Actions</th></tr></thead>
-          <tbody id="policyTbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-staff">
-      <div class="section-hd"><div><h2>Staff List</h2><p id="staffCount">—</p></div></div>
-      <div class="card">
-        <div class="card-title">👤 Current staff</div>
-        <div class="staff-chips" id="staffChips"></div>
-        <div class="add-staff-row">
-          <input type="text" class="add-staff-input" id="newStaffName" placeholder="Full name…" onkeydown="if(event.key==='Enter')addStaff()">
-          <button class="btn btn-primary" onclick="addStaff()">Add</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-compliance">
-      <div class="section-hd">
-        <div><h2>Compliance Dashboard</h2><p id="compSummary">Loading…</p></div>
-        <div style="display:flex;gap:.5rem;align-items:center"><button class="btn btn-ghost" onclick="loadCompliance()">↻ Refresh</button></div>
-      </div>
-      <div class="comp-stats" id="compStats"></div>
-      <div class="card" id="compCard">
-        <div style="text-align:center;padding:2rem;color:var(--text3)"><div class="spinner"></div><p style="margin-top:.75rem;font-size:.8rem">Loading compliance data…</p></div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-settings">
-      <div class="section-hd"><div><h2>Settings</h2><p>Organisation and portal configuration</p></div></div>
-      <div class="settings-grid">
-        <div class="setting-group">
-          <h3>Organisation</h3>
-          <div class="form-col"><label>Organisation name</label><input type="text" class="form-input" id="setOrgName" value="Greencoat Nursery CIC"></div>
-          <div class="form-col"><label>Policy adopted date</label><input type="text" class="form-input" id="setAdoptedDate" value="March 2026"></div>
-          <div class="form-col"><label>Review date</label><input type="text" class="form-input" id="setReviewDate" value="March 2027"></div>
-          <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
-        </div>
-        <div class="setting-group">
-          <h3>Security</h3>
-          <div class="form-col"><label>New admin password</label><input type="password" class="form-input" id="newPass" placeholder="Leave blank to keep current"></div>
-          <div class="form-col"><label>Confirm password</label><input type="password" class="form-input" id="confPass" placeholder="Repeat new password"></div>
-          <button class="btn btn-primary" onclick="changePassword()">Change password</button>
-          <p style="font-size:.7rem; color:var(--text2); margin-top:.75rem">⚠️ Make sure to update the Netlify Environment Variables if you change this.</p>
-        </div>
-        <div class="setting-group" style="border-color:var(--t1)">
-          <h3 style="color:#fca5a5; border-bottom-color:var(--t1)">⚠️ Emergency Reset</h3>
-          <p style="font-size:.75rem;color:var(--text2);margin-bottom:.8rem">If the portal is blank or corrupted, click this to wipe the database and restore the original 111 policies and default staff list.</p>
-          <button class="btn" style="background:rgba(239,68,68,.2);color:#fca5a5" onclick="restoreDefaults()">Restore Defaults & Fix Portal</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-aiquestions">
-      <div class="section-hd" style="margin-bottom:1rem;">
-        <div><h2>🤖 Staff AI Questions</h2><p style="font-size: .8rem; color: var(--text2);">Every question staff have asked the AI about policies.</p></div>
-        <button class="btn-primary" onclick="loadAiQuestions()" style="padding:.4rem .85rem;border-radius:8px;cursor:pointer;font-size:.8rem">↻ Refresh</button>
-      </div>
-      <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap">
-        <input type="text" id="aiQSearch" placeholder="Search questions…" oninput="filterAiQuestions()" style="flex:1;min-width:200px;padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none">
-        <select id="aiQStaffFilter" onchange="filterAiQuestions()" style="padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none"><option value="">All Staff</option></select>
-        <select id="aiQPolicyFilter" onchange="filterAiQuestions()" style="padding:.45rem .85rem;border-radius:8px;border:1px solid var(--border2);background:var(--card2);color:var(--text);font-family:inherit;font-size:.82rem;outline:none"><option value="">All Policies</option></select>
-      </div>
-      <div id="aiQStats" style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap"></div>
-      <div id="aiQList" style="display:flex;flex-direction:column;gap:.65rem"><p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading questions…</p></div>
-    </div>
-
-    <div class="panel" id="panel-heatmap">
-      <div class="section-hd">
-        <div><h2>Compliance Heatmap</h2><p>Every staff member × every policy at a glance.</p></div>
-        <div style="display:flex;gap:.5rem;align-items:center">
-          <button class="btn btn-ghost" onclick="loadHeatmap()">↻ Refresh</button>
-          <button class="btn btn-primary" onclick="exportCSV()">⬇ Export CSV</button>
-        </div>
-      </div>
-      <div id="ofstedScore" class="ofsted-score-card hidden"></div>
-      <div id="heatmapWrap"><div style="text-align:center;padding:3rem;color:var(--text3)"><div class="spinner"></div></div></div>
-    </div>
-
-  
-<div class="panel" id="panel-pins">
-  <div class="section-hd">
-    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
-    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
-  </div>
-  <div id="pinTableWrap"></div>
-
-  </div>
-</div><!-- /panels -->
-</div><!-- /adminApp -->
-
-<div class="modal-overlay" id="policyModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-hd"><h3 id="modalTitle">Edit policy</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div class="modal-body">
-      <input type="hidden" id="editId">
-      <div class="form-col"><label>Policy title</label><input type="text" class="form-input" id="editTitle" placeholder="Full policy title"></div>
-      <div class="form-row">
-        <div><label>Tier</label><select class="form-input" id="editTier"><option value="1">Tier 1 — Essential</option><option value="2">Tier 2 — Common</option><option value="3">Tier 3 — Library</option></select></div>
-        <div><label>Category</label><select class="form-input" id="editCat"><option>Safeguarding</option><option>Health & Safety</option><option>Health & Care</option><option>Child Safety</option><option>Child Development</option><option>Staffing</option><option>Governance</option><option>Families</option><option>Inclusion</option></select></div>
-      </div>
-      <div class="form-col"><label>Sites</label>
-        <div class="checkbox-group">
-          <label class="checkbox-label"><input type="checkbox" id="siteAll" value="all"> All sites</label>
-          <label class="checkbox-label"><input type="checkbox" id="siteSh" value="sparkhill"> Sparkhill</label>
-          <label class="checkbox-label"><input type="checkbox" id="siteBw" value="bearwood"> Bearwood</label>
-          <label class="checkbox-label"><input type="checkbox" id="siteBa" value="billesley"> Billesley Ark</label>
-        </div>
-      </div>
-      <div class="form-row">
-        <div><label>Filename (.docx)</label><input type="text" class="form-input" id="editFile" placeholder="Greencoat_Policy_Name_Mar2026.docx"></div>
-        <div><label>Adopted date</label><input type="text" class="form-input" id="editAdopted" placeholder="March 2026"></div>
-      </div>
-      <div class="form-col"><label>Description</label><textarea class="form-input" id="editDesc" rows="3" placeholder="Brief summary…" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="savePolicy()">Save policy</button></div>
+  <div id="content">
+    <div id="tab-compliance" class="tab-panel active"></div>
+    <div id="tab-staff"      class="tab-panel"></div>
+    <div id="tab-policies"   class="tab-panel"></div>
+    <div id="tab-pfa"        class="tab-panel"></div>
+    <div id="tab-expiry"     class="tab-panel"></div>
+    <div id="tab-activity"   class="tab-panel"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="modal-overlay" hidden>
+  <div id="modal-box">
+    <div id="modal-header">
+      <span id="modal-title"></span>
+      <button id="modal-close">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="loader-overlay" hidden><div class="loader"></div></div>
+<div id="toast"></div>
 
 <script>
-// ── AUTH ─────────────────────────────────────────────────────────────────
-const ADMIN_USER = 'admin';
-let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
-let toastTimer;
+/* =========================================================
+   GREENCOAT ADMIN CONSOLE — vanilla JS, no framework
+========================================================= */
 
-async function doLogin() {
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
-  const err = document.getElementById('loginErr');
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    err.style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').classList.add('show');
-    init().catch(e => console.error('Init error:', e));
-  } else {
-    err.style.display = 'block';
-    err.textContent = 'Incorrect username or password.';
-  }
-}
-function doLogout() {
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('adminApp').classList.remove('show');
-  document.getElementById('loginPass').value = '';
-}
-
-// ── DEFAULT DATA ────────────────────────────────────────────────────────
-const DEFAULT_STAFF = ['Ambreen Afzal','Anila Naz','Hadiya Tariq','Joanna Payne','Kiran Riaz','Kubir Hussain','Lawaiza Firdous','Momina Khatun','Muniba Zaman','Sadiyah Begum','Saira Nisa','Sidra Begum','Sunella Anjam','Taslim Yaqub','Taz Khan','Zahraa Rashid'];
+/* --- DEFAULT POLICIES ----------------------------------- */
 const DEFAULT_POLICIES = [
-  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Safeguarding_Policy_Feb2026.docx',desc:'Core safeguarding policy covering DSL roles, types of abuse, disclosure procedures, the Summary of Interaction recording process.',adopted:'February 2026'},
-  {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',desc:'Procedures for staff to report concerns, including qualifying disclosures, sexual harassment provisions, DSL-first escalation route.',adopted:'March 2026'},
-  {id:'llc',tier:1,title:'Low-Level Concerns Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concerns_Policy_Mar2026.docx',desc:'How to record and report low-level concerns about staff behaviour that do not meet the threshold for referral.',adopted:'March 2026'},
-  {id:'scc',tier:1,title:'Staff Code of Conduct',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Code_of_Conduct_Mar2026.docx',desc:'Professional standards expected of all staff, including conduct with children, families, colleagues and on social media.',adopted:'March 2026'},
-  {id:'os',tier:1,title:'Online Safety Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Online_Safety_Policy_Mar2026.docx',desc:'Risks of online harm including content, contact, conduct and commerce. DSL responsibilities, CEOP and IWF reporting.',adopted:'March 2026'},
-  {id:'ppb',tier:1,title:'Promoting Positive Behaviour Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Promoting_Positive_Behaviour_Policy_Mar2026.docx',desc:'Approaches to supporting children\'s behaviour positively. Named behaviour lead: Sidra Begum (Lead SENCo).',adopted:'March 2026'},
-  {id:'rec',tier:1,title:'Safer Recruitment, Selection and Suitability of Staff Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Safer_Recruitment_Policy_Mar2026.docx',desc:'Safer recruitment procedures including DBS checks, overseas criminal records checks (including multi-country), health questionnaires, right to work, disqualification checks and ongoing suitability.',adopted:'March 2026'},
-  {id:'acc',tier:1,title:'Accidents and First Aid Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Accidents_First_Aid_Policy_Mar2026.docx',desc:'All staff are paediatric first aid trained. Accident file locations, first aid box locations, and monthly checking schedule.',adopted:'March 2026'},
-  {id:'med',tier:1,title:'Medication Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Policy_Mar2026.docx',desc:'Administration of both prescription and non-prescription medication, parental consent requirements, and record-keeping procedures.',adopted:'March 2026'},
-  {id:'alg',tier:1,title:'Allergies and Allergic Reactions Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Allergies_Policy_Mar2026.docx',desc:'Identification, recording and management of allergies. Allergy register held in the kitchen and main room.',adopted:'March 2026'},
-  {id:'arr',tier:1,title:'Arrivals and Departures Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Arrivals_Departures_Policy_Mar2026.docx',desc:'Safe procedures for signing children in and out, authorised collection, password systems, and record-keeping.',adopted:'March 2026'},
-  {id:'lc',tier:1,title:'Late Collection and Non-Collection of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Late_Collection_Policy_Mar2026.docx',desc:'Grace period of 15 minutes before formal procedure initiates. Staff may call sooner. Late fee applied at management discretion.',adopted:'March 2026'},
-  {id:'mc',tier:1,title:'Missing Child from Nursery Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for on nursery premises, including search protocol, police notification.',adopted:'March 2026'},
-  {id:'el',tier:1,title:'Emergency Lockdown Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Emergency_Lockdown_Policy_Mar2026.docx',desc:'Procedure for full or partial lockdown. Drills held at least annually using non-alarming scenarios.',adopted:'March 2026'},
-  {id:'sc',tier:1,title:'Supervision of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Children_Policy_Mar2026.docx',desc:'Staffing arrangements, ratios and supervision expectations to ensure children\'s safety at all times on nursery premises.',adopted:'March 2026'},
-  {id:'cwb',tier:1,title:"Children's Wellbeing Policy",cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',desc:"Policy covering promotion of children's emotional and physical wellbeing, resilience, positive relationships and practitioner responsibilities.",adopted:'March 2026'},
-  {id:'ie',tier:1,title:'Inclusion and Equality Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Inclusion_Equality_Policy_Mar2026.docx',desc:'Commitment to inclusive practice under the Equality Act 2010. Training at induction and through CPD.',adopted:'March 2026'},
-  {id:'sg_summ',tier:2,title:'Safeguarding Staff Summary Sheet',cat:'Safeguarding',sites:['all'],file:'Greencoat_Safeguarding_Staff_Summary_Feb2026.docx',desc:'Quick-reference visual guide: DSL contacts at all 3 sites, types of abuse, 5-step reporting procedure, Summary of Interaction process.',adopted:'February 2026'},
-  {id:'ict',tier:1,title:'Intimate Care and Toileting Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Intimate_Care_Toileting_Policy_Mar2026.docx',desc:'Merged policy covering nappy changing procedure, respectful intimate care principles, toilet training in line with DfE guidance (18-30 month window), room transition expectations, SEND adjustments, and safeguarding across all intimate care routines.',adopted:'March 2026'},
-  {id:'nappy',tier:2,title:'Nappy Changing Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Nappy_Changing_Policy_Mar2026.docx',desc:'Procedures for safe, dignified and hygienic nappy changing, including consent, recording and safeguarding considerations.',adopted:'March 2026'},
-  {id:'ric',tier:2,title:'Respectful Intimate Care Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Respectful_Intimate_Care_Policy_Mar2026.docx',desc:'Policy for delivering intimate care with dignity, consent and safeguarding awareness, including parental communication and record keeping.',adopted:'March 2026'},
-    {id:'sleep',tier:2,title:'Sleep Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sleep_Policy_Mar2026.docx',desc:'Safe sleep arrangements, monitoring procedures, positional preferences, risk reduction for SIDS.',adopted:'March 2026'},
-  {id:'infect',tier:2,title:'Infection Control Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Infection_Control_Policy_Mar2026.docx',desc:'Hygiene standards, handwashing procedures, oral health, management of infectious illnesses, and exclusion periods.',adopted:'March 2026'},
-  {id:'sick',tier:2,title:'Sickness and Illness Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sickness_Illness_Policy_Mar2026.docx',desc:'Recognition and management of children\'s illness on-site, exclusion guidance, record-keeping.',adopted:'March 2026'},
-  {id:'send',tier:2,title:'Special Educational Needs and Disabilities (SEND) Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_SEND_Policy_Mar2026.docx',desc:'Identification and support for children with SEND, graduated approach, EHCP, working with external agencies.',adopted:'March 2026'},
-  {id:'dp',tier:2,title:'Data Protection and Confidentiality Policy',cat:'Governance',sites:['all'],file:'Greencoat_Data_Protection_Policy_Mar2026.docx',desc:'GDPR compliance, lawful bases for processing, what personal data is held and why, and staff confidentiality obligations.',adopted:'March 2026'},
-  {id:'mob',tier:2,title:'Mobile Phone and Electronic Device Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Mobile_Phone_Electronic_Device_Policy_Mar2026.docx',desc:'Restrictions on personal mobile use in childcare areas, designated storage, professional use of devices.',adopted:'March 2026'},
-  {id:'sn',tier:2,title:'Social Networking Policy',cat:'Governance',sites:['all'],file:'Greencoat_Social_Networking_Policy_Mar2026.docx',desc:'Staff responsibilities when using social media personally and professionally, prohibition on posting images of children.',adopted:'March 2026'},
-  {id:'nutri',tier:2,title:'Nutrition and Mealtimes Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Nutrition_Mealtimes_Policy_Mar2026.docx',desc:'Nutritional standards for meals and snacks, mealtime environment, dietary needs and allergies.',adopted:'March 2026'},
-  {id:'packed',tier:2,title:'Packed Lunch Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Packed_Lunch_Policy_Mar2026.docx',desc:'Standards and guidance for packed lunches, prohibited items (nuts), storage, and parental communication.',adopted:'March 2026'},
-  {id:'out',tier:2,title:'Outdoor Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Outdoor_Play_Policy_Mar2026.docx',desc:'Daily outdoor play commitment, risk-benefit approach to outdoor learning, weather considerations.',adopted:'March 2026'},
-  {id:'set',tier:2,title:'Settling In Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Settling_In_Policy_Mar2026.docx',desc:'Graduated settling-in process, key person role, working with parents during transition.',adopted:'March 2026'},
-  {id:'kp',tier:1,title:'Key Person Policy',cat:'Children & Families',sites:['all'],file:'Greencoat_Key_Person_Policy_Mar2026.docx',desc:'Statutory EYFS key person requirements covering assignment, caseload, buddy system, transitions, safeguarding responsibilities and SEND integration.',adopted:'March 2026'},
-  {id:'trans',tier:2,title:'Transitions Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Transitions_Policy_Mar2026.docx',desc:'Supporting children through planned and unplanned transitions including room moves, change of key person.',adopted:'March 2026'},
-  {id:'pap',tier:2,title:'Parents as Partners Policy',cat:'Families',sites:['all'],file:'Greencoat_Parents_as_Partners_Policy_Mar2026.docx',desc:'Partnership approach with families, two-way information sharing, involving parents in learning.',adopted:'March 2026'},
-  {id:'comp',tier:2,title:'Complaints and Compliments Policy',cat:'Governance',sites:['all'],file:'Greencoat_Complaints_Compliments_Policy_Mar2026.docx',desc:'How to raise, record and resolve complaints. Timescales for response, escalation to Ofsted.',adopted:'March 2026'},
-  {id:'cctv_sh',tier:2,title:'CCTV Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_CCTV_Policy_Sparkhill_Mar2026.docx',desc:'14 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
-  {id:'cctv_bw',tier:2,title:'CCTV Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_CCTV_Policy_Bearwood_Mar2026.docx',desc:'8 fixed cameras monitoring all rooms and outside areas. Subject Access Request procedures.',adopted:'March 2026'},
-  {id:'supv_sh',tier:2,title:'Supervision Policy — Sparkhill',cat:'Staffing',sites:['sparkhill'],file:'Greencoat_Supervision_Policy_Sparkhill_Mar2026.docx',desc:'Six supervisions per year (every half term) trialling mini-supervision model.',adopted:'March 2026'},
-  {id:'supv_sm',tier:2,title:'Supervision Policy — Bearwood & Billesley Ark',cat:'Staffing',sites:['bearwood','billesley'],file:'Greencoat_Supervision_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Three supervisions per year for smaller two-person sites. Carried out by manager or deputy.',adopted:'March 2026'},
-  {id:'lac',tier:2,title:'Looked After Children Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Looked_After_Children_Policy_Mar2026.docx',desc:'Designated LAC persons: site DSLs. Individual education plans, virtual school heads.',adopted:'March 2026'},
-  {id:'sf',tier:2,title:'Separated Family Policy',cat:'Families',sites:['all'],file:'Greencoat_Separated_Family_Policy_Mar2026.docx',desc:'Handling parental responsibility, court orders, collection rights, information sharing.',adopted:'March 2026'},
-  {id:'school',tier:2,title:'School Collection Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_School_Collection_Policy_Mar2026.docx',desc:'Procedures for collecting children from school, authorised persons, signing-out records.',adopted:'March 2026'},
-  {id:'visit',tier:2,title:'Visits and Outings Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Policy_Mar2026.docx',desc:'Risk assessment for outings, ratios, permission, sticker ID system.',adopted:'March 2026'},
-  {id:'bite',tier:2,title:'Biting Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Biting_Policy_Mar2026.docx',desc:'Understanding biting as communication in young children, staff response, supporting the bitten child.',adopted:'March 2026'},
-  {id:'baby_sh',tier:2,title:'Caring for Babies and Toddlers Policy — Sparkhill',cat:'Health & Care',sites:['sparkhill'],file:'Greencoat_Caring_for_Babies_Policy_Sparkhill_Mar2026.docx',desc:'Baby room (max 6, ratio 1:3) and toddler room (max 20). Mobile cot for evacuation.',adopted:'March 2026'},
-  {id:'baby_ot',tier:2,title:'Caring for Babies and Toddlers Policy — Bearwood & Billesley Ark',cat:'Health & Care',sites:['bearwood','billesley'],file:'Greencoat_Caring_for_Babies_Policy_Bearwood_Billesley_Mar2026.docx',desc:'Toddlers-only sites (no dedicated baby room). EYFS requirements for under-2s, ratio 1:3.',adopted:'March 2026'},
-  {id:'childreg',tier:2,title:'Child Registration Form',cat:'Governance',sites:['all'],file:'Greencoat_Child_Registration_Form_Mar2026.docx',desc:'Registration form capturing child and family details, emergency contacts, medical information.',adopted:'March 2026'},
-  {id:'attend',tier:2,title:'Attendance Policy',cat:'Governance',sites:['all'],file:'Greencoat_Attendance_Policy_Mar2026.docx',desc:'Expectations for regular attendance, absence notification procedures, follow-up for unexplained absences.',adopted:'March 2026'},
-  {id:'abs_children',tier:2,title:'Absence Policy (Children)',cat:'Governance',sites:['all'],file:'Greencoat_Absence_Policy_Children_Mar2026.docx',desc:'Procedures for reporting, monitoring and following up child absence including unexplained absence escalation to Day 10 welfare check, and safeguarding considerations.',adopted:'March 2026'},
-  {id:'fire_sh',tier:2,title:'Fire Safety Policy — Sparkhill',cat:'Health & Safety',sites:['sparkhill'],file:'Greencoat_Fire_Safety_Policy_Sparkhill_Mar2026.docx',desc:'Fire wardens: Zahra Rashid and Sidra Begum. Primary assembly: rear of own car park.',adopted:'March 2026'},
-  {id:'fire_bw',tier:2,title:'Fire Safety Policy — Bearwood',cat:'Health & Safety',sites:['bearwood'],file:'Greencoat_Fire_Safety_Policy_Bearwood_Mar2026.docx',desc:'Fire warden: Sadiyah Begum. Primary assembly: nursery land/car park.',adopted:'March 2026'},
-  {id:'fire_ba',tier:2,title:'Fire Safety Policy — Billesley Ark',cat:'Health & Safety',sites:['billesley'],file:'Greencoat_Fire_Safety_Policy_Billesley_Ark_Mar2026.docx',desc:'Fire warden: Sunella Anjam. Assembly point: Billesley Common playground via rear fire exit.',adopted:'March 2026'},
-  {id:'hs',tier:2,title:'Health and Safety — General Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Health_Safety_General_Policy_Mar2026.docx',desc:'General health and safety responsibilities, fridge and freezer temperature recording, food hygiene.',adopted:'March 2026'},
-  {id:'abs',tier:3,title:'Absence Management Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Absence_Management_Procedure_Mar2026.docx',desc:'Managing staff absence including return to work interviews, trigger points, occupational health referrals.',adopted:'March 2026'},
-  {id:'aiu',tier:3,title:'Acceptable Internet Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Acceptable_Internet_Use_Policy_Mar2026.docx',desc:'Appropriate use of nursery IT systems, password management, phishing awareness.',adopted:'March 2026'},
-  {id:'asr',tier:3,title:'Access, Storage and Retention of Records Policy',cat:'Governance',sites:['all'],file:'Greencoat_Access_Storage_Retention_Records_Policy_Mar2026.docx',desc:'How long different categories of records must be kept, parent and staff access rights.',adopted:'March 2026'},
-  {id:'adm_sh',tier:3,title:'Admissions Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_Admissions_Policy_Sparkhill_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places, and registration process. Sparkhill: max 62 children.',adopted:'March 2026'},
-  {id:'adm_bw',tier:3,title:'Admissions Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_Admissions_Policy_Bearwood_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Bearwood: max 32 children.',adopted:'March 2026'},
-  {id:'adm_ba',tier:3,title:'Admissions Policy — Billesley Ark',cat:'Governance',sites:['billesley'],file:'Greencoat_Admissions_Policy_Billesley_Ark_Mar2026.docx',desc:'Admissions criteria, waiting list management, funded places. Billesley Ark: max 24 children.',adopted:'March 2026'},
-  {id:'alc',tier:3,title:'Alcohol and Substance Misuse Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Alcohol_Substance_Misuse_Policy_Mar2026.docx',desc:'Prohibition on being under the influence at work, support available, and disciplinary consequences.',adopted:'March 2026'},
-  {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',desc:'Bribery Act 2010 compliance, what constitutes bribery, gifts and hospitality guidelines.',adopted:'March 2026'},
-  {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',desc:'Supporting children and families experiencing bereavement, staff guidance on language and response.',adopted:'March 2026'},
-  {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',desc:'Log template for recording CCTV system checks, access events, and Subject Access Requests.',adopted:'March 2026'},
-  {id:'crp',tier:3,title:'Conflict Resolution with Parents and Aggressive Behaviour Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',desc:'De-escalation of parental conflict, zero tolerance of aggressive behaviour.',adopted:'March 2026'},
-  {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',desc:'Response to serious incidents including staff death, major injury, outbreak of disease.',adopted:'March 2026'},
-  {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',desc:'Protecting nursery systems and data from cyber threats, staff training, suspicious email reporting.',adopted:'March 2026'},
-  {id:'disc_beh',tier:3,title:'Dealing with Discriminatory Behaviour Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Dealing_with_Discriminatory_Behaviour_Policy_Mar2026.docx',desc:'How to identify and challenge discriminatory behaviour from staff, children, parents or visitors.',adopted:'March 2026'},
-  {id:'discip',tier:3,title:'Disciplinary Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Disciplinary_Procedure_Mar2026.docx',desc:'Formal disciplinary process including informal action, formal warnings, gross misconduct.',adopted:'March 2026'},
-  {id:'elo',tier:3,title:'Early Learning Opportunities Statement',cat:'Child Development',sites:['all'],file:'Greencoat_Early_Learning_Opportunities_Statement_Mar2026.docx',desc:'How Greencoat delivers the EYFS, our approach to planning and assessment.',adopted:'March 2026'},
-  {id:'env',tier:3,title:'Environmental Sustainability Policy',cat:'Governance',sites:['all'],file:'Greencoat_Environmental_Sustainability_Policy_Mar2026.docx',desc:'Commitment to sustainability in nursery operations, waste reduction, energy efficiency.',adopted:'March 2026'},
-  {id:'equip',tier:3,title:'Equipment and Resources Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Equipment_Resources_Policy_Mar2026.docx',desc:'Selection, maintenance, inspection and safe storage of nursery equipment and resources.',adopted:'March 2026'},
-  {id:'food_play',tier:3,title:'Food Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Food_Play_Policy_Mar2026.docx',desc:'Safe use of food in play and sensory activities, allergen awareness, hygiene.',adopted:'March 2026'},
-  {id:'gdpr',tier:3,title:'GDPR Privacy Notice',cat:'Governance',sites:['all'],file:'Greencoat_GDPR_Privacy_Notice_Mar2026.docx',desc:'Privacy notice for parents and staff covering what personal data is held, how it is used.',adopted:'March 2026'},
-  {id:'griev',tier:3,title:'Grievance Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Grievance_Procedure_Mar2026.docx',desc:'Informal and formal grievance process, timescales, investigation standards.',adopted:'March 2026'},
-  {id:'gun',tier:3,title:'Gun and Superhero Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Gun_Superhero_Play_Policy_Mar2026.docx',desc:'Managing superhero and weapon play in a developmentally appropriate way, safe boundaries.',adopted:'March 2026'},
-  {id:'harass',tier:3,title:'Harassment and Sexual Harassment Risk Assessment Template',cat:'Staffing',sites:['all'],file:'Greencoat_Harassment_Sexual_Harassment_Risk_Assessment_Mar2026.docx',desc:'Template for assessing risk of harassment and sexual harassment in the workplace.',adopted:'March 2026'},
-  {id:'hwp',tier:3,title:'Healthy Workplace Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Healthy_Workplace_Policy_Mar2026.docx',desc:'Promoting staff physical and mental health, occupational health support, adjustments for health conditions.',adopted:'March 2026'},
-  {id:'imm',tier:3,title:'Immunisation Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Policy_Mar2026.docx',desc:'Promoting immunisation in line with government health policy, recording vaccination status.',adopted:'March 2026'},
-  {id:'immd',tier:3,title:'Immunisation Disclaimer Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Disclaimer_Form_Mar2026.docx',desc:'Form for parents to complete if they decline recommended immunisations for their child.',adopted:'March 2026'},
-  {id:'inc_form',tier:3,title:'Incident Form',cat:'Health & Safety',sites:['all'],file:'Greencoat_Incident_Form_Mar2026.docx',desc:'Template for recording incidents, near misses, and hazards identified on nursery premises.',adopted:'March 2026'},
-  {id:'lone',tier:3,title:'Lone Working Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Lone_Working_Policy_Mar2026.docx',desc:'Ensuring no staff member works alone in a room or building, risk assessment for lone working scenarios.',adopted:'March 2026'},
-  {id:'llcf',tier:3,title:'Low-Level Concern Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concern_Form_Mar2026.docx',desc:'Template form for recording low-level concerns about staff behaviour, to be submitted to the DSL.',adopted:'March 2026'},
-  {id:'exw',tier:3,title:'Managing Extreme Weather Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Managing_Extreme_Weather_Policy_Mar2026.docx',desc:'Procedures for extreme heat, cold, storms and flooding. Sun safety, vitamin D guidance.',adopted:'March 2026'},
-  {id:'mh',tier:3,title:'Manual Handling Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Manual_Handling_Policy_Mar2026.docx',desc:'Safe manual handling techniques, training requirements, risk assessment for regular lifting tasks.',adopted:'March 2026'},
-  {id:'med_form',tier:3,title:'Medication Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Form_Mar2026.docx',desc:'Template form for parental consent to administer medication, dosage instructions, and administration record.',adopted:'March 2026'},
-  {id:'men',tier:3,title:'Menopause Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Menopause_Policy_Mar2026.docx',desc:'Supporting staff experiencing menopause symptoms, reasonable adjustments, confidential conversations.',adopted:'March 2026'},
-  {id:'miss_out',tier:3,title:'Missing Child from Outings Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_from_Outings_Procedure_Mar2026.docx',desc:'Step-by-step procedure if a child cannot be accounted for during an outing. Immediate search, police notification.',adopted:'March 2026'},
-  {id:'more',tier:3,title:'More Able and Talented Children Policy',cat:'Child Development',sites:['all'],file:'Greencoat_More_Able_Talented_Children_Policy_Mar2026.docx',desc:'Identifying and supporting more able children through challenge, enrichment, and specialist services.',adopted:'March 2026'},
-  {id:'mult',tier:3,title:'Multiple Birth Families Policy',cat:'Families',sites:['all'],file:'Greencoat_Multiple_Birth_Families_Policy_Mar2026.docx',desc:'Supporting families with twins, triplets and higher multiples, individual key persons, and transition planning.',adopted:'March 2026'},
-  {id:'nos',tier:3,title:'No Smoking and Vaping Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_No_Smoking_Vaping_Policy_Mar2026.docx',desc:'Absolute prohibition on smoking and vaping on nursery premises or in vehicles used for nursery purposes.',adopted:'March 2026'},
-  {id:'nop',tier:3,title:'Nursery Operational Plan',cat:'Governance',sites:['all'],file:'Greencoat_Nursery_Operational_Plan_Mar2026.docx',desc:'Reference document covering day-to-day operational standards including funded hours delivery, staffing ratios.',adopted:'March 2026'},
-  {id:'ora',tier:3,title:'Overall Approach to Risk Assessment',cat:'Health & Safety',sites:['all'],file:'Greencoat_Overall_Approach_Risk_Assessment_Mar2026.docx',desc:'Framework for identifying, assessing and managing risks in the nursery, including the risk-benefit approach.',adopted:'March 2026'},
-  {id:'perm',tier:3,title:'Permission Forms',cat:'Governance',sites:['all'],file:'Greencoat_Permission_Forms_Mar2026.docx',desc:'Standard permission forms for outings, photography, medical treatment, and emergency procedures.',adopted:'March 2026'},
-  {id:'pers',tier:3,title:'Personnel Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Personnel_Policy_Mar2026.docx',desc:'HR management framework covering employment terms, performance management, equal opportunities, and staff records.',adopted:'March 2026'},
-  {id:'phys',tier:3,title:'Physical Activity Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Physical_Activity_Policy_Mar2026.docx',desc:'Commitment to daily physical activity. PANCo: Sadiyah Begum, responsible for promoting active play.',adopted:'March 2026'},
-  {id:'preg',tier:3,title:'Pregnancy and Family Leave Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Policy_Mar2026.docx',desc:'Maternity, paternity, shared parental leave and adoption leave entitlements. Reflects Employment Rights Act 2025 changes.',adopted:'March 2026'},
-  {id:'qual',tier:3,title:'Quality Provision Policy',cat:'Governance',sites:['all'],file:'Greencoat_Quality_Provision_Policy_Mar2026.docx',desc:'Commitment to high-quality care and education, self-evaluation, quality improvement, and continuous development.',adopted:'March 2026'},
-  {id:'ref',tier:3,title:'Referral Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Referral_Form_Mar2026.docx',desc:'Template form for referring a safeguarding concern to Birmingham Children\'s Social Care or the LADO.',adopted:'March 2026'},
-  {id:'rtw',tier:3,title:'Return to Work Interview Record',cat:'Staffing',sites:['all'],file:'Greencoat_Return_to_Work_Interview_Record_Mar2026.docx',desc:'Template for return to work conversations following any period of absence, however short.',adopted:'March 2026'},
-  {id:'saf',tier:3,title:'Safety Checks',cat:'Health & Safety',sites:['all'],file:'Greencoat_Safety_Checks_Mar2026.docx',desc:'Regular safety check schedules for premises, equipment, utilities, and outdoor areas.',adopted:'March 2026'},
-  {id:'scr',tier:3,title:'Single Central Record (SCR)',cat:'Staffing',sites:['all'],file:'Greencoat_Single_Central_Record_Mar2026.docx',desc:'Template for recording all pre-employment checks (DBS, identity, right to work, qualifications) for each member of staff.',adopted:'March 2026'},
-  {id:'spc',tier:3,title:'Special Consideration for Employees Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Special_Consideration_Employees_Policy_Mar2026.docx',desc:'Reasonable adjustments and special consideration for employees with health conditions, disabilities, or personal circumstances.',adopted:'March 2026'},
-  {id:'sdt',tier:3,title:'Staff Development and Training Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Development_Training_Policy_Mar2026.docx',desc:'All staff hold Level 3+, several hold Level 5/6, Director holds Level 7 with PGCE/QTS. Commitment to ongoing CPD.',adopted:'March 2026'},
-  {id:'swb',tier:3,title:'Staff Well-being Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Wellbeing_Policy_Mar2026.docx',desc:'Well-being lead: Sadiyah Begum. Supervision frequency reflects site model. Zero tolerance of harassment.',adopted:'March 2026'},
-  {id:'soc',tier:3,title:'Staff Working with Their Own Children Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Working_with_Own_Children_Policy_Mar2026.docx',desc:'Managing conflicts of interest when staff members have children or close relatives attending the nursery.',adopted:'March 2026'},
-  {id:'stud',tier:3,title:'Student Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Student_Policy_Mar2026.docx',desc:'Welcoming and supporting students on placement, supervision requirements, DBS checks, conduct expectations.',adopted:'March 2026'},
-  {id:'sv',tier:3,title:'Supervision of Visitors Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Visitors_Policy_Mar2026.docx',desc:'Signing-in procedures, escorting visitors, contractor management, and ensuring visitors are never left unsupervised.',adopted:'March 2026'},
-  {id:'dum',tier:3,title:'Use of Dummies in Nursery Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Use_of_Dummies_Policy_Mar2026.docx',desc:'Guidance on use of dummies as comforters, hygiene requirements, speech development considerations, and parental agreement.',adopted:'March 2026'},
-  {id:'vola',tier:3,title:'Volunteer Agreement',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteer_Agreement_Mar2026.docx',desc:'Agreement covering volunteer tasks, expectations, DBS requirements, and safeguarding responsibilities.',adopted:'March 2026'},
-  {id:'volp',tier:3,title:'Volunteers Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteers_Policy_Mar2026.docx',desc:'Framework for welcoming volunteers. Designated officer: Taz Khan (Director). DBS, induction, supervision.',adopted:'March 2026'},
-  {id:'dse',tier:3,title:'Working with Display Screen Equipment Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Working_with_Display_Screen_Equipment_Policy_Mar2026.docx',desc:'DSE assessment requirements, eye test entitlements, workstation adjustments, and reporting symptoms.',adopted:'March 2026'},
-  {id:'yw',tier:3,title:'Young Worker Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Young_Worker_Policy_Mar2026.docx',desc:'Legal requirements and additional safeguards for staff under 18 or apprentices, including working hours, supervision.',adopted:'March 2026'},
-  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',desc:'Planning template for nursery outings including risk assessment, staffing ratios, parental consent, emergency contacts.',adopted:'March 2026'},
-  {id:'preg_guide',tier:1,title:'Pregnancy & Family Leave — Staff Guide',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Staff_Guide_Mar2026.docx',desc:'Step-by-step guide for staff covering maternity, paternity, adoption, shared parental leave, neonatal care and key deadlines.',adopted:'March 2026'}
+  {id:'sg',tier:1,title:'Safeguarding Children and Child Protection Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Safeguarding_Policy_Feb2026.docx',adopted:'February 2026'},
+  {id:'wb',tier:1,title:'Whistleblowing Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Nursery_CIC_Whistleblowing_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'llc',tier:1,title:'Low-Level Concerns Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concerns_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'scc',tier:1,title:'Staff Code of Conduct',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Code_of_Conduct_Mar2026.docx',adopted:'March 2026'},
+  {id:'os',tier:1,title:'Online Safety Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Online_Safety_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'ppb',tier:1,title:'Promoting Positive Behaviour Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Promoting_Positive_Behaviour_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'rec',tier:1,title:'Safer Recruitment Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Safer_Recruitment_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'acc',tier:1,title:'Accidents and First Aid Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Accidents_First_Aid_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'med',tier:1,title:'Medication Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'alg',tier:1,title:'Allergies and Allergic Reactions Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Allergies_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'arr',tier:1,title:'Arrivals and Departures Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Arrivals_Departures_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'lc',tier:1,title:'Late Collection Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Late_Collection_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'mc',tier:1,title:'Missing Child from Nursery Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_Procedure_Mar2026.docx',adopted:'March 2026'},
+  {id:'el',tier:1,title:'Emergency Lockdown Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Emergency_Lockdown_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sc',tier:1,title:'Supervision of Children Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Children_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'cwb',tier:1,title:"Children's Wellbeing Policy",cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Childrens_Wellbeing_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'ie',tier:1,title:'Inclusion and Equality Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Inclusion_Equality_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'ict',tier:1,title:'Intimate Care and Toileting Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Intimate_Care_Toileting_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'kp',tier:1,title:'Key Person Policy',cat:'Children & Families',sites:['all'],file:'Greencoat_Key_Person_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'preg_guide',tier:1,title:'Pregnancy & Family Leave — Staff Guide',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Staff_Guide_Mar2026.docx',adopted:'March 2026'},
+  {id:'sg_summ',tier:2,title:'Safeguarding Staff Summary Sheet',cat:'Safeguarding',sites:['all'],file:'Greencoat_Safeguarding_Staff_Summary_Feb2026.docx',adopted:'February 2026'},
+  {id:'nappy',tier:2,title:'Nappy Changing Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Nappy_Changing_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'ric',tier:2,title:'Respectful Intimate Care Policy',cat:'Health & Wellbeing',sites:['all'],file:'Greencoat_Respectful_Intimate_Care_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sleep',tier:2,title:'Sleep Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sleep_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'infect',tier:2,title:'Infection Control Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Infection_Control_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sick',tier:2,title:'Sickness and Illness Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Sickness_Illness_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'send',tier:2,title:'SEND Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_SEND_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'dp',tier:2,title:'Data Protection Policy',cat:'Governance',sites:['all'],file:'Greencoat_Data_Protection_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'mob',tier:2,title:'Mobile Phone and Electronic Device Policy',cat:'Governance',sites:['all'],file:'Greencoat_Mobile_Phone_Electronic_Device_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sn',tier:2,title:'Social Networking Policy',cat:'Governance',sites:['all'],file:'Greencoat_Social_Networking_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'nutri',tier:2,title:'Nutrition and Mealtimes Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Nutrition_Mealtimes_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'packed',tier:2,title:'Packed Lunch Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Packed_Lunch_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'out',tier:2,title:'Outdoor Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Outdoor_Play_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'set',tier:2,title:'Settling In Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Settling_In_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'trans',tier:2,title:'Transitions Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Transitions_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'pap',tier:2,title:'Parents as Partners Policy',cat:'Families',sites:['all'],file:'Greencoat_Parents_as_Partners_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'comp',tier:2,title:'Complaints and Compliments Policy',cat:'Governance',sites:['all'],file:'Greencoat_Complaints_Compliments_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'cctv_sh',tier:2,title:'CCTV Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_CCTV_Policy_Sparkhill_Mar2026.docx',adopted:'March 2026'},
+  {id:'cctv_bw',tier:2,title:'CCTV Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_CCTV_Policy_Bearwood_Mar2026.docx',adopted:'March 2026'},
+  {id:'supv_sh',tier:2,title:'Supervision Policy — Sparkhill',cat:'Staffing',sites:['sparkhill'],file:'Greencoat_Supervision_Policy_Sparkhill_Mar2026.docx',adopted:'March 2026'},
+  {id:'supv_sm',tier:2,title:'Supervision Policy — Bearwood & Billesley Ark',cat:'Staffing',sites:['bearwood','billesley'],file:'Greencoat_Supervision_Policy_Bearwood_Billesley_Mar2026.docx',adopted:'March 2026'},
+  {id:'lac',tier:2,title:'Looked After Children Policy',cat:'Safeguarding',sites:['all'],file:'Greencoat_Looked_After_Children_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sf',tier:2,title:'Separated Family Policy',cat:'Families',sites:['all'],file:'Greencoat_Separated_Family_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'school',tier:2,title:'School Collection Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_School_Collection_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'visit',tier:2,title:'Visits and Outings Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'bite',tier:2,title:'Biting Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Biting_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'baby_sh',tier:2,title:'Caring for Babies Policy — Sparkhill',cat:'Health & Care',sites:['sparkhill'],file:'Greencoat_Caring_for_Babies_Policy_Sparkhill_Mar2026.docx',adopted:'March 2026'},
+  {id:'baby_ot',tier:2,title:'Caring for Babies Policy — Bearwood & Billesley Ark',cat:'Health & Care',sites:['bearwood','billesley'],file:'Greencoat_Caring_for_Babies_Policy_Bearwood_Billesley_Mar2026.docx',adopted:'March 2026'},
+  {id:'childreg',tier:2,title:'Child Registration Form',cat:'Governance',sites:['all'],file:'Greencoat_Child_Registration_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'attend',tier:2,title:'Attendance Policy',cat:'Governance',sites:['all'],file:'Greencoat_Attendance_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'abs_children',tier:2,title:'Absence Policy (Children)',cat:'Governance',sites:['all'],file:'Greencoat_Absence_Policy_Children_Mar2026.docx',adopted:'March 2026'},
+  {id:'fire_sh',tier:2,title:'Fire Safety Policy — Sparkhill',cat:'Health & Safety',sites:['sparkhill'],file:'Greencoat_Fire_Safety_Policy_Sparkhill_Mar2026.docx',adopted:'March 2026'},
+  {id:'fire_bw',tier:2,title:'Fire Safety Policy — Bearwood',cat:'Health & Safety',sites:['bearwood'],file:'Greencoat_Fire_Safety_Policy_Bearwood_Mar2026.docx',adopted:'March 2026'},
+  {id:'fire_ba',tier:2,title:'Fire Safety Policy — Billesley Ark',cat:'Health & Safety',sites:['billesley'],file:'Greencoat_Fire_Safety_Policy_Billesley_Ark_Mar2026.docx',adopted:'March 2026'},
+  {id:'hs',tier:2,title:'Health and Safety — General Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Health_Safety_General_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'abs',tier:3,title:'Absence Management Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Absence_Management_Procedure_Mar2026.docx',adopted:'March 2026'},
+  {id:'aiu',tier:3,title:'Acceptable Internet Use Policy',cat:'Governance',sites:['all'],file:'Greencoat_Acceptable_Internet_Use_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'asr',tier:3,title:'Access, Storage and Retention of Records Policy',cat:'Governance',sites:['all'],file:'Greencoat_Access_Storage_Retention_Records_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'adm_sh',tier:3,title:'Admissions Policy — Sparkhill',cat:'Governance',sites:['sparkhill'],file:'Greencoat_Admissions_Policy_Sparkhill_Mar2026.docx',adopted:'March 2026'},
+  {id:'adm_bw',tier:3,title:'Admissions Policy — Bearwood',cat:'Governance',sites:['bearwood'],file:'Greencoat_Admissions_Policy_Bearwood_Mar2026.docx',adopted:'March 2026'},
+  {id:'adm_ba',tier:3,title:'Admissions Policy — Billesley Ark',cat:'Governance',sites:['billesley'],file:'Greencoat_Admissions_Policy_Billesley_Ark_Mar2026.docx',adopted:'March 2026'},
+  {id:'alc',tier:3,title:'Alcohol and Substance Misuse Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Alcohol_Substance_Misuse_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'brib',tier:3,title:'Anti-Bribery Policy',cat:'Governance',sites:['all'],file:'Greencoat_Anti_Bribery_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'berev',tier:3,title:'Bereavement Policy',cat:'Families',sites:['all'],file:'Greencoat_Bereavement_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'cctv_log',tier:3,title:'CCTV Monitoring Log',cat:'Governance',sites:['sparkhill','bearwood'],file:'Greencoat_CCTV_Monitoring_Log_Mar2026.docx',adopted:'March 2026'},
+  {id:'crp',tier:3,title:'Conflict Resolution with Parents Policy',cat:'Families',sites:['all'],file:'Greencoat_Conflict_Resolution_Parents_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'crit',tier:3,title:'Critical Incident Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Critical_Incident_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'cyber',tier:3,title:'Cyber Security Policy',cat:'Governance',sites:['all'],file:'Greencoat_Cyber_Security_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'disc_beh',tier:3,title:'Dealing with Discriminatory Behaviour Policy',cat:'Inclusion',sites:['all'],file:'Greencoat_Dealing_with_Discriminatory_Behaviour_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'discip',tier:3,title:'Disciplinary Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Disciplinary_Procedure_Mar2026.docx',adopted:'March 2026'},
+  {id:'elo',tier:3,title:'Early Learning Opportunities Statement',cat:'Child Development',sites:['all'],file:'Greencoat_Early_Learning_Opportunities_Statement_Mar2026.docx',adopted:'March 2026'},
+  {id:'env',tier:3,title:'Environmental Sustainability Policy',cat:'Governance',sites:['all'],file:'Greencoat_Environmental_Sustainability_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'equip',tier:3,title:'Equipment and Resources Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Equipment_Resources_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'food_play',tier:3,title:'Food Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Food_Play_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'gdpr',tier:3,title:'GDPR Privacy Notice',cat:'Governance',sites:['all'],file:'Greencoat_GDPR_Privacy_Notice_Mar2026.docx',adopted:'March 2026'},
+  {id:'griev',tier:3,title:'Grievance Procedure',cat:'Staffing',sites:['all'],file:'Greencoat_Grievance_Procedure_Mar2026.docx',adopted:'March 2026'},
+  {id:'gun',tier:3,title:'Gun and Superhero Play Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Gun_Superhero_Play_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'harass',tier:3,title:'Harassment and Sexual Harassment Risk Assessment',cat:'Staffing',sites:['all'],file:'Greencoat_Harassment_Sexual_Harassment_Risk_Assessment_Mar2026.docx',adopted:'March 2026'},
+  {id:'hwp',tier:3,title:'Healthy Workplace Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Healthy_Workplace_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'imm',tier:3,title:'Immunisation Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'immd',tier:3,title:'Immunisation Disclaimer Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Immunisation_Disclaimer_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'inc_form',tier:3,title:'Incident Form',cat:'Health & Safety',sites:['all'],file:'Greencoat_Incident_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'lone',tier:3,title:'Lone Working Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Lone_Working_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'llcf',tier:3,title:'Low-Level Concern Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Low_Level_Concern_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'exw',tier:3,title:'Managing Extreme Weather Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Managing_Extreme_Weather_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'mh',tier:3,title:'Manual Handling Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Manual_Handling_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'med_form',tier:3,title:'Medication Form',cat:'Health & Care',sites:['all'],file:'Greencoat_Medication_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'men',tier:3,title:'Menopause Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Menopause_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'miss_out',tier:3,title:'Missing Child from Outings Procedure',cat:'Child Safety',sites:['all'],file:'Greencoat_Missing_Child_from_Outings_Procedure_Mar2026.docx',adopted:'March 2026'},
+  {id:'more',tier:3,title:'More Able and Talented Children Policy',cat:'Child Development',sites:['all'],file:'Greencoat_More_Able_Talented_Children_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'mult',tier:3,title:'Multiple Birth Families Policy',cat:'Families',sites:['all'],file:'Greencoat_Multiple_Birth_Families_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'nos',tier:3,title:'No Smoking and Vaping Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_No_Smoking_Vaping_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'nop',tier:3,title:'Nursery Operational Plan',cat:'Governance',sites:['all'],file:'Greencoat_Nursery_Operational_Plan_Mar2026.docx',adopted:'March 2026'},
+  {id:'ora',tier:3,title:'Overall Approach to Risk Assessment',cat:'Health & Safety',sites:['all'],file:'Greencoat_Overall_Approach_Risk_Assessment_Mar2026.docx',adopted:'March 2026'},
+  {id:'perm',tier:3,title:'Permission Forms',cat:'Governance',sites:['all'],file:'Greencoat_Permission_Forms_Mar2026.docx',adopted:'March 2026'},
+  {id:'pers',tier:3,title:'Personnel Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Personnel_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'phys',tier:3,title:'Physical Activity Policy',cat:'Child Development',sites:['all'],file:'Greencoat_Physical_Activity_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'preg',tier:3,title:'Pregnancy and Family Leave Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Pregnancy_Family_Leave_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'qual',tier:3,title:'Quality Provision Policy',cat:'Governance',sites:['all'],file:'Greencoat_Quality_Provision_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'ref',tier:3,title:'Referral Form',cat:'Safeguarding',sites:['all'],file:'Greencoat_Referral_Form_Mar2026.docx',adopted:'March 2026'},
+  {id:'rtw',tier:3,title:'Return to Work Interview Record',cat:'Staffing',sites:['all'],file:'Greencoat_Return_to_Work_Interview_Record_Mar2026.docx',adopted:'March 2026'},
+  {id:'saf',tier:3,title:'Safety Checks',cat:'Health & Safety',sites:['all'],file:'Greencoat_Safety_Checks_Mar2026.docx',adopted:'March 2026'},
+  {id:'scr',tier:3,title:'Single Central Record',cat:'Staffing',sites:['all'],file:'Greencoat_Single_Central_Record_Mar2026.docx',adopted:'March 2026'},
+  {id:'spc',tier:3,title:'Special Consideration for Employees Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Special_Consideration_Employees_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sdt',tier:3,title:'Staff Development and Training Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Development_Training_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'swb',tier:3,title:'Staff Well-being Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Wellbeing_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'soc',tier:3,title:'Staff Working with Their Own Children Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Staff_Working_with_Own_Children_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'stud',tier:3,title:'Student Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Student_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'sv',tier:3,title:'Supervision of Visitors Policy',cat:'Child Safety',sites:['all'],file:'Greencoat_Supervision_of_Visitors_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'dum',tier:3,title:'Use of Dummies in Nursery Policy',cat:'Health & Care',sites:['all'],file:'Greencoat_Use_of_Dummies_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'vola',tier:3,title:'Volunteer Agreement',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteer_Agreement_Mar2026.docx',adopted:'March 2026'},
+  {id:'volp',tier:3,title:'Volunteers Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Volunteers_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'dse',tier:3,title:'Working with Display Screen Equipment Policy',cat:'Health & Safety',sites:['all'],file:'Greencoat_Working_with_Display_Screen_Equipment_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'yw',tier:3,title:'Young Worker Policy',cat:'Staffing',sites:['all'],file:'Greencoat_Young_Worker_Policy_Mar2026.docx',adopted:'March 2026'},
+  {id:'out_plan',tier:3,title:'Visits and Outings Planning Template',cat:'Child Safety',sites:['all'],file:'Greencoat_Visits_Outings_Planning_Mar2026.docx',adopted:'March 2026'},
 ];
 
-let STAFF = [...DEFAULT_STAFF];
-let POLICIES = [...DEFAULT_POLICIES];
-let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
+/* --- STATE ---------------------------------------------- */
+let TOKEN        = sessionStorage.getItem('gc_admin_token') || '';
+let POLICIES     = [...DEFAULT_POLICIES];
+let staffProfiles   = [];
+let pfaCerts        = [];
+let certifications  = [];
+let overviewStaff   = [];
+let activeTab    = 'compliance';
+let sortKey      = 't1Pct';
+let sortDir      = 1;
+let filterSite   = 'all';
+let actTypeFilter = 'all';
+let toastTimer   = null;
 
-async function saveGlobalConfig() {
-  try {
-    const res = await fetch('/api/admin-data?action=config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
-      body: JSON.stringify({ policies: POLICIES, staff: STAFF, config: CONFIG })
-    });
-    if (res.status === 401) throw new Error('Unauthorised — check ADMIN_PASSWORD env var matches your password');
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    // Also save locally as backup
-    localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
-    localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
-    localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
-    showToast('Live portal updated ✓', 'success');
-  } catch(e) {
-    // Fallback to localStorage only
-    localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
-    localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
-    localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
-    showToast('Saved locally (server sync failed: ' + e.message + ')', 'info');
-  }
+const SITE_LABELS = {sparkhill:'Sparkhill', bearwood:'Bearwood', billesley:'Billesley Ark'};
+const ROLES = ['Room Leader','Practitioner','Apprentice','DSL','Manager','Director'];
+const PFA_TYPES = ['Paediatric First Aid','Emergency Paediatric First Aid','Emergency First Aid at Work','First Aid at Work'];
+const CERT_TYPES = ['DBS Check','Safeguarding Training','First Aid at Work','Emergency First Aid at Work','Paediatric First Aid','CPD Training','Other'];
+const POLICY_CATS = ['Safeguarding','Staffing','Child Development','Health & Safety','Health & Care','Child Safety','Governance','Families','Inclusion','Health & Wellbeing','Children & Families'];
+
+/* --- UTILITIES ------------------------------------------ */
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function jss(s){ return JSON.stringify(String(s??'')); }
+
+function entryTs(e){
+  // handles both ts (localStorage/number) and timestamp (Blobs/ISO)
+  if (e.ts) return Number(e.ts);
+  if (e.timestamp) return new Date(e.timestamp).getTime();
+  return 0;
 }
 
-
-async function loadGlobalConfig() {
-  try {
-    const res = await fetch('/api/admin-data?action=config');
-    const json = await res.json();
-    if (json.ok && json.data) {
-      if (Array.isArray(json.data.policies) && json.data.policies.length > 0) POLICIES = json.data.policies;
-      if (Array.isArray(json.data.staff)    && json.data.staff.length > 0)    STAFF    = json.data.staff;
-      if (json.data.config) Object.assign(CONFIG, json.data.config);
-    }
-  } catch(e) {
-    // Offline fallback — read from localStorage
-    try {
-      const savedStaff = JSON.parse(localStorage.getItem('gc_admin_staff') || 'null');
-      if (Array.isArray(savedStaff) && savedStaff.length > 0) STAFF = savedStaff;
-      const savedPolicies = JSON.parse(localStorage.getItem('gc_admin_policies') || 'null');
-      if (Array.isArray(savedPolicies) && savedPolicies.length > 0) POLICIES = savedPolicies;
-      const savedConfig = JSON.parse(localStorage.getItem('gc_admin_config') || 'null');
-      if (savedConfig && typeof savedConfig === 'object') Object.assign(CONFIG, savedConfig);
-    } catch(e2) {}
-  }
+function fmtDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? String(iso) : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function fmtTs(ts){
+  if (!ts) return '—';
+  const ago = (Date.now()-ts)/86400000;
+  if (ago < 1) return 'Today';
+  if (ago < 2) return 'Yesterday';
+  if (ago < 7) return Math.floor(ago)+'d ago';
+  return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function daysAgo(ts){ return ts ? (Date.now()-ts)/86400000 : Infinity; }
+function daysUntil(iso){ return iso ? (new Date(iso)-Date.now())/86400000 : -Infinity; }
+function pctCls(p){ return p>=80?'g':p>=50?'a':'r'; }
+function pfaInfo(exp){
+  const d=daysUntil(exp);
+  if (d<0) return {cls:'r',label:'Expired'};
+  if (d<183) return {cls:'a',label:'Expiring Soon'};
+  return {cls:'g',label:'Valid'};
+}
+function certInfo(exp){
+  const d=daysUntil(exp);
+  if (d<0) return {cls:'r',label:'Expired'};
+  if (d<60) return {cls:'a',label:'Due Soon'};
+  return {cls:'g',label:'Valid'};
+}
+function siteLabel(sites){
+  if (!sites||sites.includes('all')) return 'All Sites';
+  return sites.map(s=>SITE_LABELS[s]||s).join(', ');
 }
 
-
-async function restoreDefaults() {
-  if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 118 Greencoat policies and default staff list.")) return;
-  POLICIES = [...DEFAULT_POLICIES];
-  STAFF = [...DEFAULT_STAFF];
-  await saveGlobalConfig();
-  renderPolicyTable();
-  renderStaffList();
-  buildCatFilter();
-  showToast("Defaults restored successfully.", "success");
-}
-
-async function init() {
-  await loadGlobalConfig();
-  renderPolicyTable();
-  renderStaffList();
-  loadSettingsUI();
-  loadCompliance();
-  buildCatFilter();
-}
-
-function switchTab(id, el) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
-  el.classList.add('active');
-  if (id === 'compliance') loadCompliance();
-  if (id === 'heatmap') loadHeatmap();
-  if (id === 'aiquestions') loadAiQuestions();
-
-  if (id === 'pins') renderPinTable();
-}
-
-function buildCatFilter() {
-  const cats = [...new Set(POLICIES.map(p=>p.cat || 'General'))].sort();
-  const sel = document.getElementById('filterCat');
-  sel.innerHTML = '<option value="">All categories</option>';
-  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
-}
-
-function renderPolicyTable() {
-  const q    = document.getElementById('searchPolicies').value.toLowerCase();
-  const tier = document.getElementById('filterTier').value;
-  const cat  = document.getElementById('filterCat').value;
-  const list = POLICIES.filter(p => {
-    if (!p) return false;
-    const pTier = parseInt(p.tier) || 3;
-    const pCat = p.cat || 'General';
-    const pTitle = p.title || '';
-    if (tier && pTier !== parseInt(tier)) return false;
-    if (cat && pCat !== cat) return false;
-    if (q && !pTitle.toLowerCase().includes(q) && !pCat.toLowerCase().includes(q)) return false;
-    return true;
+/* --- COMPLIANCE CALCULATIONS ---------------------------- */
+function applicable(tier, sites){
+  return POLICIES.filter(p=>{
+    if (p.tier!==tier) return false;
+    if (p.sites.includes('all')) return true;
+    if (!sites||sites.includes('all')) return true;
+    return sites.some(s=>p.sites.includes(s));
   });
-  document.getElementById('policyCount').textContent = `${list.length} of ${POLICIES.length} policies shown`;
-  const tcls = {1:'t1b',2:'t2b',3:'t3b'}; const tlbl = {1:'Tier 1',2:'Tier 2',3:'Tier 3'};
-  document.getElementById('policyTbody').innerHTML = list.map(p => {
-    const pTier = parseInt(p.tier) || 3;
-    const pCat = p.cat || 'General';
-    const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
-    const pTitle = p.title || 'Untitled';
-    return `<tr><td>${pTitle}</td><td><span class="tier-badge ${tcls[pTier]||'t3b'}">${tlbl[pTier]||'Tier 3'}</span></td><td>${pCat}</td><td>${pSites.includes('all') ? 'All' : pSites.map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(', ')}</td><td>${p.adopted||''}</td><td><button class="act-btn btn-edit" onclick="openEditModal('${p.id}')">Edit</button><button class="act-btn btn-del" style="margin-left:.3rem" onclick="deletePolicy('${p.id}')">Delete</button></td></tr>`;
-  }).join('');
+}
+function tierPct(acks, tier, sites){
+  const ap = applicable(tier, sites);
+  if (!ap.length) return 100;
+  return Math.round(ap.filter(p=>acks.includes(p.id)).length/ap.length*100);
+}
+function lastActiveTs(activity){
+  if (!activity||!activity.length) return null;
+  return activity.reduce((m,e)=>{ const t=entryTs(e); return t>m?t:m; }, 0) || null;
 }
 
-function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Add policy'; document.getElementById('editId').value = ''; document.getElementById('editTitle').value = ''; document.getElementById('editTier').value = '3'; document.getElementById('editCat').value = 'Governance'; document.getElementById('editFile').value = ''; document.getElementById('editAdopted').value = 'March 2026'; document.getElementById('editDesc').value = '';
-  ['siteAll','siteSh','siteBw','siteBa'].forEach(id => document.getElementById(id).checked = false); document.getElementById('siteAll').checked = true; document.getElementById('policyModal').classList.add('open');
+/* --- MERGE STAFF --------------------------------------- */
+function computedStaff(){
+  const pm = new Map(staffProfiles.map(p=>[p.staffKey,p]));
+  const bm = new Map(overviewStaff.map(s=>[s.staffKey,s]));
+  const keys = new Set([...pm.keys(),...bm.keys()]);
+  return [...keys].map(k=>{
+    const prof = pm.get(k);
+    const blob = bm.get(k);
+    const name  = prof?.name || blob?.name || k.replace(/_/g,' ');
+    const sites = prof?.sites || ['all'];
+    // overview uses 'acknowledged', fallback to 'acks'
+    const acks  = blob?.acknowledged || blob?.acks || [];
+    const activity = blob?.activity || [];
+    return {
+      staffKey:k, name,
+      email:prof?.email||'', role:prof?.role||'',
+      sites, startDate:prof?.startDate||'',
+      active:prof?.active!==false,
+      reminders:prof?.reminders||[],
+      acks, activity,
+      lastActive:lastActiveTs(activity),
+      aiChatCount:blob?.aiChatCount||(activity.filter(e=>e.type==='aichat').length),
+      quizCount:blob?.quizCount||(activity.filter(e=>e.type==='quiz').length),
+      t1Pct:tierPct(acks,1,sites),
+      t2Pct:tierPct(acks,2,sites),
+      t3Pct:tierPct(acks,3,sites),
+    };
+  }).filter(s=>s.active);
 }
 
-function openEditModal(id) {
-  const p = POLICIES.find(x=>x.id===id); if (!p) return;
-  const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
-  document.getElementById('modalTitle').textContent = 'Edit policy'; document.getElementById('editId').value = p.id; document.getElementById('editTitle').value = p.title||''; document.getElementById('editTier').value = p.tier||3; document.getElementById('editCat').value = p.cat||'Governance'; document.getElementById('editFile').value = p.file||''; document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
-  document.getElementById('siteAll').checked = pSites.includes('all'); document.getElementById('siteSh').checked = pSites.includes('sparkhill'); document.getElementById('siteBw').checked = pSites.includes('bearwood'); document.getElementById('siteBa').checked = pSites.includes('billesley');
-  document.getElementById('policyModal').classList.add('open');
-}
-
-function closeModal() { document.getElementById('policyModal').classList.remove('open'); }
-
-function savePolicy() {
-  const id = document.getElementById('editId').value; const sites = [];
-  if (document.getElementById('siteAll').checked) sites.push('all'); if (document.getElementById('siteSh').checked) sites.push('sparkhill'); if (document.getElementById('siteBw').checked) sites.push('bearwood'); if (document.getElementById('siteBa').checked) sites.push('billesley');
-  const title = document.getElementById('editTitle').value.trim();
-  const file  = document.getElementById('editFile').value.trim();
-  if (!title) { showToast('Policy title is required', 'error'); return; }
-  if (!file)  { showToast('File name is required', 'error'); return; }
-  const data = { id: id || 'p_' + Date.now(), tier: parseInt(document.getElementById('editTier').value), title, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], file, adopted: document.getElementById('editAdopted').value, desc: document.getElementById('editDesc').value };
-  if (id) { const i = POLICIES.findIndex(p=>p.id===id); if (i>=0) POLICIES[i] = data; } else { POLICIES.push(data); }
-  closeModal(); renderPolicyTable(); buildCatFilter(); saveGlobalConfig();
-}
-
-function deletePolicy(id) { if (!confirm('Delete this policy permanently?')) return; POLICIES = POLICIES.filter(p=>p.id!==id); renderPolicyTable(); saveGlobalConfig(); }
-
-function renderStaffList() {
-  if (!Array.isArray(STAFF)) STAFF = [];
-  document.getElementById('staffCount').textContent = `${STAFF.length} staff members`;
-  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${n}<button class="chip-del" onclick="removeStaff('${(n||'').replace(/'/g,"\\'")}')">✕</button></div>`).join('');
-}
-
-function addStaff() {
-  const v = document.getElementById('newStaffName').value.trim();
-  if (!v) return;
-  if (!Array.isArray(STAFF)) STAFF = [];
-  if (STAFF.includes(v)) {
-    showToast('Staff member already exists', 'error');
-    return;
-  }
-  STAFF.push(v);
-  renderStaffList();
-  document.getElementById('newStaffName').value = '';
-  saveGlobalConfig();
-}
-
-function removeStaff(n) { if(!confirm(`Remove ${n} from active staff?`)) return; STAFF = STAFF.filter(s=>s!==n); renderStaffList(); saveGlobalConfig(); }
-
-function loadSettingsUI() { document.getElementById('setOrgName').value = CONFIG.orgName || ''; document.getElementById('setReviewDate').value = CONFIG.reviewDate || ''; document.getElementById('setAdoptedDate').value = CONFIG.adoptedDate || ''; }
-function saveSettings() { CONFIG.orgName = document.getElementById('setOrgName').value; CONFIG.adoptedDate = document.getElementById('setAdoptedDate').value; CONFIG.reviewDate = document.getElementById('setReviewDate').value; saveGlobalConfig(); }
-function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
-
-// ── COMPLIANCE ─────────────────────────────────────────────────────────────
-async function loadCompliance() {
+/* --- AUTH ---------------------------------------------- */
+async function login(){
+  const input=document.getElementById('auth-input');
+  const pw=input.value.trim();
+  if (!pw) return;
+  const btn=document.getElementById('auth-btn');
+  btn.disabled=true; btn.textContent='Checking…';
+  document.getElementById('auth-error').textContent='';
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderCompliance(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
-  }
-}
-
-
-async function loadStaffDetail(staffKey, name) {
-  try {
-    const actKey = 'gc_activity_' + staffKey;
-    let activity = [];
-    try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-    const reads = activity.filter(e => e.action === 'read').slice(-10).reverse();
-    const quizzes = activity.filter(e => e.action === 'quiz');
-    const recentReads = reads.map(r => `<li style="margin-bottom:.3rem">${r.key} <span style="color:var(--text3);font-size:.72rem">${new Date(r.timestamp||r.date).toLocaleDateString('en-GB')}</span></li>`).join('');
-    const quizItems = quizzes.slice(-5).reverse().map(q => {
-      let score = ''; try { const v = JSON.parse(q.value); score = ` — ${v.score}/${v.total}`; } catch(e) {}
-      return `<li style="margin-bottom:.3rem">${q.key}${score}</li>`;
-    }).join('');
-    const el = document.getElementById('detail_' + staffKey);
-    if (el) el.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;font-size:.82rem">
-        <div><strong>Recent reads</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${recentReads||'<li>None yet</li>'}</ul></div>
-        <div><strong>Recent quizzes</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizItems||'<li>None yet</li>'}</ul></div>
-      </div>`;
-  } catch(e) { console.error(e); }
-}
-
-
-async function loadAiQuestions() {
-  const listEl = document.getElementById('aiQList');
-  const statsEl = document.getElementById('aiQStats');
-  listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
-  try {
-    let allChats = [];
-
-    // Try server first
-    try {
-      const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-      if (res.ok) {
-        const data = await res.json();
-        for (const s of (data.staff || [])) {
-          for (const c of (s.recentAiChats || s.activity?.filter(a => a.type==='aichat') || [])) {
-            allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
-          }
-        }
-      }
-    } catch(e) {}
-
-    // If server returned nothing, fall back to localStorage
-    if (allChats.length === 0) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith('gc_activity_')) continue;
-        const staffName = k.replace('gc_activity_', '').replace(/_/g, ' ');
-        try {
-          const entries = JSON.parse(localStorage.getItem(k) || '[]');
-          for (const e of entries) {
-            if (e.action === 'aichat') {
-              allChats.push({ staff: staffName, question: e.key || '', policy: '', date: e.timestamp || e.date || '' });
-            }
-          }
-        } catch(e) {}
-      }
+    const r=await fetch('/api/admin-data?action=overview',{headers:{'Authorization':'Bearer '+pw}});
+    if (r.status===401){
+      document.getElementById('auth-error').textContent='Incorrect password';
+      input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake');
+      input.value=''; btn.disabled=false; btn.textContent='Sign in'; return;
     }
+    if (!r.ok) throw new Error('Server error '+r.status);
+    TOKEN=pw; sessionStorage.setItem('gc_admin_token',pw); showDashboard();
+  } catch(e){
+    document.getElementById('auth-error').textContent='Connection error — try again';
+    btn.disabled=false; btn.textContent='Sign in';
+  }
+}
+function logout(){
+  TOKEN=''; sessionStorage.removeItem('gc_admin_token');
+  document.getElementById('app').hidden=true;
+  document.getElementById('auth-wrap').hidden=false;
+  document.getElementById('auth-input').value='';
+  document.getElementById('auth-error').textContent='';
+  document.getElementById('auth-btn').textContent='Sign in';
+}
+function checkAuth(){ if (TOKEN) showDashboard(); }
+function showDashboard(){
+  document.getElementById('auth-wrap').hidden=true;
+  document.getElementById('app').hidden=false;
+  loadAll();
+}
 
-    allChats.sort((a,b) => b.date.localeCompare(a.date));
-    window._allChats = allChats;
+/* --- DATA LOADING --------------------------------------- */
+async function loadAll(){
+  setLoading(true);
+  try {
+    await Promise.all([loadConfig(), loadOverview()]);
+    renderAll();
+    document.getElementById('last-refreshed').textContent=
+      'Updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  } catch(e){ toast('Failed to load: '+e.message,'error'); }
+  finally { setLoading(false); }
+}
+async function loadConfig(){
+  const r=await fetch('/api/admin-data?action=config');
+  if (!r.ok) return;
+  const j=await r.json();
+  if (!j.ok||!j.data) return;
+  if (Array.isArray(j.data.policies)&&j.data.policies.length>=DEFAULT_POLICIES.length) POLICIES=j.data.policies;
+  staffProfiles  = Array.isArray(j.data.staffProfiles)  ? j.data.staffProfiles  : [];
+  pfaCerts       = Array.isArray(j.data.pfaCerts)        ? j.data.pfaCerts       : [];
+  certifications = Array.isArray(j.data.certifications)  ? j.data.certifications : [];
+}
+async function loadOverview(){
+  const r=await fetch('/api/admin-data?action=overview',{headers:{'Authorization':'Bearer '+TOKEN}});
+  if (r.status===401){ logout(); return; }
+  if (!r.ok) throw new Error('Overview failed');
+  const j=await r.json();
+  if (j.ok) overviewStaff=j.staff||[];
+}
+async function saveConfig(){
+  const r=await fetch('/api/admin-data?action=config',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'},
+    body:JSON.stringify({policies:POLICIES,staffProfiles,pfaCerts,certifications})
+  });
+  if (r.status===401){ logout(); throw new Error('Session expired'); }
+  const j=await r.json();
+  if (!j.ok) throw new Error(j.error||'Save failed');
+}
 
-    const staffNames = [...new Set(allChats.map(c => c.staff))].sort();
-    const policyNames = [...new Set(allChats.map(c => c.policy).filter(Boolean))].sort();
-    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${s}">${s}</option>`).join('');
-    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${p}">${p}</option>`).join('');
+/* --- RENDER -------------------------------------------- */
+function renderAll(){ updateHero(); renderActiveTab(); }
+function renderActiveTab(){
+  ({compliance:renderCompliance,staff:renderStaff,policies:renderPolicies,
+    pfa:renderPFA,expiry:renderExpiry,activity:renderActivity})[activeTab]?.();
+}
 
-    statsEl.innerHTML = `
-      <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
-        <span style="font-size:1.1rem;font-weight:700;color:var(--text)">${allChats.length}</span> total questions
+/* --- HERO --------------------------------------------- */
+function updateHero(){
+  const staff=computedStaff();
+  const fullyT1=staff.filter(s=>s.t1Pct===100).length;
+  const pct=staff.length?Math.round(fullyT1/staff.length*100)+'%':'—';
+  const overdue=staff.filter(s=>s.t1Pct<100).length;
+  const inactive=staff.filter(s=>daysAgo(s.lastActive)>14).length;
+  const pfaAlerts=pfaCerts.filter(c=>daysUntil(c.expiryDate)<60).length;
+  document.getElementById('h-compliance').textContent=pct;
+  document.getElementById('h-overdue').textContent=overdue;
+  document.getElementById('h-inactive').textContent=inactive;
+  const pfaEl=document.getElementById('h-pfa');
+  pfaEl.textContent=pfaAlerts||'✓';
+  pfaEl.className='hv '+(pfaAlerts>0?'red':'green');
+  document.getElementById('h-overdue').className='hv '+(overdue>0?'red':'green');
+  document.getElementById('h-inactive').className='hv '+(inactive>0?'amber':'green');
+}
+
+/* --- COMPLIANCE TAB ------------------------------------ */
+function renderCompliance(){
+  let staff=computedStaff();
+  if (filterSite!=='all') staff=staff.filter(s=>s.sites.includes('all')||s.sites.includes(filterSite));
+  staff.sort((a,b)=>{
+    let av=a[sortKey],bv=b[sortKey];
+    if (sortKey==='sites'){ av=siteLabel(a.sites); bv=siteLabel(b.sites); }
+    if (typeof av==='string'){ av=av.toLowerCase(); bv=(bv||'').toLowerCase(); }
+    if (av===null||av===undefined) return sortDir;
+    if (bv===null||bv===undefined) return -sortDir;
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+  const si=k=>sortKey===k?(sortDir===1?' ↑':' ↓'):'';
+  const rows=staff.map(s=>{
+    const inact=daysAgo(s.lastActive)>14;
+    return `<tr class="${inact?'dim':''}">
+      <td class="nc"><span style="cursor:pointer;color:var(--teal)" onclick="openDetail(${jss(s.staffKey)})">${esc(s.name)}</span>${s.role?` <span class="role-tag">${esc(s.role)}</span>`:''}</td>
+      <td>${esc(siteLabel(s.sites))}</td>
+      <td><span class="pct ${pctCls(s.t1Pct)}">${s.t1Pct}%</span></td>
+      <td><span class="pct ${pctCls(s.t2Pct)}">${s.t2Pct}%</span></td>
+      <td><span class="pct ${pctCls(s.t3Pct)}">${s.t3Pct}%</span></td>
+      <td class="${inact?'amber':''}">${fmtTs(s.lastActive)}</td>
+      <td class="ac">
+        <button class="btn xs teal" onclick="openDetail(${jss(s.staffKey)})">Detail</button>
+        <button class="btn xs warn" onclick="openReminder(${jss(s.staffKey)})">Remind</button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="7" class="empty-td">No staff data yet — add staff in the Staff tab or wait for portal activity.</td></tr>`;
+  document.getElementById('tab-compliance').innerHTML=`
+    <div class="toolbar">
+      <select style="width:auto" onchange="filterSite=this.value;renderCompliance()">
+        <option value="all">All Sites</option>
+        <option value="sparkhill" ${filterSite==='sparkhill'?'selected':''}>Sparkhill</option>
+        <option value="bearwood"  ${filterSite==='bearwood'?'selected':''}>Bearwood</option>
+        <option value="billesley" ${filterSite==='billesley'?'selected':''}>Billesley Ark</option>
+      </select>
+      <span class="count-lbl">${staff.length} staff</span>
+      <div class="toolbar-r"><button class="btn" onclick="exportComplianceCSV()">↓ Compliance CSV</button></div>
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr>
+        <th class="sort" onclick="setSort('name')">Name${si('name')}</th>
+        <th class="sort" onclick="setSort('sites')">Site${si('sites')}</th>
+        <th class="sort" onclick="setSort('t1Pct')">Tier 1 Essential${si('t1Pct')}</th>
+        <th class="sort" onclick="setSort('t2Pct')">Tier 2 Important${si('t2Pct')}</th>
+        <th class="sort" onclick="setSort('t3Pct')">Tier 3 Standard${si('t3Pct')}</th>
+        <th class="sort" onclick="setSort('lastActive')">Last Active${si('lastActive')}</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function setSort(k){ if (sortKey===k) sortDir=-sortDir; else {sortKey=k;sortDir=1;} renderCompliance(); }
+
+/* --- STAFF DETAIL MODAL -------------------------------- */
+function openDetail(key){
+  const s=computedStaff().find(x=>x.staffKey===key);
+  if (!s) return;
+  function tierSec(tier){
+    const ap=applicable(tier,s.sites);
+    const cnt=ap.filter(p=>s.acks.includes(p.id)).length;
+    const pct=ap.length?Math.round(cnt/ap.length*100):100;
+    const rows=ap.map(p=>{
+      const ok=s.acks.includes(p.id);
+      // quiz entries for this policy
+      const qe=s.activity.filter(e=>e.type==='quiz'&&(e.key===p.id||e.policyId===p.id));
+      const best=qe.length?Math.max(...qe.map(e=>Number(e.value)||0)):null;
+      return `<tr>
+        <td>${esc(p.title)}</td>
+        <td class="muted">${esc(p.cat)}</td>
+        <td>${ok?'<span class="ack-y">✓ Acknowledged</span>':'<span class="ack-n">—</span>'}</td>
+        <td class="muted">${best!==null?best+'/5':'—'}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="dsec">
+      <h4 class="t${tier}">Tier ${tier} — ${['','Essential','Important','Standard'][tier]} &nbsp;<span style="color:var(--text2);font-weight:400">${cnt}/${ap.length} (${pct}%)</span></h4>
+      <div class="table-wrap"><table class="dt">
+        <thead><tr><th>Policy</th><th>Category</th><th>Status</th><th>Best Quiz</th></tr></thead>
+        <tbody>${rows||'<tr><td colspan="4" class="empty-td">No applicable policies</td></tr>'}</tbody>
+      </table></div>
+    </div>`;
+  }
+  // AI chat history — key=question, value=reply (per AGENTS.md)
+  const chats=s.activity.filter(e=>e.type==='aichat').slice(-5).reverse();
+  const chatHtml=chats.length
+    ?chats.map(e=>`<div class="chat-entry">
+        <div class="chat-q">${esc(e.key||'')}</div>
+        <div class="chat-a">${esc(e.value||'')}</div>
+        <div class="chat-ts">${fmtTs(entryTs(e))}</div>
+      </div>`).join('')
+    :'<p style="color:var(--text3);font-size:.8125rem">No AI chat activity</p>';
+  // Quiz history
+  const quizzes=s.activity.filter(e=>e.type==='quiz').slice(-10).reverse();
+  const quizHtml=quizzes.length
+    ?`<div class="table-wrap"><table class="dt">
+        <thead><tr><th>Policy</th><th>Score</th><th>Date</th></tr></thead>
+        <tbody>${quizzes.map(e=>`<tr>
+          <td>${esc(e.policyTitle||e.key||'—')}</td>
+          <td>${e.value!==null&&e.value!==undefined?e.value+'/5':'—'}</td>
+          <td class="muted">${fmtTs(entryTs(e))}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`
+    :'<p style="color:var(--text3);font-size:.8125rem">No quiz history</p>';
+  openModal(esc(s.name)+' — Compliance Detail',`
+    <div class="dmeta"><div class="mgrid">
+      <div><label>Role</label><span>${esc(s.role||'—')}</span></div>
+      <div><label>Email</label><span>${esc(s.email||'—')}</span></div>
+      <div><label>Sites</label><span>${esc(siteLabel(s.sites))}</span></div>
+      <div><label>Start Date</label><span>${s.startDate?fmtDate(s.startDate):'—'}</span></div>
+      <div><label>Last Active</label><span>${fmtTs(s.lastActive)}</span></div>
+      <div><label>Total Acks</label><span>${s.acks.length}</span></div>
+      <div><label>AI Chats</label><span>${s.aiChatCount}</span></div>
+      <div><label>Quizzes</label><span>${s.quizCount}</span></div>
+    </div></div>
+    <div style="margin-bottom:10px">
+      <button class="btn warn" onclick="closeModal();openReminder(${jss(key)})">Send Reminder</button>
+    </div>
+    ${tierSec(1)}${tierSec(2)}${tierSec(3)}
+    <div class="dsec"><h4>Quiz History (last 10)</h4>${quizHtml}</div>
+    <div class="dsec"><h4>Recent AI Conversations (last 5)</h4>${chatHtml}</div>`);
+}
+
+/* --- REMINDER MODAL ------------------------------------ */
+function openReminder(staffKey){
+  const s=computedStaff().find(x=>x.staffKey===staffKey);
+  if (!s) return;
+  const pending=applicable(1,s.sites).filter(p=>!s.acks.includes(p.id));
+  if (!pending.length){ toast('All Tier 1 policies already acknowledged','success'); return; }
+  const items=pending.map(p=>`
+    <label style="display:flex;align-items:flex-start;gap:9px;padding:9px 11px;background:var(--bg4);border-radius:var(--r-md);margin-bottom:7px;cursor:pointer">
+      <input type="checkbox" name="rp" value="${esc(p.id)}" checked style="margin-top:2px;accent-color:var(--teal)">
+      <span style="font-size:.875rem;color:var(--text2)">${esc(p.title)}</span>
+    </label>`).join('');
+  openModal('Send Reminder — '+esc(s.name),`
+    <p style="color:var(--text2);font-size:.8125rem;margin-bottom:14px">Selected policies will appear as a reminder banner when this staff member next logs in to the portal.</p>
+    ${items}
+    <div class="factions">
+      <button class="btn primary" onclick="confirmReminder(${jss(staffKey)})">Set Reminder</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+function confirmReminder(staffKey){
+  const checks=[...document.querySelectorAll('[name="rp"]:checked')].map(c=>c.value);
+  if (!checks.length){ toast('Select at least one policy','error'); return; }
+  const idx=staffProfiles.findIndex(p=>p.staffKey===staffKey);
+  if (idx>=0) staffProfiles[idx].reminders=checks;
+  else {
+    const b=overviewStaff.find(s=>s.staffKey===staffKey);
+    staffProfiles.push({staffKey,name:b?.name||staffKey.replace(/_/g,' '),email:'',role:'',sites:['all'],startDate:'',active:true,reminders:checks});
+  }
+  saveConfig().then(()=>{toast('Reminder set','success');closeModal();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+
+/* --- STAFF TAB ----------------------------------------- */
+function renderStaff(){
+  const rows=staffProfiles.map(p=>{
+    const active=p.active!==false;
+    return `<tr class="${!active?'dim':''}">
+      <td class="nc">${esc(p.name)}</td>
+      <td><span class="role-tag">${esc(p.role||'—')}</span></td>
+      <td>${esc(siteLabel(p.sites))}</td>
+      <td class="muted">${esc(p.email||'—')}</td>
+      <td class="muted">${p.startDate?fmtDate(p.startDate):'—'}</td>
+      <td><span class="dot ${active?'g':'r'}"></span>${active?'Active':'Inactive'}</td>
+      <td class="ac">
+        <button class="btn xs" onclick="openEditStaff(${jss(p.staffKey)})">Edit</button>
+        ${active
+          ?`<button class="btn xs danger" onclick="deactivateStaff(${jss(p.staffKey)})">Deactivate</button>`
+          :`<button class="btn xs teal"   onclick="reactivateStaff(${jss(p.staffKey)})">Reactivate</button>`}
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="7" class="empty-td">No staff registered. Click "+ Add Staff" to begin.</td></tr>`;
+  document.getElementById('tab-staff').innerHTML=`
+    <div class="toolbar">
+      <span class="count-lbl">${staffProfiles.length} registered</span>
+      <div class="toolbar-r"><button class="btn primary" onclick="openAddStaff()">+ Add Staff</button></div>
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr><th>Name</th><th>Role</th><th>Sites</th><th>Email</th><th>Start Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function openAddStaff(){ openModal('Add Staff Member',staffForm(null),()=>saveStaff(null)); }
+function openEditStaff(key){ openModal('Edit Staff Member',staffForm(staffProfiles.find(p=>p.staffKey===key)),()=>saveStaff(key)); }
+function staffForm(p){
+  const sc=['sparkhill','bearwood','billesley'].map(s=>`
+    <label><input type="checkbox" name="ps" value="${s}" ${p?.sites?.includes(s)?'checked':''}> ${SITE_LABELS[s]}</label>`).join('');
+  return `<form id="sf" class="mform">
+    <div class="fr"><label>Full Name *</label>
+      <input type="text" name="name" value="${esc(p?.name||'')}" required placeholder="e.g. Zahra Rashid"></div>
+    <div class="fr"><label>Email</label>
+      <input type="email" name="email" value="${esc(p?.email||'')}" placeholder="name@greencoat.org"></div>
+    <div class="fr"><label>Role *</label>
+      <select name="role">${ROLES.map(r=>`<option${p?.role===r?' selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="fr"><label>Sites *</label>
+      <div class="chkgrp">
+        <label><input type="checkbox" name="ps" value="all" ${!p||p.sites?.includes('all')?'checked':''}> All Sites</label>
+        ${sc}
+      </div></div>
+    <div class="fr"><label>Start Date</label>
+      <input type="date" name="startDate" value="${esc(p?.startDate||'')}"></div>
+    <div class="factions">
+      <button type="submit" class="btn primary">Save</button>
+      <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`;
+}
+function saveStaff(existingKey){
+  const f=document.getElementById('sf');
+  const name=f.querySelector('[name="name"]').value.trim();
+  if (!name){ toast('Name is required','error'); return; }
+  const email=f.querySelector('[name="email"]').value.trim();
+  const role=f.querySelector('[name="role"]').value;
+  const startDate=f.querySelector('[name="startDate"]').value;
+  const sites=[...f.querySelectorAll('[name="ps"]:checked')].map(c=>c.value);
+  const key=existingKey||name.replace(/\s+/g,'_');
+  const ex=staffProfiles.find(p=>p.staffKey===key);
+  const prof={staffKey:key,name,email,role,sites:sites.length?sites:['all'],startDate,active:ex?.active!==false,reminders:ex?.reminders||[]};
+  const idx=staffProfiles.findIndex(p=>p.staffKey===key);
+  if (idx>=0) staffProfiles[idx]=prof; else staffProfiles.push(prof);
+  saveConfig().then(()=>{toast('Staff saved','success');closeModal();renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+function deactivateStaff(key){
+  if (!confirm('Deactivate this staff member? Their history is preserved.')) return;
+  const idx=staffProfiles.findIndex(p=>p.staffKey===key);
+  if (idx>=0) staffProfiles[idx].active=false;
+  saveConfig().then(()=>{toast('Deactivated','success');renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+function reactivateStaff(key){
+  const idx=staffProfiles.findIndex(p=>p.staffKey===key);
+  if (idx>=0) staffProfiles[idx].active=true;
+  saveConfig().then(()=>{toast('Reactivated','success');renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+
+/* --- POLICIES TAB -------------------------------------- */
+function renderPolicies(){
+  const t=[1,2,3].map(t=>POLICIES.filter(p=>p.tier===t).length);
+  const rows=POLICIES.map(p=>`<tr>
+    <td><span class="tb t${p.tier}">T${p.tier}</span></td>
+    <td class="nc" style="max-width:300px">${esc(p.title)}</td>
+    <td class="muted">${esc(p.cat)}</td>
+    <td class="muted">${esc(siteLabel(p.sites))}</td>
+    <td class="muted">${esc(p.adopted||'—')}</td>
+    <td class="ac"><button class="btn xs" onclick="openEditPolicy(${jss(p.id)})">Edit</button></td>
+  </tr>`).join('');
+  document.getElementById('tab-policies').innerHTML=`
+    <div class="toolbar">
+      <span class="count-lbl">${POLICIES.length} policies</span>
+      <span style="padding:2px 8px;border-radius:var(--r-full);font-size:.72rem;font-weight:600;background:var(--t1-bg);color:var(--t1)">T1:${t[0]}</span>
+      <span style="padding:2px 8px;border-radius:var(--r-full);font-size:.72rem;font-weight:600;background:var(--t2-bg);color:var(--t2)">T2:${t[1]}</span>
+      <span style="padding:2px 8px;border-radius:var(--r-full);font-size:.72rem;font-weight:600;background:var(--t3-bg);color:var(--t3)">T3:${t[2]}</span>
+      <div class="toolbar-r"><button class="btn primary" onclick="openAddPolicy()">+ Add Policy</button></div>
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr><th>Tier</th><th>Title</th><th>Category</th><th>Sites</th><th>Adopted</th><th>Edit</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function openAddPolicy(){ openModal('Add Policy',policyForm(null),()=>savePolicy(null)); }
+function openEditPolicy(id){ openModal('Edit Policy',policyForm(POLICIES.find(p=>p.id===id)),()=>savePolicy(id)); }
+function policyForm(p){
+  const sc=['sparkhill','bearwood','billesley'].map(s=>`
+    <label><input type="checkbox" name="polsite" value="${s}" ${p?.sites?.includes(s)?'checked':''}> ${SITE_LABELS[s]}</label>`).join('');
+  return `<form id="polf" class="mform">
+    <div class="fr"><label>ID (slug) *</label>
+      <input type="text" name="pid" value="${esc(p?.id||'')}" ${p?'readonly':''} required placeholder="e.g. sg">
+      <span class="hint">Unique — cannot change after creation</span></div>
+    <div class="fr"><label>Title *</label>
+      <input type="text" name="ptitle" value="${esc(p?.title||'')}" required></div>
+    <div class="fr"><label>Tier *</label>
+      <select name="ptier">
+        <option value="1"${p?.tier===1?' selected':''}>1 — Essential (Ofsted priority)</option>
+        <option value="2"${p?.tier===2?' selected':''}>2 — Important (operational)</option>
+        <option value="3"${p?.tier===3?' selected':''}>3 — Standard (general)</option>
+      </select></div>
+    <div class="fr"><label>Category</label>
+      <select name="pcat">${POLICY_CATS.map(c=>`<option${p?.cat===c?' selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="fr"><label>Sites</label>
+      <div class="chkgrp">
+        <label><input type="checkbox" name="polsite" value="all" ${!p||p.sites?.includes('all')?'checked':''}> All Sites</label>${sc}
+      </div></div>
+    <div class="fr"><label>Filename (.docx)</label>
+      <input type="text" name="pfile" value="${esc(p?.file||'')}" placeholder="Greencoat_Policy_Mar2026.docx"></div>
+    <div class="fr"><label>Description</label>
+      <textarea name="pdesc" rows="2">${esc(p?.desc||'')}</textarea></div>
+    <div class="fr"><label>Adopted Date</label>
+      <input type="text" name="padopted" value="${esc(p?.adopted||'')}" placeholder="March 2026"></div>
+    <div class="factions">
+      <button type="submit" class="btn primary">Save</button>
+      <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`;
+}
+function savePolicy(existingId){
+  const f=document.getElementById('polf');
+  const id=f.querySelector('[name="pid"]').value.trim();
+  const title=f.querySelector('[name="ptitle"]').value.trim();
+  if (!id||!title){ toast('ID and title required','error'); return; }
+  const tier=parseInt(f.querySelector('[name="ptier"]').value);
+  const cat=f.querySelector('[name="pcat"]').value;
+  const file=f.querySelector('[name="pfile"]').value.trim();
+  const desc=f.querySelector('[name="pdesc"]').value.trim();
+  const adopted=f.querySelector('[name="padopted"]').value.trim();
+  const sites=[...f.querySelectorAll('[name="polsite"]:checked')].map(c=>c.value);
+  const pol={id,tier,title,cat,sites:sites.length?sites:['all'],file,desc,adopted};
+  const idx=POLICIES.findIndex(p=>p.id===id);
+  if (idx>=0) POLICIES[idx]=pol; else POLICIES.push(pol);
+  saveConfig().then(()=>{toast('Policy saved','success');closeModal();renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+
+/* --- PFA TAB ------------------------------------------- */
+function renderPFA(){
+  const expired=pfaCerts.filter(c=>daysUntil(c.expiryDate)<0).length;
+  const soon=pfaCerts.filter(c=>{const d=daysUntil(c.expiryDate);return d>=0&&d<183;}).length;
+  const sorted=[...pfaCerts].sort((a,b)=>new Date(a.expiryDate)-new Date(b.expiryDate));
+  const rows=sorted.map(c=>{
+    const si=pfaInfo(c.expiryDate);
+    return `<tr>
+      <td class="nc">${esc(c.staffName)}</td>
+      <td>${esc(c.certType)}</td>
+      <td class="muted">${c.issueDate?fmtDate(c.issueDate):'—'}</td>
+      <td class="${si.cls==='r'?'red':si.cls==='a'?'amber':''}">${c.expiryDate?fmtDate(c.expiryDate):'—'}</td>
+      <td><span class="pill ${si.cls}">${si.label}</span></td>
+      <td class="ac">
+        <button class="btn xs" onclick="openEditPFA(${jss(c.id)})">Edit</button>
+        <button class="btn xs danger" onclick="deletePFA(${jss(c.id)})">Delete</button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="6" class="empty-td">No PFA certificates recorded yet.</td></tr>`;
+  document.getElementById('tab-pfa').innerHTML=`
+    <div class="alert-banner">⚠ Paediatric First Aiders must be on premises at all times — Ofsted critical. Certificates expire every 3 years.
+      ${expired?`<strong style="margin-left:8px">${expired} EXPIRED</strong>`:''}
+      ${soon?`<strong style="margin-left:6px">${soon} expiring &lt;6 months</strong>`:''}
+    </div>
+    <div class="toolbar">
+      <span class="count-lbl">${pfaCerts.length} certificates</span>
+      <div class="toolbar-r">
+        <button class="btn" onclick="exportPFACSV()">↓ PFA CSV</button>
+        <button class="btn primary" onclick="openAddPFA()">+ Add Certificate</button>
       </div>
-      <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
-        <span style="font-size:1.1rem;font-weight:700;color:var(--text)">${staffNames.length}</span> staff members
-      </div>`;
-
-    renderAiQuestions(allChats);
-  } catch(e) {
-    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${e.message}</p>`;
-  }
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr><th>Staff Member</th><th>Certificate Type</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function openAddPFA(){ openModal('Add PFA Certificate',pfaForm(null),()=>savePFA(null)); }
+function openEditPFA(id){ openModal('Edit PFA Certificate',pfaForm(pfaCerts.find(c=>c.id===id)),()=>savePFA(id)); }
+function pfaForm(c){
+  const opts=staffProfiles.filter(p=>p.active!==false).map(p=>`<option value="${esc(p.staffKey)}"${c?.staffKey===p.staffKey?' selected':''}>${esc(p.name)}</option>`).join('');
+  return `<form id="pfaf" class="mform">
+    <div class="fr"><label>Staff Member *</label>
+      <select name="sk"><option value="">— Select —</option>${opts}</select></div>
+    <div class="fr"><label>Certificate Type *</label>
+      <select name="ct">${PFA_TYPES.map(t=>`<option${c?.certType===t?' selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="fr"><label>Issue Date</label>
+      <input type="date" name="id" value="${esc(c?.issueDate||'')}"></div>
+    <div class="fr"><label>Expiry Date *</label>
+      <input type="date" name="ed" value="${esc(c?.expiryDate||'')}" required>
+      <span class="hint">PFA certificates are valid for 3 years from issue date</span></div>
+    <div class="factions">
+      <button type="submit" class="btn primary">Save</button>
+      <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`;
+}
+function savePFA(existingId){
+  const f=document.getElementById('pfaf');
+  const sk=f.querySelector('[name="sk"]').value;
+  const ct=f.querySelector('[name="ct"]').value;
+  const issueDate=f.querySelector('[name="id"]').value;
+  const expiryDate=f.querySelector('[name="ed"]').value;
+  if (!sk){ toast('Select a staff member','error'); return; }
+  if (!expiryDate){ toast('Expiry date required','error'); return; }
+  const staffName=staffProfiles.find(p=>p.staffKey===sk)?.name||sk.replace(/_/g,' ');
+  const cert={id:existingId||'pfa_'+Date.now(),staffKey:sk,staffName,certType:ct,issueDate,expiryDate};
+  const idx=pfaCerts.findIndex(c=>c.id===existingId);
+  if (idx>=0) pfaCerts[idx]=cert; else pfaCerts.push(cert);
+  saveConfig().then(()=>{toast('Certificate saved','success');closeModal();renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+function deletePFA(id){
+  if (!confirm('Delete this PFA certificate?')) return;
+  pfaCerts=pfaCerts.filter(c=>c.id!==id);
+  saveConfig().then(()=>{toast('Deleted','success');renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
 }
 
-
-async function loadHeatmap() {
-  try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderHeatmap(staff); renderOfstedScore(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
-  }
+/* --- EXPIRY WATCH TAB ---------------------------------- */
+function renderExpiry(){
+  const alerts=[
+    ...pfaCerts.map(c=>({...c,label:'PFA: '+c.certType})).filter(c=>daysUntil(c.expiryDate)<60),
+    ...certifications.filter(c=>daysUntil(c.expiryDate)<60)
+  ].sort((a,b)=>new Date(a.expiryDate)-new Date(b.expiryDate));
+  const alertRows=alerts.map(c=>{
+    const si=certInfo(c.expiryDate);
+    return `<tr><td class="nc">${esc(c.staffName)}</td><td>${esc(c.label||c.type)}</td>
+      <td class="${si.cls==='r'?'red':'amber'}">${c.expiryDate?fmtDate(c.expiryDate):'—'}</td>
+      <td><span class="pill ${si.cls}">${si.label}</span></td></tr>`;
+  }).join('');
+  const certRows=certifications.map(c=>{
+    const si=certInfo(c.expiryDate);
+    return `<tr>
+      <td class="nc">${esc(c.staffName)}</td><td>${esc(c.type)}</td>
+      <td class="muted">${c.issueDate?fmtDate(c.issueDate):'—'}</td>
+      <td class="${si.cls==='r'?'red':si.cls==='a'?'amber':''}">${c.expiryDate?fmtDate(c.expiryDate):'—'}</td>
+      <td><span class="pill ${si.cls}">${si.label}</span></td>
+      <td class="ac">
+        <button class="btn xs" onclick="openEditCert(${jss(c.id)})">Edit</button>
+        <button class="btn xs danger" onclick="deleteCert(${jss(c.id)})">Delete</button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="6" class="empty-td">No certification records. Add DBS, Safeguarding, and First Aid records here.</td></tr>`;
+  document.getElementById('tab-expiry').innerHTML=`
+    ${alerts.length
+      ?`<p class="sh">${alerts.length} alert${alerts.length>1?'s':''} — expired or due within 60 days</p>
+        <div class="table-wrap" style="margin-bottom:20px"><table class="dt">
+          <thead><tr><th>Staff</th><th>Certification</th><th>Expires</th><th>Status</th></tr></thead>
+          <tbody>${alertRows}</tbody>
+        </table></div>`
+      :`<div class="empty-state"><div class="empty-icon">✓</div><p>No expiry alerts — all tracked certifications are current.</p></div>`}
+    <div class="toolbar">
+      <p class="sh" style="margin:0">All Certification Records (DBS · Safeguarding · First Aid)</p>
+      <div class="toolbar-r"><button class="btn primary" onclick="openAddCert()">+ Add Record</button></div>
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr><th>Staff</th><th>Type</th><th>Issue Date</th><th>Expiry Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${certRows}</tbody>
+    </table></div>`;
+}
+function openAddCert(){ openModal('Add Certification Record',certForm(null),()=>saveCert(null)); }
+function openEditCert(id){ openModal('Edit Certification',certForm(certifications.find(c=>c.id===id)),()=>saveCert(id)); }
+function certForm(c){
+  const opts=staffProfiles.filter(p=>p.active!==false).map(p=>`<option value="${esc(p.staffKey)}"${c?.staffKey===p.staffKey?' selected':''}>${esc(p.name)}</option>`).join('');
+  return `<form id="certf" class="mform">
+    <div class="fr"><label>Staff Member *</label>
+      <select name="sk"><option value="">— Select —</option>${opts}</select></div>
+    <div class="fr"><label>Type *</label>
+      <select name="type">${CERT_TYPES.map(t=>`<option${c?.type===t?' selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="fr"><label>Issue Date</label>
+      <input type="date" name="idate" value="${esc(c?.issueDate||'')}"></div>
+    <div class="fr"><label>Expiry / Renewal Date *</label>
+      <input type="date" name="edate" value="${esc(c?.expiryDate||'')}" required></div>
+    <div class="factions">
+      <button type="submit" class="btn primary">Save</button>
+      <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </form>`;
+}
+function saveCert(existingId){
+  const f=document.getElementById('certf');
+  const sk=f.querySelector('[name="sk"]').value;
+  const type=f.querySelector('[name="type"]').value;
+  const issueDate=f.querySelector('[name="idate"]').value;
+  const expiryDate=f.querySelector('[name="edate"]').value;
+  if (!sk){ toast('Select a staff member','error'); return; }
+  if (!expiryDate){ toast('Expiry date required','error'); return; }
+  const staffName=staffProfiles.find(p=>p.staffKey===sk)?.name||sk.replace(/_/g,' ');
+  const cert={id:existingId||'cert_'+Date.now(),staffKey:sk,staffName,type,issueDate,expiryDate};
+  const idx=certifications.findIndex(c=>c.id===existingId);
+  if (idx>=0) certifications[idx]=cert; else certifications.push(cert);
+  saveConfig().then(()=>{toast('Saved','success');closeModal();renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
+}
+function deleteCert(id){
+  if (!confirm('Delete this certification record?')) return;
+  certifications=certifications.filter(c=>c.id!==id);
+  saveConfig().then(()=>{toast('Deleted','success');renderAll();}).catch(e=>toast('Failed: '+e.message,'error'));
 }
 
-
-async function exportCSV() {
-  showToast('Building export…', 'info');
-  try {
-    const staff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
-    staff.forEach(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = new Set();
-      try { acks = new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch(e) {}
-      const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-      policies.forEach(p => rows.push([name, p.id, p.title, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
-    });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-    a.download = 'greencoat_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
-    a.click();
-    showToast('CSV exported ✓', 'success');
-  } catch(e) { showToast('Export failed: ' + e.message, 'error'); }
+/* --- ACTIVITY FEED ------------------------------------- */
+function renderActivity(){
+  const all=[];
+  computedStaff().forEach(s=>(s.activity||[]).forEach(e=>all.push({...e,staffName:s.name})));
+  all.sort((a,b)=>entryTs(b)-entryTs(a));
+  const filtered=actTypeFilter==='all'?all:all.filter(e=>e.type===actTypeFilter);
+  const recent=filtered.slice(0,50);
+  const typeLbl={read:'📖 Read',quiz:'🧠 Quiz',aichat:'🤖 AI Chat',milestone:'🏆 Milestone'};
+  const rows=recent.map(e=>`<tr>
+    <td class="muted">${fmtTs(entryTs(e))}</td>
+    <td class="nc">${esc(e.staffName)}</td>
+    <td><span style="font-size:.72rem;font-weight:600;padding:2px 7px;border-radius:var(--r-full);background:var(--bg4);color:var(--text2)">${typeLbl[e.type]||esc(e.type)}</span></td>
+    <td class="muted">${esc(e.policyTitle||e.key||'—')}</td>
+    <td class="muted">${e.value?esc(String(e.value).slice(0,80)):'—'}</td>
+  </tr>`).join('')||`<tr><td colspan="5" class="empty-td">No activity recorded yet.</td></tr>`;
+  document.getElementById('tab-activity').innerHTML=`
+    <div class="toolbar">
+      <select style="width:auto" onchange="actTypeFilter=this.value;renderActivity()">
+        <option value="all">All Types</option>
+        <option value="read"    ${actTypeFilter==='read'   ?'selected':''}>📖 Reads</option>
+        <option value="quiz"    ${actTypeFilter==='quiz'   ?'selected':''}>🧠 Quizzes</option>
+        <option value="aichat"  ${actTypeFilter==='aichat' ?'selected':''}>🤖 AI Chats</option>
+      </select>
+      <span class="count-lbl">${all.length} total · showing ${recent.length}</span>
+    </div>
+    <div class="table-wrap"><table class="dt">
+      <thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Policy / Question</th><th>Detail / Score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
 }
 
+/* --- EXPORTS ------------------------------------------- */
+function exportComplianceCSV(){
+  const staff=computedStaff();
+  const hdr=['Name','Sites','Role','Email','Tier1%','Tier2%','Tier3%','Last Active','AI Chats','Quizzes','Total Acks'];
+  const rows=staff.map(s=>[s.name,siteLabel(s.sites),s.role,s.email,s.t1Pct,s.t2Pct,s.t3Pct,s.lastActive?new Date(s.lastActive).toLocaleDateString('en-GB'):'Never',s.aiChatCount,s.quizCount,s.acks.length]);
+  dlCSV([hdr,...rows],'greencoat-compliance-'+today()+'.csv');
+}
+function exportPFACSV(){
+  const hdr=['Staff Name','Certificate Type','Issue Date','Expiry Date','Status'];
+  const rows=pfaCerts.map(c=>[c.staffName,c.certType,c.issueDate?fmtDate(c.issueDate):'',c.expiryDate?fmtDate(c.expiryDate):'',pfaInfo(c.expiryDate).label]);
+  dlCSV([hdr,...rows],'greencoat-pfa-register-'+today()+'.csv');
+  toast('PFA CSV exported','success');
+}
+function dlCSV(rows,filename){
+  const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(a.href);
+  toast('Exported','success');
+}
+function today(){ return new Date().toISOString().slice(0,10); }
 
-function showToast(msg, type='info') {
-  const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`;
-  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className='toast',3000);
+/* --- MODAL --------------------------------------------- */
+function openModal(title,body,submitFn){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-overlay').hidden=false;
+  document.body.style.overflow='hidden';
+  document.getElementById('modal-body').scrollTop=0;
+  const form=document.getElementById('modal-body').querySelector('form');
+  if (form&&submitFn) form.addEventListener('submit',e=>{e.preventDefault();submitFn();});
+}
+function closeModal(){
+  document.getElementById('modal-overlay').hidden=true;
+  document.body.style.overflow='';
 }
 
-document.addEventListener('keydown', e => { if (e.key==='Enter' && document.getElementById('loginScreen').style.display!=='none') doLogin(); });
+/* --- TOAST & LOADING ----------------------------------- */
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3200);
+}
+function setLoading(on){
+  document.getElementById('loader-overlay').hidden=!on;
+  document.getElementById('refresh-btn').disabled=on;
+  document.getElementById('refresh-btn').textContent=on?'Loading…':'↻ Refresh';
+}
 
-// Surface any unhandled JS errors as visible toasts so they don't silently swallow
-window.addEventListener('error', ev => {
-  const msg = (ev.message || 'Unknown JS error') + (ev.lineno ? ' (line ' + ev.lineno + ')' : '');
-  console.error('Admin error:', ev.error || ev.message);
-  try { showToast('⚠ ' + msg, 'error'); } catch(e) {}
+/* --- WIRING -------------------------------------------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active'); activeTab=btn.dataset.tab;
+  document.getElementById('tab-'+activeTab).classList.add('active');
+  renderActiveTab();
+}));
+document.getElementById('auth-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+document.getElementById('auth-btn').addEventListener('click',login);
+document.getElementById('logout-btn').addEventListener('click',logout);
+document.getElementById('refresh-btn').addEventListener('click',loadAll);
+document.getElementById('export-compliance-btn').addEventListener('click',exportComplianceCSV);
+document.getElementById('export-pfa-btn').addEventListener('click',exportPFACSV);
+document.getElementById('modal-close').addEventListener('click',closeModal);
+document.getElementById('modal-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-overlay'))closeModal();
 });
 
-
-function renderCompliance(compData) {
-  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-  const total = policies.length;
-  const compCard = document.getElementById('compCard');
-  const compStats = document.getElementById('compStats');
-
-  // Summary stats
-  const staffWithAcks = compData.filter(s => s.acknowledged.length > 0);
-  const avgPct = compData.length ? Math.round(compData.reduce((sum, s) => sum + (s.acknowledged.length / total * 100), 0) / compData.length) : 0;
-  const fullComp = compData.filter(s => s.acknowledged.length === total);
-
-  compStats.innerHTML = `
-    <div class="stat-card"><div class="stat-num">${avgPct}%</div><div class="stat-label">Avg compliance</div></div>
-    <div class="stat-card"><div class="stat-num">${staffWithAcks.length}/${compData.length}</div><div class="stat-label">Staff started</div></div>
-    <div class="stat-card"><div class="stat-num">${fullComp.length}</div><div class="stat-label">Fully compliant</div></div>
-    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total policies</div></div>`;
-
-  if (!compData.length) { compCard.innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No staff data found.</p>'; return; }
-
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
-  html += '<thead><tr style="border-bottom:2px solid var(--border2)">';
-  html += '<th style="text-align:left;padding:.5rem .75rem;color:var(--text2)">Staff member</th>';
-  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Acknowledged</th>';
-  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Tier 1</th>';
-  html += '<th style="padding:.5rem .75rem;color:var(--text2)">Progress</th>';
-  html += '</tr></thead><tbody>';
-
-  compData.forEach((s, i) => {
-    const acks = new Set(s.acknowledged);
-    const pct = Math.round(acks.size / total * 100);
-    const t1 = policies.filter(p => p.tier === 1);
-    const t1done = t1.filter(p => acks.has(p.id)).length;
-    const barCol = pct >= 80 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
-    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=&quot;detail_${s.name.replace(/\s+/g,'_')}&quot;><div style=&quot;padding:.5rem .75rem;color:var(--text3);font-size:.8rem&quot;>Loading…</div></td></tr>')">
-      <td style="padding:.5rem .75rem;font-weight:500">${s.name}</td>
-      <td style="text-align:center;padding:.5rem .75rem">${acks.size}/${total}</td>
-      <td style="text-align:center;padding:.5rem .75rem">${t1done}/${t1.length}</td>
-      <td style="padding:.5rem .75rem">
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <div style="flex:1;height:6px;background:var(--border2);border-radius:3px">
-            <div style="width:${pct}%;height:6px;background:${barCol};border-radius:3px"></div>
-          </div>
-          <span style="font-size:.75rem;color:var(--text2);min-width:2.5rem">${pct}%</span>
-        </div>
-      </td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  compCard.innerHTML = html;
-  document.getElementById('compSummary').textContent = `${compData.length} staff · ${avgPct}% average compliance`;
-}
-
-function renderAiQuestions(chats) {
-  const listEl = document.getElementById('aiQList');
-  if (!chats || !chats.length) {
-    listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">No AI questions recorded yet. Questions staff ask the AI will appear here.</p>';
-    return;
-  }
-  listEl.innerHTML = chats.map(c => {
-    const dateStr = c.date ? new Date(c.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-    return `<div style="background:var(--card2);border-radius:10px;padding:.75rem 1rem;border-left:3px solid var(--accent)">
-      <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
-        <span style="font-weight:600;font-size:.82rem">${c.staff}</span>
-        <span style="font-size:.72rem;color:var(--text3)">${dateStr}</span>
-      </div>
-      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${c.question || '(no text recorded)'}</div>
-      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${c.policy}</div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function filterAiQuestions() {
-  const search = (document.getElementById('aiQSearch')?.value || '').toLowerCase();
-  const staff = document.getElementById('aiQStaffFilter')?.value || '';
-  const policy = document.getElementById('aiQPolicyFilter')?.value || '';
-  const all = window._allChats || [];
-  const filtered = all.filter(c =>
-    (!staff || c.staff === staff) &&
-    (!policy || c.policy === policy) &&
-    (!search || (c.question||'').toLowerCase().includes(search) || (c.staff||'').toLowerCase().includes(search))
-  );
-  renderAiQuestions(filtered);
-}
-
-function renderHeatmap(compData) {
-  const wrap = document.getElementById('heatmapWrap');
-  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-  const t1 = policies.filter(p => p.tier === 1);
-
-  if (!compData.length) { wrap.innerHTML = '<p style="color:var(--text3);padding:3rem;text-align:center">No compliance data yet.</p>'; return; }
-
-  let html = '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.72rem;min-width:600px">';
-  html += '<thead><tr><th style="text-align:left;padding:.3rem .5rem;position:sticky;left:0;background:var(--bg);z-index:2;min-width:130px;border-bottom:2px solid var(--border2)">Staff</th>';
-  t1.forEach(p => {
-    html += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${p.title.slice(0,20)}</th>`;
-  });
-  html += '</tr></thead><tbody>';
-
-  compData.forEach((s, i) => {
-    const acks = new Set(s.acknowledged);
-    const rowBg = i % 2 === 0 ? 'var(--bg)' : 'var(--card2)';
-    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${s.name}</td>`;
-    t1.forEach(p => {
-      const done = acks.has(p.id);
-      html += `<td style="text-align:center;padding:.2rem;background:${done ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.1)'}">
-        <span style="font-size:.65rem">${done ? '✓' : '·'}</span></td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table></div>';
-  wrap.innerHTML = html;
-}
-
-function renderOfstedScore(compData) {
-  const el = document.getElementById('ofstedScore');
-  if (!el) return;
-  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-  const t1 = policies.filter(p => p.tier === 1);
-  const staffCount = compData.length || 1;
-  const totalPossible = t1.length * staffCount;
-  const totalDone = compData.reduce((sum, s) => {
-    const acks = new Set(s.acknowledged);
-    return sum + t1.filter(p => acks.has(p.id)).length;
-  }, 0);
-  const pct = totalPossible ? Math.round(totalDone / totalPossible * 100) : 0;
-  const colour = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
-  el.innerHTML = `<div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--card2);border-radius:12px;border:1px solid var(--border2);margin-bottom:1rem">
-    <div style="font-size:2rem;font-weight:700;color:${colour}">${pct}%</div>
-    <div><div style="font-weight:600;font-size:.9rem">Ofsted Readiness Score</div>
-    <div style="font-size:.75rem;color:var(--text2)">Tier 1 policy acknowledgement across all staff (${totalDone}/${totalPossible})</div></div></div>`;
-  el.classList.remove('hidden');
-}
-
-// ── PIN MANAGEMENT (admin) ──────────────────────────────────────────
-function getAdminPins() {
-  try { return JSON.parse(localStorage.getItem('gc_staff_pins') || '{}'); }
-  catch { return {}; }
-}
-function saveAdminPins(pins) {
-  localStorage.setItem('gc_staff_pins', JSON.stringify(pins));
-}
-
-function renderPinTable() {
-  const wrap = document.getElementById('pinTableWrap');
-  if (!wrap) return;
-  const pins = getAdminPins();
-
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
-  html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
-    '<th style="text-align:left;padding:.6rem .75rem">Staff member</th>' +
-    '<th style="text-align:center;padding:.6rem .75rem">Current PIN</th>' +
-    '<th style="padding:.6rem .75rem;text-align:right">Actions</th></tr></thead><tbody>';
-
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach((name, i) => {
-    const pin = pins[name] || '0000';
-    const isDefault = pin === '0000';
-    const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--card2)';
-    html += `<tr style="background:${fill}">
-      <td style="padding:.6rem .75rem;font-weight:600">${name}</td>
-      <td style="text-align:center;padding:.6rem .75rem">
-        <span style="font-family:monospace;font-size:1rem;letter-spacing:.15em;color:${isDefault?'#e57373':'var(--gc-green)'}">${pin}</span>
-        ${isDefault ? '<span style="font-size:.7rem;color:#e57373;margin-left:.4rem">(default)</span>' : ''}
-      </td>
-      <td style="text-align:right;padding:.6rem .75rem">
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem"
-          onclick="adminSetPin('${name.replace(/'/g,"\'")}')">Set PIN</button>
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem"
-          onclick="adminResetPin('${name.replace(/'/g,"\'")}')">Reset to 0000</button>
-      </td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  wrap.innerHTML = html;
-}
-
-function adminSetPin(name) {
-  const p1 = prompt(`Set new 4-digit PIN for ${name}:`);
-  if (p1 === null) return;
-  if (!/^\d{4}$/.test(p1)) { showToast('PIN must be exactly 4 digits', 'error'); return; }
-  const p2 = prompt(`Confirm PIN for ${name}:`);
-  if (p1 !== p2) { showToast('PINs did not match — not saved', 'error'); return; }
-  const pins = getAdminPins();
-  pins[name] = p1;
-  saveAdminPins(pins);
-  showToast(`PIN updated for ${name}`, 'success');
-  renderPinTable();
-}
-
-function adminResetPin(name) {
-  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
-  const pins = getAdminPins();
-  pins[name] = '0000';
-  saveAdminPins(pins);
-  showToast(`PIN reset for ${name}`, 'success');
-  renderPinTable();
-}
-
-function resetAllPins() {
-  if (!confirm('Reset ALL staff PINs to 0000? Staff will be prompted to set a new PIN on next login.')) return;
-  const pins = {};
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach(n => pins[n] = '0000');
-  saveAdminPins(pins);
-  showToast('All PINs reset to 0000', 'success');
-  renderPinTable();
-}
-
+/* --- BOOT ---------------------------------------------- */
+checkAuth();
 </script>
 </body>
 </html>
