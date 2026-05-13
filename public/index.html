@@ -929,6 +929,14 @@ body {
   .ca-btn { padding: .38rem .7rem; font-size: .74rem; border-radius: var(--r-sm); }
 }
 
+/* ── SIDEBAR BACKDROP (mobile) ───────────────────────────── */
+.sidebar-backdrop {
+  display: none;
+  position: fixed; inset: 0; z-index: 449;
+  background: rgba(0,0,0,.45);
+}
+.sidebar-backdrop.show { display: block; }
+
 /* ── BOTTOM NAV (iOS-native style) ───────────────────────── */
 .mob-nav {
   display: none;
@@ -1114,7 +1122,7 @@ body {
 
 <div class="app">
   <header class="topbar">
-    <button id="menuBtn" class="topbar-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+    <button id="menuBtn" class="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <a class="topbar-logo" href="#">
       <div class="logo-icon">🌿</div>
       <div class="logo-words"><div class="logo-name" id="logoName">Greencoat Nursery</div><div class="logo-sub">Policy Hub</div></div>
@@ -1152,6 +1160,7 @@ body {
     <button class="mob-tier-pill t3" id="mtp-t3" onclick="mobSetTier(3,this)">🟢 Tier 3</button>
   </div>
 
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
   <div class="main">
     <aside class="sidebar" id="sidebar">
       <div class="staff-box">
@@ -2447,10 +2456,23 @@ function docSearchNext() { if (docSearchMatches.length) { docSearchIndex = (docS
 function docSearchPrev() { if (docSearchMatches.length) { docSearchIndex = (docSearchIndex - 1 + docSearchMatches.length) % docSearchMatches.length; updateDocSearchNav(); } }
 
 // ─── AI PANEL ─────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const open = s.classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show', open);
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+}
 function toggleAI() {
   aiOpen = !aiOpen;
   document.getElementById('aiPanel').classList.toggle('closed', !aiOpen);
-  if (aiOpen) { document.getElementById('aiInput').focus(); updateAISuggestions(); }
+  if (aiOpen) {
+    closeSidebar();
+    document.getElementById('aiInput').focus();
+    updateAISuggestions();
+  }
 }
 function updateAISuggestions() {
   const el = document.getElementById('aiSuggestions'); if (!el) return;
@@ -2868,7 +2890,7 @@ function printOfstedReport() { const t1 = POLICIES.filter(p => p.tier === 1); co
 // ─── MISC ─────────────────────────────────────────────────────────────────
 function showCelebration(title, msg) { document.getElementById('celebTitle').textContent = title; document.getElementById('celebMsg').textContent = msg; document.getElementById('celebWrap').style.display = 'flex'; document.getElementById('confettiCanvas').style.display = 'block'; launchConfetti(); setTimeout(() => { document.getElementById('celebWrap').style.display = 'none'; document.getElementById('confettiCanvas').style.display = 'none'; }, 5000); }
 function launchConfetti() { const canvas = document.getElementById('confettiCanvas'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; const ctx = canvas.getContext('2d'); const colors = ['#2B6B3A','#F5C518','#4CAF6A','#ffffff','#a8d5b5']; const pieces = Array.from({length:120}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height, r: Math.random()*6+4, d: Math.random()*100+40, color: colors[Math.floor(Math.random()*colors.length)], tilt: Math.random()*10-10, ta: 0, tai: Math.random()*.07+.05 })); let angle = 0; function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); angle += .01; pieces.forEach(p => { p.ta += p.tai; p.y += (Math.cos(angle+p.d)+3+p.r/2)*.85; p.x += Math.sin(angle)*1.5; p.tilt = Math.sin(p.ta)*15; ctx.beginPath(); ctx.lineWidth = p.r/2; ctx.strokeStyle = p.color; ctx.moveTo(p.x+p.tilt+p.r/4, p.y); ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4); ctx.stroke(); }); if (pieces.some(p => p.y < canvas.height)) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height); } draw(); }
-function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
+function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); closeSidebar(); if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
 let toastTimer; function showToast(msg, type='') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show${type?' '+type:''}`; clearTimeout(toastTimer); const dur = msg.length > 60 ? 5000 : 3000; toastTimer = setTimeout(() => t.classList.remove('show'), dur); }
 function mobSetSite(site, el) { filterSite = site; const map = {null:'nav-all-s', sparkhill:'nav-sh', bearwood:'nav-bw', billesley:'nav-ba'}; document.querySelectorAll('[id^="nav-all-s"],[id="nav-sh"],[id="nav-bw"],[id="nav-ba"]').forEach(n => n.classList.remove('active')); const sideEl = document.getElementById(map[site]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-site-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
 function mobSetTier(tier, el) { filterTier = tier; filterCat = null; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); const map = {null:'nav-all', 1:'nav-t1', 2:'nav-t2', 3:'nav-t3'}; const sideEl = document.getElementById(map[tier]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-tier-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
