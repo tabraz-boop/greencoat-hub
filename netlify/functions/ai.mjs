@@ -88,9 +88,10 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     // ── Waterfall model rotation ─────────────────────────────────────
     // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
     const modelsToTry = [
-      'gemini-3.1-flash-lite-preview',   // Primary: fastest, cost-efficient, perfect for structured tasks
-      'gemini-3.1-flash',                // Secondary: faster, improved reasoning
-      'gemini-3.0-flash',                // Fallback: stable, proven
+      'gemini-3.1-flash-lite',    // Best for Free Tier: 15 RPM / 1000 RPD. High speed, low timeout risk.
+      'gemini-3.1-flash',         // Stable: 10 RPM / 250 RPD. Good balance of logic and speed.
+      'gemini-2.5-flash-lite',    // Fallback: Extremely stable legacy model with high free-tier limits.
+      'gemini-flash-latest',      // Alias: Automatically points to the newest stable Flash model.
     ];
 
     let reply = null;
@@ -99,7 +100,7 @@ CRITICAL RULES YOU MUST NEVER BREAK:
       try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const ctrl = new AbortController();
-      const tId = setTimeout(() => ctrl.abort(), 20000);
+      const tId = setTimeout(() => ctrl.abort(), 6000);
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -146,6 +147,9 @@ CRITICAL RULES YOU MUST NEVER BREAK:
             break;
           }
         } else if (resp.status === 429 || resp.status === 503) {
+          console.warn(`Model ${model} returned ${resp.status} — trying next model...`);
+          continue;
+        } else {
           console.warn(`Model ${model} returned ${resp.status} — trying next model...`);
           continue;
         }

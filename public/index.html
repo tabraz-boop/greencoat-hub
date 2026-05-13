@@ -2535,19 +2535,30 @@ async function sendAI() {
       })
     });
     window._contextPolicy = null;
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      const err = new Error(errData.error || `Server error ${res.status}`);
+      err.name = 'ServiceError';
+      throw err;
+    }
     const data = await res.json();
     document.getElementById('aiTyping').classList.remove('show');
     const reply = data.reply || 'Sorry, I could not get a response. Please try again.';
     chatHistory.push({ role: 'assistant', content: reply });
     addAIMessage('bot', reply);
-    const replySnippet = reply.slice(0, 500);
+    const replySnippet = reply.slice(0, 200);
     if (currentStaff) logActivityToServer('aichat', text.slice(0, 200), replySnippet, currentPolicy?.id||null, currentPolicy?.title||'General');
     trackActivity('aichat', text.slice(0, 200), replySnippet);
   } catch(e) {
     document.getElementById('aiTyping').classList.remove('show');
-    const msg = e?.name === 'AbortError'
-      ? 'Request timed out. Please check your connection and try again.'
-      : 'Connection error. Please check your internet and try again.';
+    let msg;
+    if (e?.name === 'AbortError') {
+      msg = 'The request timed out — all AI models are currently busy. Please try again in a moment.';
+    } else if (e?.name === 'ServiceError') {
+      msg = `The AI assistant is temporarily unavailable: ${e.message}`;
+    } else {
+      msg = 'Connection error. Please check your internet and try again.';
+    }
     addAIMessage('bot', msg);
   } finally {
     clearTimeout(aiTimeout);
