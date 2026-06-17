@@ -1,0 +1,15 @@
+[project]
+name = "famly-mcp"
+version = "0.1.0"
+description = "Local MCP server for the Famly childcare GraphQL API"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2.0",
+    "httpx>=0.27.0",
+]
+
+# The server is a single self-contained script (famly_mcp_server.py) and also
+# carries PEP 723 inline metadata, so `uv run famly_mcp_server.py` works without
+# installing this project. This pyproject is provided for the plain-venv setup.
+[tool.uv]
+package = false

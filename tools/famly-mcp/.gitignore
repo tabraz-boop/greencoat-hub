@@ -1,0 +1,8 @@
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+
+# Never commit secrets
+.env
+*.token
