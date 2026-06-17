@@ -24,9 +24,16 @@ GraphQL API using your own API token.
 
 ## 1. Get a Famly API access token
 
-In Famly, create a personal API access token (Account / settings → developer /
-API access — see Famly's [Public API Guide](https://help.famly.co/en/articles/10057605-famly-s-public-api-guide)).
-The server sends it in the `X-Famly-Accesstoken` header. Treat it like a
+Create a token in Famly (see [API access](https://help.famly.co/en/articles/13859542-api-access)):
+
+- **Organisation-level:** Home → select the organisation in the site picker →
+  **Settings** → **Show** under "Manage API tokens" → add a new token.
+- **Site-level:** **Settings** → **Integrations** → **Manage API tokens** → add
+  a new token.
+
+Grant only the minimum permissions the integration needs. Famly reminds you
+seven days before a token expires, so set a calendar note to rotate it. The
+server sends the token in the `X-Famly-Accesstoken` header — treat it like a
 password.
 
 ## 2. Choose how Claude Desktop launches the server
