@@ -43,9 +43,9 @@ netlify.toml      — publish=public, functions=netlify/functions
 
 ### Rules that must never be broken
 
-1. **No build step. No bundler. No package.json.** Files in `public/` deploy as-is. Do not introduce npm, Vite, webpack, Rollup, or any compile step.  
+1. **No build step. No bundler.** Files in `public/` deploy as-is. Do not introduce Vite, webpack, Rollup, or any compile step. `package.json` exists **only** to declare `@netlify/blobs` for the functions (Netlify installs it automatically; there is no build command).  
      
-2. **Functions are ES modules (`.mjs`).** Use `import`/`export`. The only external import is `@netlify/blobs` — available in the Netlify runtime without installation. Do not add other npm dependencies.  
+2. **Functions are ES modules (`.mjs`).** Use `import`/`export`. The only external import is `@netlify/blobs`, declared in `package.json`. It is **not** provided by the Netlify runtime — without `package.json` every Blobs function crashes with `Cannot find package '@netlify/blobs'` (this broke all tracking until Oct 2026). Do not add other npm dependencies. Shared server code lives in `netlify/lib/` (outside `netlify/functions/` so it is not deployed as an endpoint).  
      
 3. **No frontend framework.** The UI is plain HTML/CSS/JS. Do not introduce React, Vue, Svelte, Alpine, or any other framework.  
      
@@ -55,7 +55,7 @@ netlify.toml      — publish=public, functions=netlify/functions
      
 6. **Always use `/api/*` paths in frontend code**, never `/.netlify/functions/*` directly. The `netlify.toml` redirect handles translation.  
      
-7. **Do not touch the Gemini model waterfall in `ai.mjs`** unless specifically asked. The model priority order is intentional.  
+7. **Do not touch the Gemini model waterfall in `ai.mjs`** unless specifically asked. `MODEL_PREFERENCE` is intersected at runtime with the models the key can use (ListModels), so retired models are skipped automatically. Override with the `GEMINI_MODELS` env var (comma-separated).  
      
 8. **Do not modify the God Prompt** in `ai.mjs` unless specifically asked. It encodes legally binding EYFS ratio rules and nursery-specific compliance logic that is non-trivial to restore if broken.
 
@@ -87,7 +87,8 @@ The staff portal intentionally uses `localStorage` as primary storage. Netlify B
 | Store | Key pattern | Contents | Consistency |
 | :---- | :---- | :---- | :---- |
 | `gc_portal_config` | `portal_data` | Live policy list \+ portal settings | strong |
-| `gc_acks` | `<staffKey>` | `{ staffName, acks[], updatedAt }` | eventual |
+| `gc_acks` | `<staffKey>` | `{ staffName, acks[], records{ <policyId>: { at, method, score, total, policyTitle, legacy? } }, updatedAt }` — `at` is the server timestamp; `legacy` = date came from the staff device | strong |
+| `gc_pins` | `<staffKey>` | `{ staffName, hash, salt, setAt, setBy, failCount, lockedUntil }` — scrypt-hashed PIN, never the PIN | strong |
 | `gc_activity` | `<staffKey>` | `{ staffName, entries[], updatedAt }` (max 500\) | eventual |
 
 Use **site-scoped** stores (`getStore`), not deploy-scoped, so data survives deploys. Use `consistency: 'strong'` when reading data that was just written (e.g. after adding a new staff member in the admin console).
@@ -305,6 +306,13 @@ Light and dark mode via `data-theme="light|dark"` on `<html>`. Text size via `da
 
 ---
 
+## Staff identity & tracking (Oct 2026)
+
+- Staff log in with a 4-digit PIN verified by `track.mjs` (`login` / `set_pin`), which returns a signed session token (24h). Ack/activity writes require the token. 5 wrong PINs → 5-minute lock. Admin can reset or set a temporary PIN (Staff PINs tab).
+- Staff-portal server writes go through a persistent outbox (`gc_outbox_<staffKey>`), flushed sequentially after login, when back online, and every minute. localStorage remains the source of truth for the staff UI.
+- Each acknowledgement sends `action: 'ack'` with `method` (`quiz` | `offline_quiz` | `direct`) and the quiz score. On login, acks held only on the device are uploaded via merge-only `sync_acks` (keeping the device's `gc_ack_date_*` date, flagged `legacy`).
+- Admin auth is checked by the server (`?action=login`); the password is no longer in `admin.html`. `ADMIN_PASSWORD` (env) always works; a password changed in Settings is stored hashed in `gc_portal_config/admin_auth`. Optional env: `SESSION_SECRET` (otherwise generated once and kept in Blobs).
+
 ## Known Issues to Fix (Prioritised)
 
 1. **`admin.html` is broken** — cannot add staff, compliance overview non-functional. Needs a full rebuild. See the admin spec below.  
@@ -353,7 +361,7 @@ A full cross-audit of frontend calls vs function expectations was completed. The
 
 | Area | Status | Notes |
 | :---- | :---- | :---- |
-| `ai.mjs` model waterfall | ✅ Correct | Gemini 3.1 → 2.5-flash → 2.5-pro, intentional |
+| `ai.mjs` model waterfall | ✅ Updated Oct 2026 | Preferred order filtered by ListModels; invalid key returns `AI_KEY_INVALID` |
 | `ai.mjs` JSON schema enforcement | ✅ Correct | `correct` coerced to int, min 3 questions validated |
 | `ai.mjs` CORS \+ timeout | ✅ Correct | 26s timeout, CORS headers present |
 | `admin-data.mjs` auth guard | ✅ Correct | Bearer token on all write actions |
@@ -371,7 +379,7 @@ A full cross-audit of frontend calls vs function expectations was completed. The
 ## What Agent Runs Should Never Do
 
 - Add a build step, package manager, or bundler  
-- Install npm packages or add a `package.json`  
+- Add npm dependencies beyond `@netlify/blobs`, or remove `package.json`  
 - Introduce a frontend framework (React, Vue, etc.)  
 - Split `index.html` or `admin.html` into multiple files  
 - Change the `gc_acks_<staffKey>` localStorage key pattern  

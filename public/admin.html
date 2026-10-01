@@ -567,6 +567,7 @@ body {
           <div class="form-col"><label>Policy adopted date</label><input type="text" class="form-input" id="setAdoptedDate" value="March 2026"></div>
           <div class="form-col"><label>Review date</label><input type="text" class="form-input" id="setReviewDate" value="March 2027"></div>
           <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+          <div id="aiStatus" style="margin-top:.75rem;font-size:.8rem;color:var(--text2)">AI assistant status: checking…</div>
         </div>
         <div class="setting-group">
           <h3>Security</h3>
@@ -613,7 +614,7 @@ body {
 <div class="panel" id="panel-pins">
   <div class="section-hd">
     <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
-    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
+    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all PINs</button>
   </div>
   <div id="pinTableWrap"></div>
 
@@ -654,27 +655,56 @@ body {
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────
 const ADMIN_USER = 'admin';
-let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
-let toastTimer;
-
+let ADMIN_PASS = sessionStorage.getItem('gc_admin_session') || '';
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : '—';
+async function api(action, { method = 'GET', body } = {}) {
+  const res = await fetch('/api/admin-data?action=' + action, {
+    method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && action !== 'login') { doLogout(); showToast('Session expired — please sign in again', 'error'); }
+  if (!res.ok) throw new Error(data.error || ('Server error ' + res.status));
+  return data;
+}
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    err.style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').classList.add('show');
-    init().catch(e => console.error('Init error:', e));
-  } else {
+  err.style.display = 'none';
+  if (u !== ADMIN_USER) { err.style.display = 'block'; err.textContent = 'Incorrect username or password.'; return; }
+  ADMIN_PASS = p;
+  try {
+    const r = await api('login', { method: 'POST' });
+    sessionStorage.setItem('gc_admin_session', p);
+    showAdminApp(r.usingDefault);
+  } catch (e) {
+    ADMIN_PASS = '';
     err.style.display = 'block';
-    err.textContent = 'Incorrect username or password.';
+    err.textContent = /Unauthorised/.test(e.message) ? 'Incorrect username or password.' : 'Could not reach the server: ' + e.message;
   }
 }
+function showAdminApp(usingDefault) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').classList.add('show');
+  if (usingDefault) setTimeout(() => showToast('You are using the default admin password — change it in Settings', 'error'), 600);
+  init().catch(e => console.error('Init error:', e));
+}
 function doLogout() {
+  ADMIN_PASS = '';
+  sessionStorage.removeItem('gc_admin_session');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminApp').classList.remove('show');
   document.getElementById('loginPass').value = '';
+}
+if (ADMIN_PASS) api('login', { method: 'POST' }).then(r => showAdminApp(r.usingDefault)).catch(() => doLogout());
+
+// Compliance data comes only from the server — the admin's own browser storage holds no staff data.
+let _overview = null;
+async function fetchOverview(force) {
+  if (!_overview || force) _overview = api('overview').catch(e => { _overview = null; throw e; });
+  return _overview;
 }
 
 // ── DEFAULT DATA ────────────────────────────────────────────────────────
@@ -808,8 +838,8 @@ async function saveGlobalConfig() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
       body: JSON.stringify({ policies: POLICIES, staff: STAFF, config: CONFIG })
     });
-    if (res.status === 401) throw new Error('Unauthorised — check ADMIN_PASSWORD env var matches your password');
-    if (!res.ok) throw new Error('Server error ' + res.status);
+    if (res.status === 401) throw new Error('Unauthorised — please sign in again');
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || ('Server error ' + res.status));
     // Also save locally as backup
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
     localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
@@ -820,7 +850,7 @@ async function saveGlobalConfig() {
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
     localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
     localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
-    showToast('Saved locally (server sync failed: ' + e.message + ')', 'info');
+    showToast('NOT saved to the live portal: ' + e.message, 'error');
   }
 }
 
@@ -865,6 +895,7 @@ async function init() {
   renderStaffList();
   loadSettingsUI();
   loadCompliance();
+  loadAiStatus();
   buildCatFilter();
 }
 
@@ -965,117 +996,58 @@ function removeStaff(n) { if(!confirm(`Remove ${n} from active staff?`)) return;
 
 function loadSettingsUI() { document.getElementById('setOrgName').value = CONFIG.orgName || ''; document.getElementById('setReviewDate').value = CONFIG.reviewDate || ''; document.getElementById('setAdoptedDate').value = CONFIG.adoptedDate || ''; }
 function saveSettings() { CONFIG.orgName = document.getElementById('setOrgName').value; CONFIG.adoptedDate = document.getElementById('setAdoptedDate').value; CONFIG.reviewDate = document.getElementById('setReviewDate').value; saveGlobalConfig(); }
-function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
+async function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } try { await api('change_password', { method: 'POST', body: { newPassword: np } }); ADMIN_PASS = np; sessionStorage.setItem('gc_admin_session', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓', 'success'); } catch (e) { showToast('Password NOT changed: ' + e.message, 'error'); } }
 
 // ── COMPLIANCE ─────────────────────────────────────────────────────────────
 async function loadCompliance() {
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderCompliance(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
+    const data = await fetchOverview(true);
+    renderCompliance((data.staff || []).filter(s => s.active));
+  } catch (e) {
+    document.getElementById('compCard').innerHTML = `<p style="color:#f87171;padding:2rem;text-align:center">Could not load compliance data: ${esc(e.message)}</p>`;
   }
 }
 
-
-async function loadStaffDetail(staffKey, name) {
+async function loadStaffDetail(staffKey) {
+  const el = document.getElementById('detail_' + staffKey);
   try {
-    const actKey = 'gc_activity_' + staffKey;
-    let activity = [];
-    try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-    const reads = activity.filter(e => e.action === 'read').slice(-10).reverse();
-    const quizzes = activity.filter(e => e.action === 'quiz');
-    const recentReads = reads.map(r => `<li style="margin-bottom:.3rem">${r.key} <span style="color:var(--text3);font-size:.72rem">${new Date(r.timestamp||r.date).toLocaleDateString('en-GB')}</span></li>`).join('');
-    const quizItems = quizzes.slice(-5).reverse().map(q => {
-      let score = ''; try { const v = JSON.parse(q.value); score = ` — ${v.score}/${v.total}`; } catch(e) {}
-      return `<li style="margin-bottom:.3rem">${q.key}${score}</li>`;
-    }).join('');
-    const el = document.getElementById('detail_' + staffKey);
+    const d = await api('staff-detail&staff=' + encodeURIComponent(staffKey));
+    const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+    const byId = Object.fromEntries(policies.map(p => [p.id, p]));
+    const recs = Object.entries(d.records || {}).sort((a, b) => String(b[1].at || '').localeCompare(String(a[1].at || '')));
+    const how = r => r.method === 'quiz' ? `Quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'offline_quiz' ? `Offline quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'direct' ? 'Confirmed (quiz unavailable)' : 'Recorded on device';
+    const ackRows = recs.map(([id, r]) => `<tr><td style="padding:.25rem .5rem">${esc(byId[id]?.title || r.policyTitle || id)}</td><td style="padding:.25rem .5rem;white-space:nowrap">${fmtDate(r.at)}${r.legacy ? ' <span title="Date taken from the staff member\'s device before server tracking worked" style="color:var(--text3)">(device)</span>' : ''}</td><td style="padding:.25rem .5rem;color:var(--text2)">${esc(how(r))}</td></tr>`).join('');
+    const outstanding = policies.filter(p => p.tier === 1 && !d.records?.[p.id]).map(p => `<li>${esc(p.title)}</li>`).join('');
+    const quizzes = (d.quizzes || []).slice(-10).reverse().map(q => { let v = {}; try { v = JSON.parse(q.value); } catch (e) {} return `<li>${esc(q.policyTitle || q.key)} — ${v.score ?? '?'}/${v.total ?? '?'} ${v.passed ? '✓ passed' : '✗ not passed'} <span style="color:var(--text3)">${fmtDate(q.timestamp)}</span></li>`; }).join('');
     if (el) el.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;font-size:.82rem">
-        <div><strong>Recent reads</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${recentReads||'<li>None yet</li>'}</ul></div>
-        <div><strong>Recent quizzes</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizItems||'<li>None yet</li>'}</ul></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin:.5rem 0 .75rem;font-size:.8rem">
+        <div><strong>Acknowledged (${recs.length})</strong>
+          <table style="width:100%;border-collapse:collapse;margin-top:.3rem">${ackRows || '<tr><td style="padding:.25rem .5rem;color:var(--text3)">None yet</td></tr>'}</table></div>
+        <div><strong>Outstanding Tier 1</strong><ul style="margin:.3rem 0 .8rem;padding-left:1.2rem;color:#fca5a5">${outstanding || '<li style="color:#86efac">All done ✓</li>'}</ul>
+          <strong>Recent quiz attempts</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizzes || '<li>None yet</li>'}</ul></div>
       </div>`;
-  } catch(e) { console.error(e); }
+  } catch (e) { if (el) el.innerHTML = `<div style="padding:.5rem .75rem;color:#f87171">Could not load: ${esc(e.message)}</div>`; }
 }
-
 
 async function loadAiQuestions() {
   const listEl = document.getElementById('aiQList');
   const statsEl = document.getElementById('aiQStats');
   listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
   try {
-    let allChats = [];
-
-    // Try server first
-    try {
-      const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-      if (res.ok) {
-        const data = await res.json();
-        for (const s of (data.staff || [])) {
-          for (const c of (s.recentAiChats || s.activity?.filter(a => a.type==='aichat') || [])) {
-            allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
-          }
-        }
-      }
-    } catch(e) {}
-
-    // If server returned nothing, fall back to localStorage
-    if (allChats.length === 0) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith('gc_activity_')) continue;
-        const staffName = k.replace('gc_activity_', '').replace(/_/g, ' ');
-        try {
-          const entries = JSON.parse(localStorage.getItem(k) || '[]');
-          for (const e of entries) {
-            if (e.action === 'aichat') {
-              allChats.push({ staff: staffName, question: e.key || '', policy: '', date: e.timestamp || e.date || '' });
-            }
-          }
-        } catch(e) {}
+    const data = await fetchOverview(true);
+    const allChats = [];
+    for (const s of (data.staff || [])) {
+      for (const c of (s.recentAiChats || [])) {
+        allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
       }
     }
-
     allChats.sort((a,b) => b.date.localeCompare(a.date));
     window._allChats = allChats;
 
     const staffNames = [...new Set(allChats.map(c => c.staff))].sort();
     const policyNames = [...new Set(allChats.map(c => c.policy).filter(Boolean))].sort();
-    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${s}">${s}</option>`).join('');
-    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${p}">${p}</option>`).join('');
+    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
 
     statsEl.innerHTML = `
       <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
@@ -1087,66 +1059,35 @@ async function loadAiQuestions() {
 
     renderAiQuestions(allChats);
   } catch(e) {
-    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${e.message}</p>`;
+    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${esc(e.message)}</p>`;
   }
 }
-
 
 async function loadHeatmap() {
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderHeatmap(staff); renderOfstedScore(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
+    const data = await fetchOverview(true);
+    const staff = (data.staff || []).filter(s => s.active);
+    renderHeatmap(staff); renderOfstedScore(staff);
+  } catch (e) {
+    document.getElementById('heatmapWrap').innerHTML = `<p style="color:#f87171;padding:2rem;text-align:center">Could not load: ${esc(e.message)}</p>`;
   }
 }
 
-
+// Ofsted evidence: one row per staff member per policy, with when and how it was acknowledged.
 async function exportCSV() {
   showToast('Building export…', 'info');
   try {
-    const staff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
-    staff.forEach(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = new Set();
-      try { acks = new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch(e) {}
-      const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-      policies.forEach(p => rows.push([name, p.id, p.title, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
+    const data = await fetchOverview(true);
+    const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged', 'Acknowledged On', 'Method', 'Quiz Score', 'Date Source']];
+    (data.staff || []).filter(s => s.active).forEach(s => {
+      policies.forEach(p => {
+        const r = s.records?.[p.id];
+        rows.push([s.name, p.id, p.title, p.tier, p.cat, r ? 'Yes' : 'No', r?.at ? new Date(r.at).toISOString().slice(0, 10) : '',
+          r ? r.method : '', r && r.score != null ? `${r.score}/${r.total}` : '', r ? (r.legacy ? 'staff device' : 'server') : '']);
+      });
     });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const csv = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = 'greencoat_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
@@ -1156,6 +1097,7 @@ async function exportCSV() {
 }
 
 
+let toastTimer;
 function showToast(msg, type='info') {
   const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`;
   clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className='toast',3000);
@@ -1190,24 +1132,32 @@ function renderCompliance(compData) {
 
   if (!compData.length) { compCard.innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No staff data found.</p>'; return; }
 
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
+  const t1 = policies.filter(p => p.tier === 1);
+  let html = `<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.9rem">
+    <label for="whoReadSel" style="font-size:.8rem;color:var(--text2)">Who has read…</label>
+    <select id="whoReadSel" class="filter-sel" style="flex:1;min-width:220px" onchange="renderWhoRead(this.value)">
+      <option value="">— choose a policy —</option>${policies.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('')}
+    </select></div><div id="whoReadOut"></div>`;
+  html += '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">';
   html += '<th style="text-align:left;padding:.5rem .75rem;color:var(--text2)">Staff member</th>';
   html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Acknowledged</th>';
   html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Tier 1</th>';
+  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Last acknowledged</th>';
   html += '<th style="padding:.5rem .75rem;color:var(--text2)">Progress</th>';
   html += '</tr></thead><tbody>';
 
-  compData.forEach((s, i) => {
+  compData.forEach((s) => {
     const acks = new Set(s.acknowledged);
     const pct = Math.round(acks.size / total * 100);
-    const t1 = policies.filter(p => p.tier === 1);
     const t1done = t1.filter(p => acks.has(p.id)).length;
     const barCol = pct >= 80 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
-    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=&quot;detail_${s.name.replace(/\s+/g,'_')}&quot;><div style=&quot;padding:.5rem .75rem;color:var(--text3);font-size:.8rem&quot;>Loading…</div></td></tr>')">
-      <td style="padding:.5rem .75rem;font-weight:500">${s.name}</td>
+    const last = Object.values(s.records || {}).map(r => r.at).filter(Boolean).sort().at(-1);
+    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" title="Show details" onclick="toggleStaffDetail(this, ${esc(JSON.stringify(s.staffKey))})">
+      <td style="padding:.5rem .75rem;font-weight:500">${esc(s.name)}${s.hasPin ? '' : ' <span title="Has not logged in with a PIN yet" style="color:var(--text3);font-size:.72rem">(not logged in yet)</span>'}</td>
       <td style="text-align:center;padding:.5rem .75rem">${acks.size}/${total}</td>
-      <td style="text-align:center;padding:.5rem .75rem">${t1done}/${t1.length}</td>
+      <td style="text-align:center;padding:.5rem .75rem;color:${t1done === t1.length ? '#86efac' : '#fca5a5'}">${t1done}/${t1.length}</td>
+      <td style="text-align:center;padding:.5rem .75rem;color:var(--text2)">${fmtDate(last)}</td>
       <td style="padding:.5rem .75rem">
         <div style="display:flex;align-items:center;gap:.5rem">
           <div style="flex:1;height:6px;background:var(--border2);border-radius:3px">
@@ -1220,7 +1170,29 @@ function renderCompliance(compData) {
   });
   html += '</tbody></table>';
   compCard.innerHTML = html;
+  window._compData = compData;
   document.getElementById('compSummary').textContent = `${compData.length} staff · ${avgPct}% average compliance`;
+}
+
+function toggleStaffDetail(row, staffKey) {
+  const next = row.nextElementSibling;
+  if (next && next.classList.contains('detail-row')) { next.remove(); return; }
+  row.insertAdjacentHTML('afterend', `<tr class="detail-row"><td colspan="5" id="detail_${esc(staffKey)}"><div style="padding:.5rem .75rem;color:var(--text3);font-size:.8rem">Loading…</div></td></tr>`);
+  loadStaffDetail(staffKey);
+}
+
+function renderWhoRead(policyId) {
+  const out = document.getElementById('whoReadOut');
+  if (!policyId) { out.innerHTML = ''; return; }
+  const staff = window._compData || [];
+  const read = staff.filter(s => s.records?.[policyId]).sort((a, b) => String(a.records[policyId].at || '').localeCompare(String(b.records[policyId].at || '')));
+  const notRead = staff.filter(s => !s.records?.[policyId]);
+  const how = r => r.method === 'quiz' || r.method === 'offline_quiz' ? `quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'direct' ? 'confirmed' : 'device record';
+  out.innerHTML = `<div class="card" style="margin-bottom:1rem;font-size:.82rem">
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+      <div><strong style="color:#86efac">Read (${read.length})</strong><ul style="margin:.4rem 0 0;padding-left:1.2rem">${read.map(s => `<li>${esc(s.name)} — ${fmtDate(s.records[policyId].at)} <span style="color:var(--text3)">(${esc(how(s.records[policyId]))})</span></li>`).join('') || '<li style="color:var(--text3)">Nobody yet</li>'}</ul></div>
+      <div><strong style="color:#fca5a5">Not yet (${notRead.length})</strong><ul style="margin:.4rem 0 0;padding-left:1.2rem">${notRead.map(s => `<li>${esc(s.name)}</li>`).join('') || '<li style="color:#86efac">Everyone ✓</li>'}</ul></div>
+    </div></div>`;
 }
 
 function renderAiQuestions(chats) {
@@ -1233,11 +1205,11 @@ function renderAiQuestions(chats) {
     const dateStr = c.date ? new Date(c.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
     return `<div style="background:var(--card2);border-radius:10px;padding:.75rem 1rem;border-left:3px solid var(--accent)">
       <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
-        <span style="font-weight:600;font-size:.82rem">${c.staff}</span>
+        <span style="font-weight:600;font-size:.82rem">${esc(c.staff)}</span>
         <span style="font-size:.72rem;color:var(--text3)">${dateStr}</span>
       </div>
-      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${c.question || '(no text recorded)'}</div>
-      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${c.policy}</div>` : ''}
+      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${esc(c.question) || '(no text recorded)'}</div>
+      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${esc(c.policy)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1272,7 +1244,7 @@ function renderHeatmap(compData) {
   compData.forEach((s, i) => {
     const acks = new Set(s.acknowledged);
     const rowBg = i % 2 === 0 ? 'var(--bg)' : 'var(--card2)';
-    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${s.name}</td>`;
+    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${esc(s.name)}</td>`;
     t1.forEach(p => {
       const done = acks.has(p.id);
       html += `<td style="text-align:center;padding:.2rem;background:${done ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.1)'}">
@@ -1304,42 +1276,33 @@ function renderOfstedScore(compData) {
   el.classList.remove('hidden');
 }
 
-// ── PIN MANAGEMENT (admin) ──────────────────────────────────────────
-function getAdminPins() {
-  try { return JSON.parse(localStorage.getItem('gc_staff_pins') || '{}'); }
-  catch { return {}; }
-}
-function saveAdminPins(pins) {
-  localStorage.setItem('gc_staff_pins', JSON.stringify(pins));
-}
-
-function renderPinTable() {
+// ── PIN MANAGEMENT (admin) ── PINs live on the server (hashed); the admin never sees them.
+async function renderPinTable() {
   const wrap = document.getElementById('pinTableWrap');
   if (!wrap) return;
-  const pins = getAdminPins();
-
+  wrap.innerHTML = '<p style="color:var(--text3);padding:1rem">Loading…</p>';
+  let pins = [];
+  try { pins = (await api('pins')).pins || []; }
+  catch (e) { wrap.innerHTML = `<p style="color:#f87171;padding:1rem">Could not load PINs: ${esc(e.message)}</p>`; return; }
+  const byName = Object.fromEntries(pins.map(p => [p.staffName, p]));
   let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
     '<th style="text-align:left;padding:.6rem .75rem">Staff member</th>' +
-    '<th style="text-align:center;padding:.6rem .75rem">Current PIN</th>' +
+    '<th style="text-align:center;padding:.6rem .75rem">PIN</th>' +
     '<th style="padding:.6rem .75rem;text-align:right">Actions</th></tr></thead><tbody>';
-
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach((name, i) => {
-    const pin = pins[name] || '0000';
-    const isDefault = pin === '0000';
+  STAFF.forEach((name, i) => {
+    const p = byName[name];
     const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--card2)';
+    const status = !p?.hasPin ? '<span style="color:#fbbf24">Not set — creates one at first login</span>'
+      : p.locked ? '<span style="color:#f87171">Locked (too many attempts)</span>'
+      : `<span style="color:#86efac">Set ${fmtDate(p.setAt)}${p.setBy === 'admin' ? ' by admin' : ''}</span>`;
+    const n = esc(JSON.stringify(name));
     html += `<tr style="background:${fill}">
-      <td style="padding:.6rem .75rem;font-weight:600">${name}</td>
-      <td style="text-align:center;padding:.6rem .75rem">
-        <span style="font-family:monospace;font-size:1rem;letter-spacing:.15em;color:${isDefault?'#e57373':'var(--gc-green)'}">${pin}</span>
-        ${isDefault ? '<span style="font-size:.7rem;color:#e57373;margin-left:.4rem">(default)</span>' : ''}
-      </td>
+      <td style="padding:.6rem .75rem;font-weight:600">${esc(name)}</td>
+      <td style="text-align:center;padding:.6rem .75rem;font-size:.8rem">${status}</td>
       <td style="text-align:right;padding:.6rem .75rem">
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem"
-          onclick="adminSetPin('${name.replace(/'/g,"\'")}')">Set PIN</button>
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem"
-          onclick="adminResetPin('${name.replace(/'/g,"\'")}')">Reset to 0000</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem" onclick="adminSetPin(${n})">Set temporary PIN</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem" onclick="adminResetPin(${n})">Reset</button>
       </td>
     </tr>`;
   });
@@ -1347,36 +1310,40 @@ function renderPinTable() {
   wrap.innerHTML = html;
 }
 
-function adminSetPin(name) {
-  const p1 = prompt(`Set new 4-digit PIN for ${name}:`);
+async function adminSetPin(name) {
+  const p1 = prompt(`Set a temporary 4-digit PIN for ${name} (tell them in person; they can change it after logging in):`);
   if (p1 === null) return;
   if (!/^\d{4}$/.test(p1)) { showToast('PIN must be exactly 4 digits', 'error'); return; }
   const p2 = prompt(`Confirm PIN for ${name}:`);
   if (p1 !== p2) { showToast('PINs did not match — not saved', 'error'); return; }
-  const pins = getAdminPins();
-  pins[name] = p1;
-  saveAdminPins(pins);
-  showToast(`PIN updated for ${name}`, 'success');
+  try { await api('set_pin', { method: 'POST', body: { staffName: name, pin: p1 } }); showToast(`PIN set for ${name}`, 'success'); }
+  catch (e) { showToast('PIN not saved: ' + e.message, 'error'); }
   renderPinTable();
 }
 
-function adminResetPin(name) {
-  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
-  const pins = getAdminPins();
-  pins[name] = '0000';
-  saveAdminPins(pins);
-  showToast(`PIN reset for ${name}`, 'success');
+async function adminResetPin(name) {
+  if (!confirm(`Reset ${name}'s PIN? They will create a new PIN the next time they log in.`)) return;
+  try { await api('reset_pin', { method: 'POST', body: { staffName: name } }); showToast(`PIN reset for ${name}`, 'success'); }
+  catch (e) { showToast('Reset failed: ' + e.message, 'error'); }
   renderPinTable();
 }
 
-function resetAllPins() {
-  if (!confirm('Reset ALL staff PINs to 0000? Staff will be prompted to set a new PIN on next login.')) return;
-  const pins = {};
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach(n => pins[n] = '0000');
-  saveAdminPins(pins);
-  showToast('All PINs reset to 0000', 'success');
+async function resetAllPins() {
+  if (!confirm('Reset ALL staff PINs? Everyone will create a new PIN at their next login.')) return;
+  let failed = 0;
+  for (const name of STAFF) { try { await api('reset_pin', { method: 'POST', body: { staffName: name } }); } catch (e) { failed++; } }
+  showToast(failed ? `${failed} PIN resets failed` : 'All PINs reset', failed ? 'error' : 'success');
   renderPinTable();
+}
+
+async function loadAiStatus() {
+  const el = document.getElementById('aiStatus');
+  if (!el) return;
+  try {
+    const s = await fetch('/api/ai?action=status').then(r => r.json());
+    el.innerHTML = s.ok ? `AI assistant: <span style="color:#86efac">working</span> — models: ${esc((s.models || []).join(' → '))}`
+      : `AI assistant: <span style="color:#f87171">${esc(s.message || 'not working')}</span>`;
+  } catch (e) { el.textContent = 'AI assistant status: could not check'; }
 }
 
 </script>
