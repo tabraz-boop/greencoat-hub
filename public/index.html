@@ -1156,7 +1156,7 @@ body {
     <aside class="sidebar" id="sidebar">
       <div class="staff-box">
         <div class="staff-label">Staff member</div>
-        <select class="staff-select" id="staffSelect" onchange="loginStaff(this.value)">
+        <select class="staff-select" id="staffSelect" onchange="requestStaffPinOrSwitch(this.value)">
   <option value="">Select staff member...</option>
 </select>
       </div>
@@ -1873,16 +1873,7 @@ let filterTier = null, filterCat = null, searchQ = '';
 let filterSite = localStorage.getItem('gc_lastSite') || null;
 
 // ─── AUTHENTICATION ──────────────────────────────────────────────────────
-function loginStaff(name) {
-  if (!name || typeof name !== 'string') return;
-  currentStaff = name.trim();
-  loadAcknowledged();
-  loadChatHistory(name);
-  updateCounts();
-  render();
-  showToast(`Welcome, ${name}!`, 'ok');
-}
-
+// Login is handled by the PIN overlay (server-verified) → pinSuccess() → onStaffChange().
 function loadAcknowledged() {
   if (!currentStaff) { acknowledged = new Set(); return; }
   try {
@@ -1900,7 +1891,6 @@ function saveAcknowledged() {
   try {
     const ackKey = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
     localStorage.setItem(ackKey, JSON.stringify([...acknowledged]));
-    syncAcksToServer();
   } catch(e) { console.warn('saveAcknowledged failed:', e); }
 }
 
@@ -1910,6 +1900,7 @@ let guidedMode = false;
 let queueMode = false;
 let quizCache = {};
 let preloadedQuiz = null;   // questions ready for the currently-open policy
+let preloadedQuizOffline = false; // true when questions came from the offline fallback bank
 let preloadedQuizForId = null; // policy ID these questions belong to — guards against race condition
 let aiController       = null; // AbortController for AI requests (module-scoped for cancel)
 let _loadDocController = null; // AbortController for the active loadDoc fetch
@@ -1965,26 +1956,66 @@ async function trackActivity(storeName, key, value) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 // ── SERVER SYNC (fire-and-forget — never blocks UI) ──────────────────────
-function syncAcksToServer() {
+// Writes are queued in a per-staff outbox (localStorage) and sent one at a time, so nothing is lost
+// offline or when the session token has expired — the queue flushes after the next login.
+const outboxKey = name => `gc_outbox_${name.replace(/\s+/g,'_')}`;
+let _flushing = false;
+function queueServerWrite(action, data) {
   if (!currentStaff) return;
-  const acks = [...acknowledged];
-  fetch('/api/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'sync_acks', staffName: currentStaff, data: { acks } })
-  }).catch(() => {}); // silent fail — localStorage is source of truth
+  try {
+    const box = JSON.parse(localStorage.getItem(outboxKey(currentStaff)) || '[]');
+    box.push({ action, data, queuedAt: new Date().toISOString() });
+    localStorage.setItem(outboxKey(currentStaff), JSON.stringify(box.slice(-300)));
+  } catch(e) { console.warn('queueServerWrite failed:', e); }
+  flushOutbox();
+}
+async function flushOutbox() {
+  const session = getPinSession();
+  if (_flushing || !currentStaff || !session?.token || session.name !== currentStaff) return;
+  _flushing = true;
+  const key = outboxKey(currentStaff);
+  try {
+    while (true) {
+      const box = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!box.length) break;
+      const item = box[0];
+      let res;
+      try {
+        res = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: item.action, token: session.token, data: item.data }) });
+      } catch(e) { break; } // offline — retry later
+      if (res.status === 401) { markSessionNeedsLogin(); break; }
+      if (!res.ok && res.status >= 500) break; // server trouble — retry later
+      const fresh = JSON.parse(localStorage.getItem(key) || '[]'); fresh.shift();
+      localStorage.setItem(key, JSON.stringify(fresh));
+    }
+  } catch(e) { console.warn('flushOutbox failed:', e); }
+  _flushing = false;
+}
+window.addEventListener('online', () => flushOutbox());
+setInterval(() => flushOutbox(), 60000);
+
+// Upload every ack held on this device (merge-only on the server), with the device's dates.
+function syncAcksToServer() {
+  if (!currentStaff || !acknowledged.size) return;
+  const sk = currentStaff.replace(/\s+/g,'_');
+  const dates = {}, titles = {};
+  for (const id of acknowledged) {
+    const d = localStorage.getItem(`gc_ack_date_${id}_${sk}`); if (d) dates[id] = d;
+    const p = POLICIES.find(x => x.id === id); if (p) titles[id] = p.title;
+  }
+  queueServerWrite('sync_acks', { acks: [...acknowledged], dates, titles });
+}
+
+function recordAckOnServer(p, method, score, total) {
+  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, method, score, total });
 }
 
 function logActivityToServer(activityType, key, value, policyId, policyTitle) {
-  if (!currentStaff) return;
-  fetch('/api/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'log_activity', staffName: currentStaff, data: {
-      activityType, key: key || null, value: value || null,
-      policyId: policyId || null, policyTitle: policyTitle || null
-    }})
-  }).catch(() => {}); // silent fail
+  queueServerWrite('log_activity', {
+    activityType, key: key || null, value: value || null,
+    policyId: policyId || null, policyTitle: policyTitle || null
+  });
 }
 
 async function init() {
@@ -2158,18 +2189,31 @@ async function syncAcksFromServer(name) {
   // Start with localStorage (source of truth)
   const localStored = JSON.parse(localStorage.getItem(localKey) || '[]');
   let merged = new Set(localStored);
-  // Best-effort fetch from server to merge any acks from other devices
-  try {
-    const res = await fetch('/api/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_acks', staffName: name })
-    });
-    if (res.ok) {
-      const d = await res.json();
-      if (Array.isArray(d.acks)) d.acks.forEach(id => merged.add(id));
-    }
-  } catch(e) { /* offline — local only */ }
+  // Best-effort fetch from server to merge acks from other devices; then upload any this device
+  // recorded that the server doesn't have yet (e.g. acks made before server sync worked).
+  const session = getPinSession();
+  if (session?.token && session.name === name) {
+    try {
+      const res = await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_acks', token: session.token })
+      });
+      if (res.status === 401) markSessionNeedsLogin();
+      if (res.ok) {
+        const d = await res.json();
+        const serverIds = new Set(Array.isArray(d.acks) ? d.acks : []);
+        serverIds.forEach(id => merged.add(id));
+        const sk = name.replace(/\s+/g,'_');
+        for (const [id, rec] of Object.entries(d.records || {})) {
+          const k = `gc_ack_date_${id}_${sk}`;
+          if (rec?.at && !localStorage.getItem(k)) localStorage.setItem(k, new Date(rec.at).toLocaleDateString('en-GB'));
+        }
+        if (localStored.some(id => !serverIds.has(id))) setTimeout(syncAcksToServer, 0);
+      }
+    } catch(e) { /* offline — local only */ }
+    flushOutbox();
+  }
   // Save merged result back to localStorage
   acknowledged = merged;
   localStorage.setItem(localKey, JSON.stringify([...acknowledged]));
@@ -2537,7 +2581,12 @@ async function sendAI() {
     window._contextPolicy = null;
     const data = await res.json();
     document.getElementById('aiTyping').classList.remove('show');
-    const reply = data.reply || 'Sorry, I could not get a response. Please try again.';
+    if (!data.reply) {
+      chatHistory.pop(); // don't send an unanswered question as context next time
+      addAIMessage('bot', data.error || 'Sorry, I could not get a response. Please try again.');
+      return;
+    }
+    const reply = data.reply;
     chatHistory.push({ role: 'assistant', content: reply });
     addAIMessage('bot', reply);
     const replySnippet = reply.slice(0, 500);
@@ -2646,6 +2695,7 @@ async function preloadQuiz(policy, isRetry) {
       }
       if (valid.length >= 3) {
         preloadedQuiz = valid.slice(0, 3);
+        preloadedQuizOffline = false;
         preloadedQuizForId = policy.id;
       }
     }
@@ -2689,6 +2739,7 @@ async function ackCurrent() {
       }));
       if (fallback.length >= 3) {
         preloadedQuiz = fallback;
+        preloadedQuizOffline = true;
         preloadedQuizForId = p.id;
         openQuizForAck(p);
         showToast('Using offline knowledge check', 'info');
@@ -2795,6 +2846,7 @@ function doDirectAcknowledge(p) {
   acknowledged.add(p.id);
   saveAcknowledged();
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+  recordAckOnServer(p, 'direct', null, null);
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
   if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
   render();
@@ -2808,11 +2860,13 @@ function doDirectAcknowledge(p) {
 async function doAcknowledge() {
   if (!quizPolicy) return;
   const p = quizPolicy;
-  closeQuiz();
+  const score = quizScore, total = quizQuestions.length, offline = preloadedQuizOffline;
+  closeQuiz(); // resets quizScore — capture it first
 
   acknowledged.add(p.id);
   saveAcknowledged();
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+  recordAckOnServer(p, offline ? 'offline_quiz' : 'quiz', score, total);
 
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
   if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
@@ -3079,8 +3133,8 @@ function getPinSession() {
   } catch(e) { return null; }
 }
 
-function setPinSession(name) {
-  try { localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name, ts: Date.now() })); }
+function setPinSession(name, token) {
+  try { localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name, ts: Date.now(), token: token || null })); }
   catch(e) { console.warn('setPinSession failed (private browsing?)', e); }
 }
 
@@ -3121,34 +3175,50 @@ function renderPinDots() {
   }
 }
 
-function onPinNameChange(name) {
+async function pinApi(action, body) {
+  const res = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...body }) });
+  return { status: res.status, data: await res.json().catch(() => ({})) };
+}
+// Offline fallback: a salted hash of the last PIN that the server accepted on this device.
+async function pinHash(name, pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`gc|${name}|${pin}`));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const pinHashKey = name => 'gc_pinhash_' + name.replace(/\s+/g,'_');
+function setPinMsg(t) { document.getElementById('pinMsg').textContent = t; }
+function enterSetupPhase(name) {
+  pinPhase = 'setup'; pinBuffer = ''; renderPinDots();
+  document.getElementById('pinSetupNote').style.display = 'block';
+  document.getElementById('pinConfirmRow').style.display = 'none';
+  document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+}
+
+async function onPinNameChange(name) {
   pinBuffer = '';
   pinPhase = 'enter';
-  pinAttempts = 0;
   renderPinDots();
-  document.getElementById('pinMsg').textContent = '';
+  setPinMsg('');
   document.getElementById('pinPad').style.pointerEvents = '';
   document.getElementById('pinNameSelect').disabled = false;
   document.getElementById('pinSetupNote').style.display = 'none';
   document.getElementById('pinConfirmRow').style.display = 'none';
   if (!name) return;
-  // Check admin-set PIN first, then self-set
-  let hasPin = false;
-  try { const ap = JSON.parse(localStorage.getItem('gc_staff_pins')||'{}'); if(ap[name]) hasPin=true; } catch(e){}
-  if (!hasPin) hasPin = !!localStorage.getItem(getPinKey(name));
-  if (hasPin) {
-    document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
-  } else {
-    pinPhase = 'setup';
-    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
-    document.getElementById('pinSetupNote').style.display = 'block';
-  }
+  document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
+  let hasPin = !!localStorage.getItem(getPinKey(name)) || !!localStorage.getItem(pinHashKey(name));
+  try {
+    const { status, data } = await pinApi('pin_status', { staffName: name });
+    if (document.getElementById('pinNameSelect').value !== name) return; // changed meanwhile
+    if (status === 403) { setPinMsg(data.error); document.getElementById('pinPad').style.pointerEvents = 'none'; return; }
+    if (status === 200) hasPin = data.hasPin || !!localStorage.getItem(getPinKey(name)); // legacy device PIN migrates on entry
+    if (data.lockedUntil) setPinMsg(`⚠ Too many attempts. Try again after ${new Date(data.lockedUntil).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}.`);
+  } catch(e) { /* offline — decide from this device */ }
+  if (!hasPin) enterSetupPhase(name);
 }
 
 function pinKey(digit) {
   if (pinBuffer.length >= 4) return;
   const name = document.getElementById('pinNameSelect').value;
-  if (!name) { document.getElementById('pinMsg').textContent = 'Please select your name first.'; return; }
+  if (!name) { setPinMsg('Please select your name first.'); return; }
   pinBuffer += digit;
   renderPinDots();
   if (pinBuffer.length === 4) {
@@ -3159,73 +3229,11 @@ function pinKey(digit) {
 function pinDel() {
   pinBuffer = pinBuffer.slice(0, -1);
   renderPinDots();
-  document.getElementById('pinMsg').textContent = '';
+  setPinMsg('');
 }
 
-function processPinEntry(name) {
-  // Check admin-set PIN first (gc_staff_pins), then self-set (gc_pin_[name])
-  function getEffectivePin(n) {
-    try {
-      const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
-      if (adminPins[n]) return adminPins[n];
-    } catch(e) {}
-    return localStorage.getItem(getPinKey(n)) || null;
-  }
-  const storedPin = getEffectivePin(name);
-
-  // Check for active lockout (survives page refresh via sessionStorage)
-  const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
-  const lockedUntil = parseInt(sessionStorage.getItem(lockoutKey) || '0');
-  if (lockedUntil > Date.now()) {
-    const secsLeft = Math.ceil((lockedUntil - Date.now()) / 1000);
-    document.getElementById('pinMsg').textContent = `⚠ Too many attempts. Try again in ${secsLeft}s.`;
-    document.getElementById('pinPad').style.pointerEvents = 'none';
-    return;
-  }
-
-  if (pinPhase === 'enter') {
-    if (!storedPin) { // no PIN set — shouldn't reach here but handle gracefully
-      pinPhase = 'setup';
-      pinBuffer = '';
-      renderPinDots();
-      document.getElementById('pinSetupNote').style.display = 'block';
-      document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
-      return;
-    }
-    if (pinBuffer === storedPin) {
-      pinAttempts = 0;
-      pinSuccess(name);
-    } else {
-      pinAttempts++;
-      pinBuffer = '';
-      renderPinDots();
-      if (pinAttempts >= 5) {
-        document.getElementById('pinPad').style.pointerEvents = 'none';
-        // Keep name select ENABLED — another user on shared device must still be able to log in
-        const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
-        const lockoutUntil = Date.now() + 30000;
-        sessionStorage.setItem(lockoutKey, lockoutUntil); // survives F5, clears on tab close
-        let secs = 30;
-        const msgEl = document.getElementById('pinMsg');
-        msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
-        const countdown = setInterval(() => {
-          secs--;
-          if (secs <= 0) {
-            clearInterval(countdown);
-            pinAttempts = 0;
-            sessionStorage.removeItem(lockoutKey);
-            document.getElementById('pinPad').style.pointerEvents = '';
-            msgEl.textContent = '';
-          } else {
-            msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
-          }
-        }, 1000);
-      } else {
-        document.getElementById('pinMsg').textContent = `Incorrect PIN. ${5 - pinAttempts} attempt${5 - pinAttempts !== 1 ? 's' : ''} remaining.`;
-      }
-    }
-  } else if (pinPhase === 'setup') {
-    // First entry — move to confirm
+async function processPinEntry(name) {
+  if (pinPhase === 'setup') {
     pinFirst = pinBuffer;
     pinBuffer = '';
     renderPinDots();
@@ -3233,31 +3241,74 @@ function processPinEntry(name) {
     document.getElementById('pinSetupNote').style.display = 'none';
     document.getElementById('pinConfirmRow').style.display = 'flex';
     document.getElementById('pinSub').textContent = 'Enter your PIN again to confirm';
-    document.getElementById('pinMsg').textContent = '';
-  } else if (pinPhase === 'confirm') {
-    // 4th digit entered — show Set PIN button (user taps to commit)
-    document.getElementById('pinConfirmRow').style.display = 'flex';
+    setPinMsg('');
+    return;
+  }
+  if (pinPhase === 'confirm') { document.getElementById('pinConfirmRow').style.display = 'flex'; return; }
+
+  const pin = pinBuffer;
+  const pad = document.getElementById('pinPad');
+  pad.style.pointerEvents = 'none';
+  setPinMsg('Checking…');
+  try {
+    let { status, data } = await pinApi('login', { staffName: name, pin });
+    if (status === 409 && data.needsSetup) {
+      // No PIN on the server yet. If this device has the person's old PIN, move it to the server.
+      const legacy = localStorage.getItem(getPinKey(name));
+      if (legacy && legacy === pin) ({ status, data } = await pinApi('set_pin', { staffName: name, pin }));
+      else { pad.style.pointerEvents = ''; setPinMsg(''); enterSetupPhase(name); return; }
+    }
+    pad.style.pointerEvents = '';
+    if (status === 200 && data.token) { await pinSuccess(name, data.token, pin); return; }
+    pinBuffer = ''; renderPinDots();
+    if (status === 429) {
+      pad.style.pointerEvents = 'none';
+      const until = data.lockedUntil ? new Date(data.lockedUntil).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) : 'a few minutes';
+      setPinMsg(`⚠ Too many attempts. Try again after ${until}, or select a different name. Your manager can reset your PIN.`);
+      setTimeout(() => { pad.style.pointerEvents = ''; }, 30000);
+    } else if (status === 401) {
+      setPinMsg(`Incorrect PIN. ${data.attemptsLeft ?? ''} attempt${data.attemptsLeft === 1 ? '' : 's'} remaining.`.replace('  ', ' '));
+    } else {
+      setPinMsg(data.error || 'Could not log in — please try again.');
+    }
+  } catch(e) {
+    // Offline: accept the PIN this device last verified with the server.
+    pad.style.pointerEvents = '';
+    const stored = localStorage.getItem(pinHashKey(name));
+    const legacy = localStorage.getItem(getPinKey(name));
+    if ((stored && stored === await pinHash(name, pin)) || (legacy && legacy === pin)) {
+      await pinSuccess(name, null, pin);
+      showToast('Offline — your progress will sync when you reconnect', 'info');
+    } else {
+      pinBuffer = ''; renderPinDots();
+      setPinMsg(stored || legacy ? 'Incorrect PIN.' : 'No connection — you need to be online to log in the first time.');
+    }
   }
 }
 
-function pinConfirmNew() {
+async function pinConfirmNew() {
   const name = document.getElementById('pinNameSelect').value;
-  if (pinBuffer.length < 4) { document.getElementById('pinMsg').textContent = 'Please enter all 4 digits first.'; return; }
+  if (pinBuffer.length < 4) { setPinMsg('Please enter all 4 digits first.'); return; }
   if (pinBuffer !== pinFirst) {
-    document.getElementById('pinMsg').textContent = "PINs don't match. Try again.";
-    pinBuffer = ''; pinFirst = ''; pinPhase = 'setup';
-    renderPinDots();
-    document.getElementById('pinConfirmRow').style.display = 'none';
-    document.getElementById('pinSetupNote').style.display = 'block';
-    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+    setPinMsg("PINs don't match. Try again.");
+    pinFirst = '';
+    enterSetupPhase(name);
     return;
   }
-  localStorage.setItem(getPinKey(name), pinBuffer);
-  pinSuccess(name);
+  const session = getPinSession();
+  try {
+    const { status, data } = await pinApi('set_pin', { staffName: name, pin: pinBuffer, token: session?.name === name ? session.token : undefined });
+    if (status === 200 && data.token) { await pinSuccess(name, data.token, pinBuffer); showToast('PIN saved ✓', 'ok'); return; }
+    setPinMsg(data.error || 'Could not save PIN — please try again.');
+    if (status === 401 || status === 409) { pinPhase = 'enter'; pinBuffer = ''; renderPinDots(); document.getElementById('pinConfirmRow').style.display = 'none'; document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`; }
+  } catch(e) {
+    setPinMsg('No connection — you need to be online to set a PIN.');
+  }
 }
 
 function showChangePinFlow() {
   if (!currentStaff) { showToast('Please log in first', 'err'); return; }
+  if (!getPinSession()?.token) { showToast('Go online and log in again to change your PIN', 'err'); return; }
   showPinOverlay();
   // Pre-select the current user and put into setup mode
   setTimeout(() => {
@@ -3268,7 +3319,7 @@ function showChangePinFlow() {
     renderPinDots();
     document.getElementById('pinSetupNote').style.display = 'block';
     document.getElementById('pinConfirmRow').style.display = 'none';
-    document.getElementById('pinMsg').textContent = '';
+    setPinMsg('');
     document.getElementById('pinSub').textContent = `Set a new PIN for ${currentStaff.split(' ')[0]}`;
     document.getElementById('pinTitle').textContent = 'Change your PIN';
     // Disable name select — they can only change their own PIN here
@@ -3276,13 +3327,13 @@ function showChangePinFlow() {
   }, 60);
 }
 
-function pinSuccess(name) {
-  // If admin has set a PIN, remove any stale self-set PIN to avoid ghost fallback
+async function pinSuccess(name, token, pin) {
   try {
-    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
-    if (adminPins[name]) localStorage.removeItem(getPinKey(name));
+    localStorage.removeItem(getPinKey(name)); // retire the old plain-text device PIN
+    if (pin && token) localStorage.setItem(pinHashKey(name), await pinHash(name, pin));
   } catch(e) {}
-  setPinSession(name);
+  setPinSession(name, token);
+  _needsLoginNotified = false;
   hidePinOverlay();
   // Set the staff dropdown to match
   const sel = document.getElementById('staffSelect');
@@ -3290,6 +3341,14 @@ function pinSuccess(name) {
   onStaffChange(name);
   // Show logout button
   document.getElementById('logoutBtn').style.display = 'inline-flex';
+}
+
+// Server rejected our token (expired, or PIN reset by admin): keep working locally, ask to re-login.
+let _needsLoginNotified = false;
+function markSessionNeedsLogin() {
+  const s = getPinSession();
+  if (s?.token) setPinSession(s.name, null);
+  if (!_needsLoginNotified) { _needsLoginNotified = true; showToast('Please log out and back in with your PIN so your progress syncs', 'info'); }
 }
 
 function logoutStaff() {
@@ -3308,9 +3367,11 @@ function logoutStaff() {
 }
 
 // ── On page load: check session ──────────────────────────────────────
-(function initPinAuth() {
+// Runs after the DOM is parsed: the PIN overlay markup sits after this <script>, so calling
+// showPinOverlay() during parsing crashed and the login gate never appeared.
+function initPinAuth() {
   const session = getPinSession();
-  if (session && STAFF.includes(session.name)) {
+  if (session && STAFF.includes(session.name) && ('token' in session)) {
     // Valid session — auto-login
     setTimeout(() => {
       const sel = document.getElementById('staffSelect');
@@ -3321,7 +3382,8 @@ function logoutStaff() {
   } else {
     showPinOverlay();
   }
-})();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPinAuth); else initPinAuth();
 
 // ── Session expiry: check every 30 min ─────────────────────────
 setInterval(() => {
