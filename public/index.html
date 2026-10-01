@@ -2577,12 +2577,18 @@ function shareCurrentPolicy() {
   }
 }
 function dlFile(file, name) { const a = document.createElement('a'); a.href = file; a.download = name || file.split('/').pop(); a.click(); }
+const isPhoneLayout = () => window.matchMedia('(max-width: 768px)').matches;
 function toggleSidebar(open) {
   const sb = document.getElementById('sidebar');
   const show = typeof open === 'boolean' ? open : !sb.classList.contains('open');
   sb.classList.toggle('open', show);
   document.getElementById('sidebarScrim')?.classList.toggle('show', show);
+  if (show && aiOpen && isPhoneLayout()) toggleAI(); // one panel at a time on phones
 }
+// On phones the sidebar is an overlay: close it as soon as a filter/category is chosen.
+document.getElementById('sidebar')?.addEventListener('click', e => {
+  if (isPhoneLayout() && e.target.closest('.nav-item')) setTimeout(() => toggleSidebar(false), 120);
+});
 
 // ─── IN-DOC SEARCH ────────────────────────────────────────────────────────
 function openDocSearch() { document.getElementById('docSearchBar').style.display = 'flex'; document.getElementById('docSearchInput').focus(); }
@@ -2629,6 +2635,7 @@ function docSearchPrev() { if (docSearchMatches.length) { docSearchIndex = (docS
 // ─── AI PANEL ─────────────────────────────────────────────────────────────
 function toggleAI() {
   aiOpen = !aiOpen;
+  if (aiOpen && isPhoneLayout()) toggleSidebar(false);
   document.getElementById('aiPanel').classList.toggle('closed', !aiOpen);
   if (aiOpen) { document.getElementById('aiInput').focus(); updateAISuggestions(); }
 }
