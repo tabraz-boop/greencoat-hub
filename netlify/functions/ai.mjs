@@ -1,19 +1,23 @@
 /**
  * Netlify AI proxy — securely calls Gemini using your environment variable.
- * POST /api/ai
+ * POST /api/ai            — chat / quiz generation
+ * GET  /api/ai?action=status — is the key valid, which models will be used (no quota used)
  */
 
 export default async (req, context) => {
   if (req.method === "OPTIONS") {
     return cors(new Response(null));
   }
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (req.method === "GET" && new URL(req.url).searchParams.get("action") === "status") {
+    return cors(json(await aiStatus(apiKey)));
+  }
   if (req.method !== "POST") {
     return cors(json({ error: "Method not allowed" }, 405));
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return cors(json({ error: "Server error: Missing GEMINI_API_KEY in Netlify." }, 500));
+    return cors(json({ error: "The AI assistant isn't set up: GEMINI_API_KEY is missing in Netlify.", code: 'AI_KEY_MISSING' }, 500));
   }
 
   try {
@@ -86,23 +90,29 @@ CRITICAL RULES YOU MUST NEVER BREAK:
     }
 
     // ── Waterfall model rotation ─────────────────────────────────────
-    // Primary exhausted (429) or unavailable (503) → auto-rotate to fallback
-    const modelsToTry = [
-      'gemini-3.1-flash-lite-preview',   // Primary: fastest, cost-efficient, perfect for structured tasks
-      'gemini-3.1-flash',                // Secondary: faster, improved reasoning
-      'gemini-3.0-flash',                // Fallback: stable, proven
-    ];
+    // Preferred order (cheap/fast first), filtered to the models this key can actually use.
+    // 429 / 5xx / timeout → next model. 404 (retired model) → skipped and remembered.
+    // Invalid key → stop immediately with a clear message for the admin.
+    const modelsToTry = await getModelsToTry(apiKey);
+    if (modelsToTry.keyError) {
+      return cors(json({ error: KEY_ERROR_MSG, code: 'AI_KEY_INVALID' }, 502));
+    }
 
     let reply = null;
+    let usedModel = null;
+    let sawRateLimit = false;
+    const deadline = Date.now() + 24000;
 
     for (const model of modelsToTry) {
+      const remaining = deadline - Date.now();
+      if (remaining < 3000) break;
       try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const url = `${GEMINI_BASE}/models/${model}:generateContent`;
       const ctrl = new AbortController();
-      const tId = setTimeout(() => ctrl.abort(), 20000);
+      const tId = setTimeout(() => ctrl.abort(), Math.min(15000, remaining));
       const resp = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
         signal: ctrl.signal,
         body: JSON.stringify({
           system_instruction: { parts: [{ text: sysText }] },
@@ -112,6 +122,16 @@ CRITICAL RULES YOU MUST NEVER BREAK:
       });
       clearTimeout(tId);
 
+        if (!resp.ok) {
+          const errBody = await resp.text().catch(() => '');
+          if (isKeyError(resp.status, errBody)) {
+            return cors(json({ error: KEY_ERROR_MSG, code: 'AI_KEY_INVALID' }, 502));
+          }
+          if (resp.status === 404) deadModels.add(model);
+          if (resp.status === 429) sawRateLimit = true;
+          console.warn(`Model ${model} returned ${resp.status} — trying next model...`);
+          continue;
+        }
         if (resp.ok) {
           const data = await resp.json();
           let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -137,33 +157,121 @@ CRITICAL RULES YOU MUST NEVER BREAK:
                 }
                 if (valid.length >= 3) {
                   reply = JSON.stringify({ questions: valid.slice(0, 3) });
+                  usedModel = model;
                   break;
                 }
               }
             } catch(e) { continue; } // Malformed JSON — try next model
-          } else {
-            reply = raw || '(no response)';
+          } else if (raw) {
+            reply = raw;
+            usedModel = model;
             break;
           }
-        } else if (resp.status === 429 || resp.status === 503) {
-          console.warn(`Model ${model} returned ${resp.status} — trying next model...`);
-          continue;
         }
-      } catch(e) { continue; } // Network error — try next model
+      } catch(e) { continue; } // Network error / timeout — try next model
     }
 
     if (!reply) {
-      // Let the client fall back to its own policy-specific offline quiz questions
-      throw new Error('AI quiz generation unavailable — please try again shortly.');
+      // The client falls back to its own policy-specific offline quiz questions
+      const msg = sawRateLimit
+        ? 'The AI assistant is busy right now (free-tier limit reached). Please try again in a minute.'
+        : 'The AI assistant is unavailable right now — please try again shortly.';
+      return cors(json({ error: msg, code: sawRateLimit ? 'AI_BUSY' : 'AI_UNAVAILABLE' }, 503));
     }
 
-    return cors(json({ ok: true, reply }));
+    return cors(json({ ok: true, reply, model: usedModel }));
 
   } catch (err) {
     console.error("AI error:", err);
-    return cors(json({ error: err.message }, 500));
+    return cors(json({ error: 'AI request failed — please try again.' }, 500));
   }
 };
+
+// ── Model discovery ───────────────────────────────────────────────────
+// Google renames and retires Gemini models regularly (e.g. gemini-3.1-flash-lite-preview was shut
+// down). Instead of hardcoding one list, keep a preferred order and intersect it with the models the
+// key can actually call (ListModels — free, no generation quota). Override with GEMINI_MODELS="a,b,c".
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const MODEL_PREFERENCE = [
+  'gemini-3.1-flash-lite',     // Primary: fastest, most cost-efficient (GA successor of 3.1-flash-lite-preview)
+  'gemini-flash-lite-latest',  // Google's alias for the current Flash-Lite
+  'gemini-3.5-flash-lite',
+  'gemini-3.8-flash',          // More capable fallbacks
+  'gemini-flash-latest',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-2.5-flash-lite',     // Legacy — only for keys that still have 2.5 access
+  'gemini-2.5-flash',
+];
+const MAX_MODELS_PER_REQUEST = 3;
+const KEY_ERROR_MSG = 'The AI service key is invalid or has expired. An administrator needs to update GEMINI_API_KEY in Netlify (Site configuration → Environment variables) and redeploy.';
+const deadModels = new Set();
+let modelCache = null; // { at, names: string[] }
+
+async function listAvailableModels(apiKey) {
+  if (modelCache && Date.now() - modelCache.at < 3600000) return modelCache;
+  const names = [];
+  let pageToken = '';
+  for (let page = 0; page < 5; page++) {
+    const ctrl = new AbortController();
+    const tId = setTimeout(() => ctrl.abort(), 5000);
+    const resp = await fetch(`${GEMINI_BASE}/models?pageSize=1000${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`, {
+      headers: { 'x-goog-api-key': apiKey }, signal: ctrl.signal,
+    }).finally(() => clearTimeout(tId));
+    if (!resp.ok) {
+      const errBody = await resp.text().catch(() => '');
+      if (isKeyError(resp.status, errBody)) return { keyError: true };
+      throw new Error(`ListModels ${resp.status}`);
+    }
+    const data = await resp.json();
+    for (const m of data.models || []) {
+      if ((m.supportedGenerationMethods || []).includes('generateContent')) names.push(String(m.name).replace(/^models\//, ''));
+    }
+    if (!data.nextPageToken) break;
+    pageToken = data.nextPageToken;
+  }
+  modelCache = { at: Date.now(), names };
+  return modelCache;
+}
+
+async function getModelsToTry(apiKey) {
+  const preferred = (process.env.GEMINI_MODELS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const order = preferred.length ? preferred : MODEL_PREFERENCE;
+  let available = null;
+  try {
+    const found = await listAvailableModels(apiKey);
+    if (found.keyError) return { keyError: true };
+    available = found.names;
+  } catch (e) {
+    console.warn('Model discovery failed — using preferred list as-is:', e.message);
+  }
+  let list = available ? order.filter(m => available.includes(m)) : [...order];
+  if (available && list.length < MAX_MODELS_PER_REQUEST) {
+    // Future-proofing: if Google renamed everything, fall back to any current text Flash model.
+    const extra = available
+      .filter(m => /^gemini-.*flash/.test(m) && !/image|tts|live|audio|transcribe|embed|omni|computer|preview/.test(m))
+      .sort().reverse();
+    for (const m of extra) if (!list.includes(m)) list.push(m);
+  }
+  list = list.filter(m => !deadModels.has(m)).slice(0, MAX_MODELS_PER_REQUEST);
+  return list.length ? list : order.slice(0, MAX_MODELS_PER_REQUEST);
+}
+
+function isKeyError(status, bodyText) {
+  if (status === 401 || status === 403) return true;
+  return status === 400 && /API_KEY_INVALID|API key not valid|API key expired/i.test(bodyText || '');
+}
+
+async function aiStatus(apiKey) {
+  if (!apiKey) return { ok: false, keyConfigured: false, message: 'GEMINI_API_KEY is not set in Netlify.' };
+  try {
+    const list = await getModelsToTry(apiKey);
+    if (list.keyError) return { ok: false, keyConfigured: true, keyValid: false, message: KEY_ERROR_MSG };
+    return { ok: true, keyConfigured: true, keyValid: true, models: list };
+  } catch (e) {
+    return { ok: false, keyConfigured: true, message: 'Could not reach Google AI: ' + e.message };
+  }
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────
 function json(data, status = 200) {
@@ -177,7 +285,7 @@ function cors(response) {
   const r = new Response(response.body, response);
   r.headers.set("Access-Control-Allow-Origin", "*");
   r.headers.set("Access-Control-Allow-Headers", "Content-Type");
-  r.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  r.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   return r;
 }
 

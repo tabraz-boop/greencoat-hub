@@ -479,6 +479,66 @@ body {
 .ofsted-score-card.red   .ofs-num { color: var(--t1); }
 .ofs-text h3 { font-size: .95rem; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
 .ofs-text p  { font-size: .76rem; color: var(--text2); margin-top: .2rem; line-height: 1.5; }
+
+/* ── POLICY DOCUMENT TOOLS ── */
+.dropzone { border: 2px dashed var(--border2); border-radius: var(--r-md); padding: 1rem; text-align: center; cursor: pointer; color: var(--text2); font-size: .82rem; transition: all .15s; background: var(--card2); }
+.dropzone:hover, .dropzone.drag { border-color: var(--teal); color: var(--text); background: rgba(20,184,166,.08); }
+.dropzone .dz-file { margin-top: .4rem; font-weight: 700; color: var(--teal); word-break: break-all; }
+.doc-current { font-size: .78rem; color: var(--text2); margin: .35rem 0 .6rem; word-break: break-all; }
+.doc-current a, .ver-list a, .policy-table a.doc-link { color: var(--teal); }
+.reack-box { border: 1px solid var(--border2); border-radius: var(--r-md); padding: .7rem .8rem; margin-top: .7rem; background: rgba(245,158,11,.06); }
+.reack-box label { font-size: .82rem; color: var(--text); display: flex; gap: .5rem; align-items: flex-start; }
+.ver-list { font-size: .76rem; color: var(--text2); margin-top: .4rem; padding-left: 1.1rem; }
+.ver-meta { display: block; font-size: .7rem; color: var(--text3); font-weight: 500; margin-top: .15rem; }
+.badge-reack { display: inline-block; font-size: .64rem; font-weight: 700; padding: .05rem .35rem; border-radius: 4px; background: rgba(245,158,11,.18); color: #fbbf24; margin-left: .3rem; }
+.bulk-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: .6rem; align-items: center; padding: .55rem 0; border-bottom: 1px solid var(--border2); font-size: .8rem; }
+.bulk-row .bf { word-break: break-all; color: var(--text); font-weight: 600; }
+.bulk-row .bm { font-size: .7rem; color: var(--text3); font-weight: 500; }
+.bulk-row select { width: 100%; }
+.upload-progress { font-size: .78rem; color: var(--text2); margin-right: auto; }
+
+/* ── PHONES & TABLETS ── */
+@media (max-width: 900px) {
+  .topbar { height: auto !important; min-height: 52px; padding-top: max(.5rem, env(safe-area-inset-top)) !important; padding-bottom: .5rem !important; }
+  .topbar-right { flex-wrap: wrap; justify-content: flex-end; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .tab { white-space: nowrap; flex-shrink: 0; }
+  .topbar { flex-wrap: wrap; gap: .5rem; }
+  .status-live { display: none; }
+  .section-hd { flex-wrap: wrap; gap: .6rem; }
+  .table-controls > * { flex: 1 1 160px; }
+}
+@media (max-width: 640px) {
+  .toast { white-space: normal !important; max-width: calc(100vw - 2rem); text-align: center; }
+  .panels { padding: .75rem !important; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal-overlay { padding: 0 !important; align-items: stretch !important; }
+  .modal { max-width: 100% !important; width: 100% !important; max-height: 100dvh !important; height: 100dvh; border-radius: 0 !important; display: flex; flex-direction: column; }
+  .modal-body { flex: 1; overflow-y: auto; padding: 1rem; }
+  .modal-ft { padding-bottom: max(.8rem, env(safe-area-inset-bottom)); }
+  .bulk-row { grid-template-columns: 1fr; }
+  /* Policy list as cards so the actions are visible without sideways scrolling */
+  .policy-table thead { display: none; }
+  .policy-table, .policy-table tbody, .policy-table tr { display: block; width: 100%; }
+  .policy-table tr { padding: .75rem .8rem; border-bottom: 1px solid var(--border); }
+  .policy-table td { display: inline-block; border: none !important; padding: .15rem .4rem .15rem 0 !important; }
+  .policy-table td:first-child { display: block; max-width: none; padding-bottom: .4rem !important; }
+  .policy-table td:nth-child(4) { display: none; }
+  .policy-table td:last-child { display: flex; flex-wrap: wrap; gap: .4rem; width: 100%; padding-top: .5rem !important; white-space: normal !important; }
+  .policy-table td:last-child .act-btn { margin-left: 0 !important; flex: 1 1 auto; }
+  #compCard > div[style*="grid-template-columns:2fr 1fr"], #whoReadOut .card > div { grid-template-columns: 1fr !important; }
+  #compCard table { font-size: .78rem; }
+  [id^="detail_"] > div { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 900px), (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; } /* stops iOS zooming into fields */
+}
+@media (pointer: coarse) {
+  input[type="checkbox"] { width: 22px; height: 22px; flex-shrink: 0; }
+  .checkbox-label { min-height: 44px; display: inline-flex; align-items: center; gap: .45rem; padding-right: .6rem; }
+  .btn, .tbtn, .tab, .act-btn, .filter-sel, .search-input, .form-input, .btn-full, .chip-del, .modal-close { min-height: 44px; }
+  .act-btn { min-width: 44px; padding-left: .7rem; padding-right: .7rem; }
+}
 </style>
 </head>
 <body>
@@ -520,7 +580,11 @@ body {
     <div class="panel active" id="panel-policies">
       <div class="section-hd">
         <div><h2>Policy Library</h2><p id="policyCount">Loading…</p></div>
-        <button class="btn btn-primary" onclick="openAddModal()">+ Add Policy</button>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="document.getElementById('bulkFiles').click()" title="Upload several updated .docx files at once">⬆ Upload updated documents</button>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Policy</button>
+        </div>
+        <input type="file" id="bulkFiles" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple style="display:none" onchange="openBulkUpload(this.files);this.value=''">
       </div>
       <div class="table-controls">
         <input type="text" class="search-input" id="searchPolicies" placeholder="Search policies…" oninput="renderPolicyTable()">
@@ -529,7 +593,7 @@ body {
       </div>
       <div class="tbl-wrap">
         <table class="policy-table">
-          <thead><tr><th>Title</th><th>Tier</th><th>Category</th><th>Sites</th><th>Adopted</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Title</th><th>Tier</th><th>Category</th><th>Sites</th><th>Document</th><th>Actions</th></tr></thead>
           <tbody id="policyTbody"></tbody>
         </table>
       </div>
@@ -567,6 +631,7 @@ body {
           <div class="form-col"><label>Policy adopted date</label><input type="text" class="form-input" id="setAdoptedDate" value="March 2026"></div>
           <div class="form-col"><label>Review date</label><input type="text" class="form-input" id="setReviewDate" value="March 2027"></div>
           <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+          <div id="aiStatus" style="margin-top:.75rem;font-size:.8rem;color:var(--text2)">AI assistant status: checking…</div>
         </div>
         <div class="setting-group">
           <h3>Security</h3>
@@ -612,8 +677,8 @@ body {
   
 <div class="panel" id="panel-pins">
   <div class="section-hd">
-    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
-    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all to 0000</button>
+    <div><h2>Staff PIN Management</h2><p>Staff create their own 4-digit PIN the first time they log in (with the enrolment code below). PINs are stored securely — you can't see them, but you can reset one or set a temporary PIN.</p></div>
+    <button class="btn btn-ghost" onclick="resetAllPins()">Reset all PINs</button>
   </div>
   <div id="pinTableWrap"></div>
 
@@ -639,13 +704,44 @@ body {
           <label class="checkbox-label"><input type="checkbox" id="siteBa" value="billesley"> Billesley Ark</label>
         </div>
       </div>
-      <div class="form-row">
-        <div><label>Filename (.docx)</label><input type="text" class="form-input" id="editFile" placeholder="Greencoat_Policy_Name_Mar2026.docx"></div>
-        <div><label>Adopted date</label><input type="text" class="form-input" id="editAdopted" placeholder="March 2026"></div>
+      <div class="form-col"><label>Policy document</label>
+        <div class="doc-current" id="docCurrent"></div>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('editFileInput').click()">
+          <div>📄 <strong>Drop the new .docx here</strong> or tap to choose</div>
+          <div class="dz-file" id="dzFile"></div>
+        </div>
+        <input type="file" id="editFileInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="pickPolicyFile(this.files[0])">
+        <details style="margin-top:.5rem;font-size:.75rem;color:var(--text3)"><summary>Advanced: use a file already on the site</summary>
+          <input type="text" class="form-input" id="editFile" placeholder="Greencoat_Policy_Name_Mar2026.docx" style="margin-top:.4rem">
+        </details>
+      </div>
+      <div class="reack-box" id="reackBox">
+        <label><input type="checkbox" id="editReack"> <span>Staff must <strong>re-read and re-acknowledge</strong> this policy (their previous acknowledgement stops counting)</span></label>
+        <textarea class="form-input" id="editChangeNote" rows="2" placeholder="What changed? (shown to staff at the top of the policy)" style="margin-top:.5rem;resize:vertical"></textarea>
+      </div>
+      <div class="form-row" style="margin-top:.8rem">
+        <div><label>Adopted / reviewed</label><input type="text" class="form-input" id="editAdopted" placeholder="March 2026"></div>
+        <div></div>
       </div>
       <div class="form-col"><label>Description</label><textarea class="form-input" id="editDesc" rows="3" placeholder="Brief summary…" style="resize:vertical"></textarea></div>
+      <div class="form-col" id="verHistory" style="display:none"><label>Version history</label><ol class="ver-list" id="verList" reversed></ol></div>
     </div>
-    <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="savePolicy()">Save policy</button></div>
+    <div class="modal-ft"><span class="upload-progress" id="saveProgress"></span><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="savePolicyBtn" onclick="savePolicy()">Save policy</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bulkModal" onclick="if(event.target===this)closeBulk()">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hd"><h3>Upload updated policy documents</h3><button class="modal-close" onclick="closeBulk()">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:.6rem">Each file has been matched to a policy by its name — check the matches, change any that are wrong, then upload. Choose <em>Skip</em> to leave a file out, or <em>New policy</em> to add it to the library.</p>
+      <div id="bulkRows"></div>
+      <div class="reack-box">
+        <label><input type="checkbox" id="bulkReack" checked> <span>Staff must <strong>re-read and re-acknowledge</strong> the updated policies</span></label>
+        <textarea class="form-input" id="bulkNote" rows="2" placeholder="What changed? (optional — shown to staff on every updated policy)" style="margin-top:.5rem;resize:vertical"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft"><span class="upload-progress" id="bulkProgress"></span><button class="btn btn-ghost" onclick="closeBulk()">Cancel</button><button class="btn btn-primary" id="bulkApplyBtn" onclick="applyBulkUpload()">Upload &amp; update</button></div>
   </div>
 </div>
 
@@ -654,27 +750,73 @@ body {
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────
 const ADMIN_USER = 'admin';
-let ADMIN_PASS = localStorage.getItem('gc_admin_pass') || 'greencoat2026';
-let toastTimer;
-
+let ADMIN_PASS = sessionStorage.getItem('gc_admin_session') || '';
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : '—';
+async function api(action, { method = 'GET', body } = {}) {
+  const res = await fetch('/api/admin-data?action=' + action, {
+    method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && action !== 'login') { doLogout(); showToast('Session expired — please sign in again', 'error'); }
+  if (!res.ok) throw new Error(data.error || ('Server error ' + res.status));
+  return data;
+}
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginErr');
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    err.style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').classList.add('show');
-    init().catch(e => console.error('Init error:', e));
-  } else {
+  err.style.display = 'none';
+  if (u !== ADMIN_USER) { err.style.display = 'block'; err.textContent = 'Incorrect username or password.'; return; }
+  ADMIN_PASS = p;
+  try {
+    const r = await api('login', { method: 'POST' });
+    sessionStorage.setItem('gc_admin_session', p);
+    showAdminApp(r.usingDefault);
+  } catch (e) {
+    ADMIN_PASS = '';
     err.style.display = 'block';
-    err.textContent = 'Incorrect username or password.';
+    err.textContent = /Unauthorised/.test(e.message) ? 'Incorrect username or password.' : 'Could not reach the server: ' + e.message;
   }
 }
+function showAdminApp(usingDefault) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminApp').classList.add('show');
+  if (usingDefault) setTimeout(() => showToast('You are using the default admin password — change it in Settings', 'error'), 600);
+  init().catch(e => console.error('Init error:', e));
+}
 function doLogout() {
+  ADMIN_PASS = '';
+  sessionStorage.removeItem('gc_admin_session');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('adminApp').classList.remove('show');
   document.getElementById('loginPass').value = '';
+}
+if (ADMIN_PASS) api('login', { method: 'POST' }).then(r => showAdminApp(r.usingDefault)).catch(() => doLogout());
+
+// Compliance data comes only from the server — the admin's own browser storage holds no staff data.
+let _overview = null;
+async function fetchOverview(force) {
+  if (!_overview || force) _overview = api('overview').then(d => { (d.staff || []).forEach(annotateAcks); return d; }).catch(e => { _overview = null; throw e; });
+  return _overview;
+}
+// An acknowledgement counts only if it was made after the policy's latest "staff must re-read" update.
+function isCurrentAck(p, rec) {
+  if (!rec || rec.stale) return false;
+  if (!p?.reackRequiredFrom) return true;
+  // After a "staff must re-read" update: made after the update AND for the version it applies to
+  if (!rec.at || Date.parse(rec.at) < Date.parse(p.reackRequiredFrom)) return false;
+  const need = parseInt(p.reackVersion) || parseInt(p.version) || 1;
+  return rec.policyVersion == null || (parseInt(rec.policyVersion) || 1) >= need;
+}
+function annotateAcks(s) {
+  const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+  const byId = Object.fromEntries(policies.map(p => [p.id, p]));
+  s.records = s.records || {};
+  for (const id of s.acknowledged || []) if (!s.records[id]) s.records[id] = { at: null, method: 'device', legacy: true };
+  s.acknowledged = Object.keys(s.records).filter(id => byId[id] && isCurrentAck(byId[id], s.records[id]));
+  s.needsReread = Object.keys(s.records).filter(id => byId[id] && !isCurrentAck(byId[id], s.records[id]));
 }
 
 // ── DEFAULT DATA ────────────────────────────────────────────────────────
@@ -798,7 +940,7 @@ const DEFAULT_POLICIES = [
 ];
 
 let STAFF = [...DEFAULT_STAFF];
-let POLICIES = [...DEFAULT_POLICIES];
+let POLICIES = structuredClone(DEFAULT_POLICIES);
 let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
 
 async function saveGlobalConfig() {
@@ -808,19 +950,21 @@ async function saveGlobalConfig() {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + ADMIN_PASS },
       body: JSON.stringify({ policies: POLICIES, staff: STAFF, config: CONFIG })
     });
-    if (res.status === 401) throw new Error('Unauthorised — check ADMIN_PASSWORD env var matches your password');
-    if (!res.ok) throw new Error('Server error ' + res.status);
+    if (res.status === 401) throw new Error('Unauthorised — please sign in again');
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || ('Server error ' + res.status));
     // Also save locally as backup
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
     localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
     localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
     showToast('Live portal updated ✓', 'success');
+    return true;
   } catch(e) {
     // Fallback to localStorage only
     localStorage.setItem('gc_admin_staff', JSON.stringify(STAFF));
     localStorage.setItem('gc_admin_policies', JSON.stringify(POLICIES));
     localStorage.setItem('gc_admin_config', JSON.stringify(CONFIG));
-    showToast('Saved locally (server sync failed: ' + e.message + ')', 'info');
+    showToast('NOT saved to the live portal: ' + e.message, 'error');
+    return false;
   }
 }
 
@@ -850,7 +994,7 @@ async function loadGlobalConfig() {
 
 async function restoreDefaults() {
   if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 118 Greencoat policies and default staff list.")) return;
-  POLICIES = [...DEFAULT_POLICIES];
+  POLICIES = structuredClone(DEFAULT_POLICIES);
   STAFF = [...DEFAULT_STAFF];
   await saveGlobalConfig();
   renderPolicyTable();
@@ -865,6 +1009,7 @@ async function init() {
   renderStaffList();
   loadSettingsUI();
   loadCompliance();
+  loadAiStatus();
   buildCatFilter();
 }
 
@@ -905,46 +1050,253 @@ function renderPolicyTable() {
   const tcls = {1:'t1b',2:'t2b',3:'t3b'}; const tlbl = {1:'Tier 1',2:'Tier 2',3:'Tier 3'};
   document.getElementById('policyTbody').innerHTML = list.map(p => {
     const pTier = parseInt(p.tier) || 3;
-    const pCat = p.cat || 'General';
     const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
-    const pTitle = p.title || 'Untitled';
-    return `<tr><td>${pTitle}</td><td><span class="tier-badge ${tcls[pTier]||'t3b'}">${tlbl[pTier]||'Tier 3'}</span></td><td>${pCat}</td><td>${pSites.includes('all') ? 'All' : pSites.map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join(', ')}</td><td>${p.adopted||''}</td><td><button class="act-btn btn-edit" onclick="openEditModal('${p.id}')">Edit</button><button class="act-btn btn-del" style="margin-left:.3rem" onclick="deletePolicy('${p.id}')">Delete</button></td></tr>`;
+    const id = esc(JSON.stringify(p.id));
+    const meta = [p.version > 1 ? `v${p.version}` : '', p.updatedAt ? 'updated ' + fmtDate(p.updatedAt) : '', p.adopted ? 'adopted ' + esc(p.adopted) : ''].filter(Boolean).join(' · ');
+    return `<tr><td>${esc(p.title || 'Untitled')}${p.reackRequiredFrom ? '<span class="badge-reack" title="Staff must re-acknowledge since ' + fmtDate(p.reackRequiredFrom) + '">re-read required</span>' : ''}<span class="ver-meta">${meta}</span></td>
+      <td><span class="tier-badge ${tcls[pTier]||'t3b'}">${tlbl[pTier]||'Tier 3'}</span></td><td>${esc(p.cat || 'General')}</td>
+      <td>${pSites.includes('all') ? 'All' : pSites.map(s=>esc(s.charAt(0).toUpperCase()+s.slice(1))).join(', ')}</td>
+      <td>${p.file ? `<a class="doc-link" href="${esc(p.file)}" target="_blank" rel="noopener">Open</a>` : '<span style="color:#f87171">missing</span>'}</td>
+      <td style="white-space:nowrap"><button class="act-btn btn-edit" onclick="openEditModal(${id}, true)" title="Upload a new version of this policy">⬆ New version</button><button class="act-btn btn-edit" style="margin-left:.3rem" onclick="openEditModal(${id})">Edit</button><button class="act-btn btn-del" style="margin-left:.3rem" onclick="deletePolicy(${id})">Delete</button></td></tr>`;
   }).join('');
 }
 
-function openAddModal() {
-  document.getElementById('modalTitle').textContent = 'Add policy'; document.getElementById('editId').value = ''; document.getElementById('editTitle').value = ''; document.getElementById('editTier').value = '3'; document.getElementById('editCat').value = 'Governance'; document.getElementById('editFile').value = ''; document.getElementById('editAdopted').value = 'March 2026'; document.getElementById('editDesc').value = '';
-  ['siteAll','siteSh','siteBw','siteBa'].forEach(id => document.getElementById(id).checked = false); document.getElementById('siteAll').checked = true; document.getElementById('policyModal').classList.add('open');
+// ── Policy editor ─────────────────────────────────────────────────────
+let pendingFile = null;
+let pendingUpload = null; // { id, file, up } — kept so a retry after a failed save doesn't upload again
+const monthYear = () => new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+function titleFromFilename(name) {
+  return String(name || '').replace(/\.docx$/i, '').replace(/^Greencoat(_Nursery)?(_CIC)?_/i, '')
+    .replace(/_(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*_?\d{4}$/i, '').replace(/[_-]+/g, ' ').trim();
 }
-
-function openEditModal(id) {
-  const p = POLICIES.find(x=>x.id===id); if (!p) return;
-  const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
-  document.getElementById('modalTitle').textContent = 'Edit policy'; document.getElementById('editId').value = p.id; document.getElementById('editTitle').value = p.title||''; document.getElementById('editTier').value = p.tier||3; document.getElementById('editCat').value = p.cat||'Governance'; document.getElementById('editFile').value = p.file||''; document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
-  document.getElementById('siteAll').checked = pSites.includes('all'); document.getElementById('siteSh').checked = pSites.includes('sparkhill'); document.getElementById('siteBw').checked = pSites.includes('bearwood'); document.getElementById('siteBa').checked = pSites.includes('billesley');
+// Ids are never reused: acknowledgements are keyed by id and kept when a policy is deleted, so a new
+// policy must not inherit a deleted policy's id (staff would be credited with reading it).
+function slugify(title) {
+  const base = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 36) || 'policy';
+  let id;
+  do { id = `${base}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`; } while (POLICIES.some(p => p.id === id));
+  return id;
+}
+function setupDropzone() {
+  const dz = document.getElementById('dropzone'); if (!dz || dz.dataset.ready) return; dz.dataset.ready = '1';
+  ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', e => pickPolicyFile(e.dataTransfer.files[0]));
+}
+function pickPolicyFile(file) {
+  if (!file) return;
+  if (!/\.docx$/i.test(file.name)) { showToast('Please choose a Word .docx file', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('File is larger than 5 MB', 'error'); return; }
+  pendingFile = file; pendingUpload = null;
+  document.getElementById('dzFile').textContent = `${file.name} (${Math.round(file.size / 1024)} KB) — will be uploaded when you save`;
+  const editing = !!document.getElementById('editId').value;
+  if (!document.getElementById('editTitle').value.trim()) document.getElementById('editTitle').value = titleFromFilename(file.name);
+  document.getElementById('editAdopted').value = monthYear();
+  if (editing) document.getElementById('editReack').checked = true;
+}
+function resetPolicyForm() {
+  pendingFile = null;
+  ['editId','editTitle','editFile','editAdopted','editDesc','editChangeNote'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('editReack').checked = false;
+  document.getElementById('dzFile').textContent = '';
+  document.getElementById('editFileInput').value = '';
+  pendingUpload = null;
+  document.getElementById('docCurrent').innerHTML = '';
+  document.getElementById('saveProgress').textContent = '';
+  document.getElementById('verHistory').style.display = 'none';
+  setupDropzone();
+}
+function fillCategoryOptions(current) {
+  const sel = document.getElementById('editCat');
+  const base = ['Safeguarding','Health & Safety','Health & Care','Health & Wellbeing','Child Safety','Child Development','Children & Families','Staffing','Governance','GDPR & Information','EYFS & Curriculum','Premises & Environment'];
+  const cats = [...new Set([...base, ...POLICIES.map(p => p.cat).filter(Boolean), current].filter(Boolean))].sort();
+  sel.innerHTML = cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  sel.value = current || 'Governance';
+}
+function openAddModal() {
+  resetPolicyForm();
+  fillCategoryOptions('Governance');
+  document.getElementById('modalTitle').textContent = 'Add policy';
+  document.getElementById('editTier').value = '3';
+  document.getElementById('editAdopted').value = monthYear();
+  ['siteAll','siteSh','siteBw','siteBa'].forEach(id => document.getElementById(id).checked = false); document.getElementById('siteAll').checked = true;
+  document.getElementById('reackBox').style.display = 'none';
   document.getElementById('policyModal').classList.add('open');
 }
+async function openEditModal(id, newVersion) {
+  const p = POLICIES.find(x=>x.id===id); if (!p) return;
+  resetPolicyForm();
+  const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
+  document.getElementById('modalTitle').textContent = newVersion ? 'Upload a new version' : 'Edit policy';
+  document.getElementById('editId').value = p.id; document.getElementById('editTitle').value = p.title||''; document.getElementById('editTier').value = p.tier||3;
+  fillCategoryOptions(p.cat || 'Governance'); document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
+  document.getElementById('editFile').value = /^\/api\//.test(p.file || '') ? '' : (p.file || '');
+  document.getElementById('editChangeNote').value = p.changeNote || '';
+  // Reflect an existing requirement, so saving other edits doesn't silently cancel it
+  document.getElementById('editReack').checked = !!p.reackRequiredFrom;
+  document.getElementById('siteAll').checked = pSites.includes('all'); document.getElementById('siteSh').checked = pSites.includes('sparkhill'); document.getElementById('siteBw').checked = pSites.includes('bearwood'); document.getElementById('siteBa').checked = pSites.includes('billesley');
+  document.getElementById('docCurrent').innerHTML = p.file ? `Current: <a href="${esc(p.file)}" target="_blank" rel="noopener">${esc(p.fileName || p.file.split('/').pop())}</a>${p.version > 1 ? ` · version ${p.version}` : ''}${p.updatedAt ? ` · updated ${fmtDate(p.updatedAt)}` : ''}` : '<span style="color:#f87171">No document yet</span>';
+  document.getElementById('reackBox').style.display = '';
+  document.getElementById('policyModal').classList.add('open');
+  if (newVersion) document.getElementById('editFileInput').click();
+  try {
+    const { versions } = await api('policy_versions&id=' + encodeURIComponent(p.id));
+    if (versions?.length && document.getElementById('editId').value === p.id) {
+      document.getElementById('verList').innerHTML = versions.map(v => `<li><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.name)}</a> — ${fmtDate(v.uploadedAt)}${v.url === p.file ? ' (current)' : ''}</li>`).join('');
+      document.getElementById('verHistory').style.display = '';
+    }
+  } catch (e) { /* history is optional */ }
+}
+function closeModal() { document.getElementById('policyModal').classList.remove('open'); pendingFile = null; }
 
-function closeModal() { document.getElementById('policyModal').classList.remove('open'); }
+async function uploadPolicyFile(policyId, file) {
+  const res = await fetch(`/api/admin-data?action=upload_policy_file&id=${encodeURIComponent(policyId)}&name=${encodeURIComponent(file.name)}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'Authorization': 'Bearer ' + ADMIN_PASS }, body: file,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('Upload failed (' + res.status + ')'));
+  return data;
+}
+function applyNewVersion(p, upload, { reack, note, adopted }) {
+  const now = new Date().toISOString();
+  p.file = upload.url; p.fileName = upload.name;
+  p.version = (parseInt(p.version) || 1) + 1;
+  p.updatedAt = now;
+  if (adopted) p.adopted = adopted;
+  if (reack) { p.reackRequiredFrom = now; p.reackVersion = p.version; }
+  p.changeNote = note || '';
+}
 
-function savePolicy() {
+async function savePolicy() {
   const id = document.getElementById('editId').value; const sites = [];
   if (document.getElementById('siteAll').checked) sites.push('all'); if (document.getElementById('siteSh').checked) sites.push('sparkhill'); if (document.getElementById('siteBw').checked) sites.push('bearwood'); if (document.getElementById('siteBa').checked) sites.push('billesley');
   const title = document.getElementById('editTitle').value.trim();
-  const file  = document.getElementById('editFile').value.trim();
+  const typedFile = document.getElementById('editFile').value.trim();
+  const existing = id ? POLICIES.find(p => p.id === id) : null;
+  const cat = document.getElementById('editCat').value || existing?.cat || 'Governance';
   if (!title) { showToast('Policy title is required', 'error'); return; }
-  if (!file)  { showToast('File name is required', 'error'); return; }
-  const data = { id: id || 'p_' + Date.now(), tier: parseInt(document.getElementById('editTier').value), title, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], file, adopted: document.getElementById('editAdopted').value, desc: document.getElementById('editDesc').value };
-  if (id) { const i = POLICIES.findIndex(p=>p.id===id); if (i>=0) POLICIES[i] = data; } else { POLICIES.push(data); }
-  closeModal(); renderPolicyTable(); buildCatFilter(); saveGlobalConfig();
+  if (!pendingFile && !typedFile && !existing?.file) { showToast('Add the policy document (.docx)', 'error'); return; }
+  const btn = document.getElementById('savePolicyBtn'), prog = document.getElementById('saveProgress');
+  btn.disabled = true;
+  try {
+    const data = existing ? structuredClone(existing) : { id: pendingUpload?.id || slugify(title), version: 1 };
+    Object.assign(data, { tier: parseInt(document.getElementById('editTier').value), title, cat, sites: sites.length ? sites : ['all'], adopted: document.getElementById('editAdopted').value.trim(), desc: document.getElementById('editDesc').value.trim() });
+    const reack = !!existing && document.getElementById('editReack').checked;
+    const note = document.getElementById('editChangeNote').value.trim();
+    if (pendingFile) {
+      if (!pendingUpload || pendingUpload.file !== pendingFile || pendingUpload.id !== data.id) {
+        prog.textContent = 'Uploading document…';
+        pendingUpload = { id: data.id, file: pendingFile, up: await uploadPolicyFile(data.id, pendingFile) };
+      }
+      const up = pendingUpload.up;
+      if (existing) applyNewVersion(data, up, { reack, note });
+      else { data.file = up.url; data.fileName = up.name; data.updatedAt = new Date().toISOString(); }
+    } else {
+      if (typedFile && typedFile !== existing?.file) data.file = typedFile;
+      if (existing) {
+        if (reack && !existing.reackRequiredFrom) { data.reackRequiredFrom = new Date().toISOString(); data.reackVersion = parseInt(data.version) || 1; data.updatedAt = data.reackRequiredFrom; }
+        if (!reack) { delete data.reackRequiredFrom; delete data.reackVersion; }
+        data.changeNote = note;
+      }
+    }
+    const next = existing ? POLICIES.map(p => p.id === id ? data : p) : [...POLICIES, data];
+    prog.textContent = 'Saving…';
+    const before = POLICIES;
+    POLICIES = next;
+    if (!(await saveGlobalConfig())) { POLICIES = before; throw new Error('the live portal could not be updated — try again'); }
+    closeModal(); renderPolicyTable(); buildCatFilter();
+  } catch (e) {
+    showToast('Not saved: ' + e.message, 'error');
+  } finally { btn.disabled = false; prog.textContent = ''; }
 }
 
-function deletePolicy(id) { if (!confirm('Delete this policy permanently?')) return; POLICIES = POLICIES.filter(p=>p.id!==id); renderPolicyTable(); saveGlobalConfig(); }
+function deletePolicy(id) { const p = POLICIES.find(x => x.id === id); if (!confirm(`Delete "${p?.title || id}" from the policy library? Staff will no longer see it. (Acknowledgement records are kept.)`)) return; POLICIES = POLICIES.filter(p=>p.id!==id); renderPolicyTable(); saveGlobalConfig(); }
+
+// ── Bulk upload: match each file to a policy by name ──────────────────
+const STOP = new Set(['greencoat','nursery','cic','policy','policies','the','and','of','for','a','to','docx','jan','feb','mar','apr','may','jun','jul','aug','sep','sept','oct','nov','dec','january','february','march','april','june','july','august','september','october','november','december']);
+const stem = t => t.length > 4 && t.endsWith('ies') ? t.slice(0, -3) + 'y' : t.length > 3 && t.endsWith('s') && !t.endsWith('ss') ? t.slice(0, -1) : t;
+const tokens = str => new Set(String(str || '').toLowerCase().replace(/\.docx$/, '').split(/[^a-z0-9]+/).filter(t => t && !STOP.has(t) && !/^(19|20)\d\d$/.test(t) && !/^[a-z]{3,9}\d{4}$/.test(t) && !/^v\d+$/.test(t)).map(stem));
+const fileStem = name => [...tokens(name)].sort().join(' ');
+// Returns { policy, confident }. Weak or tied matches are flagged for the admin to check.
+function matchPolicy(fileName) {
+  const ft = tokens(fileName), fs = fileStem(fileName);
+  const exact = POLICIES.filter(p => fileStem(p.fileName || (p.file || '').split('/').pop()) === fs);
+  if (exact.length === 1) return { policy: exact[0], confident: true };
+  const scored = POLICIES.map(p => {
+    let best = 0;
+    for (const cand of [tokens(p.fileName || (p.file || '').split('/').pop()), tokens(p.title)]) {
+      const inter = [...ft].filter(t => cand.has(t)).length;
+      best = Math.max(best, inter / Math.max(1, new Set([...ft, ...cand]).size));
+    }
+    return { p, score: best };
+  }).sort((a, b) => b.score - a.score);
+  const [first, second] = scored;
+  if (!first || first.score < 0.5) return { policy: null, confident: false };
+  if (second && first.score - second.score < 0.1) return { policy: null, confident: false, ambiguous: true }; // too close to call
+  return { policy: first.p, confident: first.score >= 0.6 };
+}
+let bulkFiles = [];
+function openBulkUpload(fileList) {
+  bulkFiles = [...(fileList || [])].filter(f => /\.docx$/i.test(f.name));
+  if (!bulkFiles.length) { showToast('Choose one or more .docx files', 'error'); return; }
+  const opts = POLICIES.slice().sort((a, b) => a.title.localeCompare(b.title)).map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('');
+  const matches = bulkFiles.map(f => matchPolicy(f.name));
+  document.getElementById('bulkRows').innerHTML = bulkFiles.map((f, i) => {
+    const m = matches[i];
+    const hint = f.size > 5 * 1024 * 1024 ? ' — too large (max 5 MB)' : m.ambiguous ? ' — ⚠ matches more than one policy: choose which one' : !m.policy ? ' — no matching policy: will be added as a new policy' : !m.confident ? ' — ⚠ please check this match' : '';
+    return `<div class="bulk-row" id="bulkRow${i}"><div><div class="bf">${esc(f.name)}</div><div class="bm"${hint ? ' style="color:#fbbf24"' : ''}>${Math.round(f.size / 1024)} KB${hint}</div></div>
+      <select class="filter-sel" id="bulkSel${i}"><option value="">— Skip this file —</option><option value="__new">➕ New policy: ${esc(titleFromFilename(f.name))}</option>${opts}</select></div>`;
+  }).join('');
+  bulkFiles.forEach((f, i) => { const m = matches[i]; document.getElementById('bulkSel' + i).value = f.size > 5 * 1024 * 1024 || m.ambiguous ? '' : m.policy ? m.policy.id : '__new'; });
+  document.getElementById('bulkProgress').textContent = '';
+  document.getElementById('bulkModal').classList.add('open');
+}
+function closeBulk() { document.getElementById('bulkModal').classList.remove('open'); bulkFiles = []; }
+async function applyBulkUpload() {
+  const btn = document.getElementById('bulkApplyBtn'), prog = document.getElementById('bulkProgress');
+  const reack = document.getElementById('bulkReack').checked, note = document.getElementById('bulkNote').value.trim();
+  const jobs = bulkFiles.map((f, i) => ({ f, i, target: document.getElementById('bulkSel' + i)?.value })).filter(j => j.f && j.target);
+  if (!jobs.length) { showToast('Nothing selected to upload', 'error'); return; }
+  const dupes = jobs.map(j => j.target).filter((t, i, a) => t !== '__new' && a.indexOf(t) !== i);
+  if (dupes.length) { showToast('Two files are matched to the same policy — fix the matches first', 'error'); return; }
+  btn.disabled = true;
+  const next = structuredClone(POLICIES), doneIdx = [], failed = [];
+  for (const j of jobs) {
+    prog.textContent = `Uploading ${doneIdx.length + failed.length + 1} of ${jobs.length}…`;
+    try {
+      if (j.target === '__new') {
+        const title = titleFromFilename(j.f.name), id = slugify(title);
+        const up = await uploadPolicyFile(id, j.f);
+        next.push({ id, tier: 3, title, cat: 'Governance', sites: ['all'], file: up.url, fileName: up.name, adopted: monthYear(), desc: '', version: 1, updatedAt: up.uploadedAt });
+      } else {
+        const p = next.find(x => x.id === j.target);
+        const up = await uploadPolicyFile(p.id, j.f);
+        applyNewVersion(p, up, { reack, note, adopted: monthYear() });
+      }
+      doneIdx.push(j.i);
+    } catch (e) { failed.push(`${j.f.name}: ${e.message}`); }
+  }
+  let saved = !doneIdx.length;
+  if (doneIdx.length) {
+    prog.textContent = 'Saving…';
+    const before = POLICIES;
+    POLICIES = next;
+    saved = await saveGlobalConfig();
+    if (!saved) POLICIES = before;
+  }
+  btn.disabled = false; prog.textContent = '';
+  renderPolicyTable(); buildCatFilter();
+  if (!saved) { showToast('Documents uploaded but the live portal was NOT updated — press Upload & update again', 'error'); return; }
+  // Uploaded and published: take those rows out so a retry can't upload them twice
+  for (const i of doneIdx) { document.getElementById('bulkRow' + i)?.remove(); bulkFiles[i] = null; }
+  if (failed.length) showToast(`${doneIdx.length} updated, ${failed.length} failed — ${failed[0]}`, 'error');
+  else { showToast(`${doneIdx.length} polic${doneIdx.length === 1 ? 'y' : 'ies'} updated ✓`, 'success'); closeBulk(); }
+}
 
 function renderStaffList() {
   if (!Array.isArray(STAFF)) STAFF = [];
   document.getElementById('staffCount').textContent = `${STAFF.length} staff members`;
-  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${n}<button class="chip-del" onclick="removeStaff('${(n||'').replace(/'/g,"\\'")}')">✕</button></div>`).join('');
+  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${esc(n)}<button class="chip-del" onclick="removeStaff(${esc(JSON.stringify(n || ''))})" aria-label="Remove ${esc(n)}">✕</button></div>`).join('');
 }
 
 function addStaff() {
@@ -965,117 +1317,58 @@ function removeStaff(n) { if(!confirm(`Remove ${n} from active staff?`)) return;
 
 function loadSettingsUI() { document.getElementById('setOrgName').value = CONFIG.orgName || ''; document.getElementById('setReviewDate').value = CONFIG.reviewDate || ''; document.getElementById('setAdoptedDate').value = CONFIG.adoptedDate || ''; }
 function saveSettings() { CONFIG.orgName = document.getElementById('setOrgName').value; CONFIG.adoptedDate = document.getElementById('setAdoptedDate').value; CONFIG.reviewDate = document.getElementById('setReviewDate').value; saveGlobalConfig(); }
-function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } ADMIN_PASS = np; localStorage.setItem('gc_admin_pass', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓ (Remember to update Netlify!)', 'success'); }
+async function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!np) { showToast('Enter a new password', 'error'); return; } if (np.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; } if (np !== cp) { showToast('Passwords do not match', 'error'); return; } try { await api('change_password', { method: 'POST', body: { newPassword: np } }); ADMIN_PASS = np; sessionStorage.setItem('gc_admin_session', np); document.getElementById('newPass').value = ''; document.getElementById('confPass').value = ''; showToast('Password changed ✓', 'success'); } catch (e) { showToast('Password NOT changed: ' + e.message, 'error'); } }
 
 // ── COMPLIANCE ─────────────────────────────────────────────────────────────
 async function loadCompliance() {
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderCompliance(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderCompliance(compData);
+    const data = await fetchOverview(true);
+    renderCompliance((data.staff || []).filter(s => s.active));
+  } catch (e) {
+    document.getElementById('compCard').innerHTML = `<p style="color:#f87171;padding:2rem;text-align:center">Could not load compliance data: ${esc(e.message)}</p>`;
   }
 }
 
-
-async function loadStaffDetail(staffKey, name) {
+async function loadStaffDetail(staffKey) {
+  const el = document.getElementById('detail_' + staffKey);
   try {
-    const actKey = 'gc_activity_' + staffKey;
-    let activity = [];
-    try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-    const reads = activity.filter(e => e.action === 'read').slice(-10).reverse();
-    const quizzes = activity.filter(e => e.action === 'quiz');
-    const recentReads = reads.map(r => `<li style="margin-bottom:.3rem">${r.key} <span style="color:var(--text3);font-size:.72rem">${new Date(r.timestamp||r.date).toLocaleDateString('en-GB')}</span></li>`).join('');
-    const quizItems = quizzes.slice(-5).reverse().map(q => {
-      let score = ''; try { const v = JSON.parse(q.value); score = ` — ${v.score}/${v.total}`; } catch(e) {}
-      return `<li style="margin-bottom:.3rem">${q.key}${score}</li>`;
-    }).join('');
-    const el = document.getElementById('detail_' + staffKey);
+    const d = await api('staff-detail&staff=' + encodeURIComponent(staffKey));
+    const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+    const byId = Object.fromEntries(policies.map(p => [p.id, p]));
+    const recs = Object.entries(d.records || {}).sort((a, b) => String(b[1].at || '').localeCompare(String(a[1].at || '')));
+    const how = r => r.method === 'quiz' ? `Quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'offline_quiz' ? `Offline quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'direct' ? 'Confirmed (quiz unavailable)' : 'Recorded on device';
+    const ackRows = recs.map(([id, r]) => `<tr><td style="padding:.25rem .5rem">${esc(byId[id]?.title || r.policyTitle || id)}</td><td style="padding:.25rem .5rem;white-space:nowrap">${fmtDate(r.at)}${r.legacy ? ' <span title="Date taken from the staff member\'s device before server tracking worked" style="color:var(--text3)">(device)</span>' : ''}</td><td style="padding:.25rem .5rem;color:var(--text2)">${esc(how(r))}${byId[id] && !isCurrentAck(byId[id], r) ? ' <span style="color:#fbbf24">· older version — needs re-read</span>' : ''}</td></tr>`).join('');
+    const outstanding = policies.filter(p => p.tier === 1 && !isCurrentAck(p, d.records?.[p.id])).map(p => `<li>${esc(p.title)}${d.records?.[p.id] ? ' <span style="color:#fbbf24">(updated — needs re-read)</span>' : ''}</li>`).join('');
+    const quizzes = (d.quizzes || []).slice(-10).reverse().map(q => { let v = {}; try { v = JSON.parse(q.value); } catch (e) {} return `<li>${esc(q.policyTitle || q.key)} — ${esc(Number.isFinite(+v.score) ? +v.score : '?')}/${esc(Number.isFinite(+v.total) ? +v.total : '?')} ${v.passed === true ? '✓ passed' : '✗ not passed'} <span style="color:var(--text3)">${fmtDate(q.timestamp)}</span></li>`; }).join('');
     if (el) el.innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem;font-size:.82rem">
-        <div><strong>Recent reads</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${recentReads||'<li>None yet</li>'}</ul></div>
-        <div><strong>Recent quizzes</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizItems||'<li>None yet</li>'}</ul></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin:.5rem 0 .75rem;font-size:.8rem">
+        <div><strong>Acknowledged (${recs.length})</strong>
+          <table style="width:100%;border-collapse:collapse;margin-top:.3rem">${ackRows || '<tr><td style="padding:.25rem .5rem;color:var(--text3)">None yet</td></tr>'}</table></div>
+        <div><strong>Outstanding Tier 1</strong><ul style="margin:.3rem 0 .8rem;padding-left:1.2rem;color:#fca5a5">${outstanding || '<li style="color:#86efac">All done ✓</li>'}</ul>
+          <strong>Recent quiz attempts</strong><ul style="margin:.3rem 0 0;padding-left:1.2rem;color:var(--text2)">${quizzes || '<li>None yet</li>'}</ul></div>
       </div>`;
-  } catch(e) { console.error(e); }
+  } catch (e) { if (el) el.innerHTML = `<div style="padding:.5rem .75rem;color:#f87171">Could not load: ${esc(e.message)}</div>`; }
 }
-
 
 async function loadAiQuestions() {
   const listEl = document.getElementById('aiQList');
   const statsEl = document.getElementById('aiQStats');
   listEl.innerHTML = '<p style="color:var(--text3);font-size:.85rem;padding:2rem;text-align:center">Loading…</p>';
   try {
-    let allChats = [];
-
-    // Try server first
-    try {
-      const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-      if (res.ok) {
-        const data = await res.json();
-        for (const s of (data.staff || [])) {
-          for (const c of (s.recentAiChats || s.activity?.filter(a => a.type==='aichat') || [])) {
-            allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
-          }
-        }
-      }
-    } catch(e) {}
-
-    // If server returned nothing, fall back to localStorage
-    if (allChats.length === 0) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (!k || !k.startsWith('gc_activity_')) continue;
-        const staffName = k.replace('gc_activity_', '').replace(/_/g, ' ');
-        try {
-          const entries = JSON.parse(localStorage.getItem(k) || '[]');
-          for (const e of entries) {
-            if (e.action === 'aichat') {
-              allChats.push({ staff: staffName, question: e.key || '', policy: '', date: e.timestamp || e.date || '' });
-            }
-          }
-        } catch(e) {}
+    const data = await fetchOverview(true);
+    const allChats = [];
+    for (const s of (data.staff || [])) {
+      for (const c of (s.recentAiChats || [])) {
+        allChats.push({ staff: s.name, question: c.key || '', policy: c.policyTitle || '', date: c.timestamp || '' });
       }
     }
-
     allChats.sort((a,b) => b.date.localeCompare(a.date));
     window._allChats = allChats;
 
     const staffNames = [...new Set(allChats.map(c => c.staff))].sort();
     const policyNames = [...new Set(allChats.map(c => c.policy).filter(Boolean))].sort();
-    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${s}">${s}</option>`).join('');
-    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${p}">${p}</option>`).join('');
+    document.getElementById('aiQStaffFilter').innerHTML = '<option value="">All Staff</option>' + staffNames.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    document.getElementById('aiQPolicyFilter').innerHTML = '<option value="">All Policies</option>' + policyNames.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
 
     statsEl.innerHTML = `
       <div style="background:var(--card2);border-radius:10px;padding:.6rem 1rem;font-size:.8rem;color:var(--text2)">
@@ -1087,66 +1380,35 @@ async function loadAiQuestions() {
 
     renderAiQuestions(allChats);
   } catch(e) {
-    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${e.message}</p>`;
+    listEl.innerHTML = `<p style="color:#f87171;font-size:.85rem;padding:2rem;text-align:center">Error: ${esc(e.message)}</p>`;
   }
 }
-
 
 async function loadHeatmap() {
   try {
-    const res = await fetch('/api/admin-data?action=overview', { headers: { 'Authorization': 'Bearer ' + ADMIN_PASS } });
-    if (res.status === 401) throw new Error('Unauthorised');
-    if (!res.ok) throw new Error('API error ' + res.status);
-    const data = await res.json();
-    const staff = (data.staff || []).map(s => ({
-      name: s.name,
-      acknowledged: s.acknowledged || [],
-      activity: s.activity || []
-    }));
-    if (staff.length > 0) { renderHeatmap(staff); renderOfstedScore(staff); return; }
-    // Server returned empty — fall back to localStorage
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
-  } catch(e) {
-    // localStorage fallback
-    const fallbackStaff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const compData = fallbackStaff.map(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = [];
-      try { acks = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
-      const actKey = 'gc_activity_' + name.replace(/\s+/g,'_');
-      let activity = [];
-      try { activity = JSON.parse(localStorage.getItem(actKey) || '[]'); } catch(e) {}
-      return { name, acknowledged: acks, activity };
-    });
-    renderHeatmap(compData);
+    const data = await fetchOverview(true);
+    const staff = (data.staff || []).filter(s => s.active);
+    renderHeatmap(staff); renderOfstedScore(staff);
+  } catch (e) {
+    document.getElementById('heatmapWrap').innerHTML = `<p style="color:#f87171;padding:2rem;text-align:center">Could not load: ${esc(e.message)}</p>`;
   }
 }
 
-
+// Ofsted evidence: one row per staff member per policy, with when and how it was acknowledged.
 async function exportCSV() {
   showToast('Building export…', 'info');
   try {
-    const staff = STAFF.length ? STAFF : DEFAULT_STAFF;
-    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged']];
-    staff.forEach(name => {
-      const key = 'gc_acks_' + name.replace(/\s+/g,'_');
-      let acks = new Set();
-      try { acks = new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch(e) {}
-      const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
-      policies.forEach(p => rows.push([name, p.id, p.title, p.tier, p.cat, acks.has(p.id) ? 'Yes' : 'No']));
+    const data = await fetchOverview(true);
+    const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
+    const rows = [['Staff Name', 'Policy ID', 'Policy Title', 'Tier', 'Category', 'Acknowledged', 'Acknowledged On', 'Method', 'Quiz Score', 'Date Source']];
+    (data.staff || []).filter(s => s.active).forEach(s => {
+      policies.forEach(p => {
+        const r = s.records?.[p.id];
+        rows.push([s.name, p.id, p.title, p.tier, p.cat, r ? (isCurrentAck(p, r) ? 'Yes' : 'Needs re-read (older version)') : 'No', r?.at ? new Date(r.at).toISOString().slice(0, 10) : '',
+          r ? r.method : '', r && r.score != null ? `${r.score}/${r.total}` : '', r ? (r.legacy ? 'staff device' : 'server') : '']);
+      });
     });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const csv = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = 'greencoat_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
@@ -1156,6 +1418,7 @@ async function exportCSV() {
 }
 
 
+let toastTimer;
 function showToast(msg, type='info') {
   const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show ${type}`;
   clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.className='toast',3000);
@@ -1190,24 +1453,32 @@ function renderCompliance(compData) {
 
   if (!compData.length) { compCard.innerHTML = '<p style="color:var(--text3);padding:2rem;text-align:center">No staff data found.</p>'; return; }
 
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
+  const t1 = policies.filter(p => p.tier === 1);
+  let html = `<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.9rem">
+    <label for="whoReadSel" style="font-size:.8rem;color:var(--text2)">Who has read…</label>
+    <select id="whoReadSel" class="filter-sel" style="flex:1;min-width:220px" onchange="renderWhoRead(this.value)">
+      <option value="">— choose a policy —</option>${policies.map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('')}
+    </select></div><div id="whoReadOut"></div>`;
+  html += '<table style="width:100%;border-collapse:collapse;font-size:.83rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">';
   html += '<th style="text-align:left;padding:.5rem .75rem;color:var(--text2)">Staff member</th>';
   html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Acknowledged</th>';
   html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Tier 1</th>';
+  html += '<th style="text-align:center;padding:.5rem .75rem;color:var(--text2)">Last acknowledged</th>';
   html += '<th style="padding:.5rem .75rem;color:var(--text2)">Progress</th>';
   html += '</tr></thead><tbody>';
 
-  compData.forEach((s, i) => {
+  compData.forEach((s) => {
     const acks = new Set(s.acknowledged);
     const pct = Math.round(acks.size / total * 100);
-    const t1 = policies.filter(p => p.tier === 1);
     const t1done = t1.filter(p => acks.has(p.id)).length;
     const barCol = pct >= 80 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
-    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" onclick="loadStaffDetail('${s.name.replace(/\s+/g,'_')}','${s.name}');this.nextElementSibling?.remove();this.insertAdjacentHTML('afterend','<tr><td colspan=4 id=&quot;detail_${s.name.replace(/\s+/g,'_')}&quot;><div style=&quot;padding:.5rem .75rem;color:var(--text3);font-size:.8rem&quot;>Loading…</div></td></tr>')">
-      <td style="padding:.5rem .75rem;font-weight:500">${s.name}</td>
+    const last = Object.values(s.records || {}).map(r => r.at).filter(Boolean).sort().at(-1);
+    html += `<tr style="border-bottom:1px solid var(--border2);cursor:pointer" title="Show details" onclick="toggleStaffDetail(this, ${esc(JSON.stringify(s.staffKey))})">
+      <td style="padding:.5rem .75rem;font-weight:500">${esc(s.name)}${s.hasPin ? '' : ' <span title="Has not logged in with a PIN yet" style="color:var(--text3);font-size:.72rem">(not logged in yet)</span>'}</td>
       <td style="text-align:center;padding:.5rem .75rem">${acks.size}/${total}</td>
-      <td style="text-align:center;padding:.5rem .75rem">${t1done}/${t1.length}</td>
+      <td style="text-align:center;padding:.5rem .75rem;color:${t1done === t1.length ? '#86efac' : '#fca5a5'}">${t1done}/${t1.length}</td>
+      <td style="text-align:center;padding:.5rem .75rem;color:var(--text2)">${fmtDate(last)}</td>
       <td style="padding:.5rem .75rem">
         <div style="display:flex;align-items:center;gap:.5rem">
           <div style="flex:1;height:6px;background:var(--border2);border-radius:3px">
@@ -1220,7 +1491,30 @@ function renderCompliance(compData) {
   });
   html += '</tbody></table>';
   compCard.innerHTML = html;
+  window._compData = compData;
   document.getElementById('compSummary').textContent = `${compData.length} staff · ${avgPct}% average compliance`;
+}
+
+function toggleStaffDetail(row, staffKey) {
+  const next = row.nextElementSibling;
+  if (next && next.classList.contains('detail-row')) { next.remove(); return; }
+  row.insertAdjacentHTML('afterend', `<tr class="detail-row"><td colspan="5" id="detail_${esc(staffKey)}"><div style="padding:.5rem .75rem;color:var(--text3);font-size:.8rem">Loading…</div></td></tr>`);
+  loadStaffDetail(staffKey);
+}
+
+function renderWhoRead(policyId) {
+  const out = document.getElementById('whoReadOut');
+  if (!policyId) { out.innerHTML = ''; return; }
+  const staff = window._compData || [];
+  const read = staff.filter(s => (s.acknowledged || []).includes(policyId)).sort((a, b) => String(a.records[policyId].at || '').localeCompare(String(b.records[policyId].at || '')));
+  const reread = staff.filter(s => (s.needsReread || []).includes(policyId));
+  const notRead = staff.filter(s => !s.records?.[policyId]);
+  const how = r => r.method === 'quiz' || r.method === 'offline_quiz' ? `quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'direct' ? 'confirmed' : 'device record';
+  out.innerHTML = `<div class="card" style="margin-bottom:1rem;font-size:.82rem">
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem">
+      <div><strong style="color:#86efac">Read (${read.length})</strong><ul style="margin:.4rem 0 0;padding-left:1.2rem">${read.map(s => `<li>${esc(s.name)} — ${fmtDate(s.records[policyId].at)} <span style="color:var(--text3)">(${esc(how(s.records[policyId]))})</span></li>`).join('') || '<li style="color:var(--text3)">Nobody yet</li>'}</ul></div>
+      <div><strong style="color:#fca5a5">Not yet (${notRead.length + reread.length})</strong><ul style="margin:.4rem 0 0;padding-left:1.2rem">${reread.map(s => `<li>${esc(s.name)} <span style="color:#fbbf24">(read an older version ${fmtDate(s.records[policyId].at)})</span></li>`).join('')}${notRead.map(s => `<li>${esc(s.name)}</li>`).join('') || (reread.length ? '' : '<li style="color:#86efac">Everyone ✓</li>')}</ul></div>
+    </div></div>`;
 }
 
 function renderAiQuestions(chats) {
@@ -1233,11 +1527,11 @@ function renderAiQuestions(chats) {
     const dateStr = c.date ? new Date(c.date).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
     return `<div style="background:var(--card2);border-radius:10px;padding:.75rem 1rem;border-left:3px solid var(--accent)">
       <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
-        <span style="font-weight:600;font-size:.82rem">${c.staff}</span>
+        <span style="font-weight:600;font-size:.82rem">${esc(c.staff)}</span>
         <span style="font-size:.72rem;color:var(--text3)">${dateStr}</span>
       </div>
-      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${c.question || '(no text recorded)'}</div>
-      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${c.policy}</div>` : ''}
+      <div style="font-size:.85rem;color:var(--text);margin-bottom:.25rem">${esc(c.question) || '(no text recorded)'}</div>
+      ${c.policy ? `<div style="font-size:.72rem;color:var(--text3)">Policy: ${esc(c.policy)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -1265,14 +1559,14 @@ function renderHeatmap(compData) {
   let html = '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.72rem;min-width:600px">';
   html += '<thead><tr><th style="text-align:left;padding:.3rem .5rem;position:sticky;left:0;background:var(--bg);z-index:2;min-width:130px;border-bottom:2px solid var(--border2)">Staff</th>';
   t1.forEach(p => {
-    html += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${p.title.slice(0,20)}</th>`;
+    html += `<th title="${esc(p.title)}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${esc(p.title.slice(0,20))}</th>`;
   });
   html += '</tr></thead><tbody>';
 
   compData.forEach((s, i) => {
     const acks = new Set(s.acknowledged);
     const rowBg = i % 2 === 0 ? 'var(--bg)' : 'var(--card2)';
-    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${s.name}</td>`;
+    html += `<tr style="background:${rowBg}"><td style="padding:.3rem .5rem;font-weight:500;position:sticky;left:0;background:${rowBg};border-right:1px solid var(--border2)">${esc(s.name)}</td>`;
     t1.forEach(p => {
       const done = acks.has(p.id);
       html += `<td style="text-align:center;padding:.2rem;background:${done ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.1)'}">
@@ -1304,79 +1598,84 @@ function renderOfstedScore(compData) {
   el.classList.remove('hidden');
 }
 
-// ── PIN MANAGEMENT (admin) ──────────────────────────────────────────
-function getAdminPins() {
-  try { return JSON.parse(localStorage.getItem('gc_staff_pins') || '{}'); }
-  catch { return {}; }
+// ── PIN MANAGEMENT (admin) ── PINs live on the server (hashed); the admin never sees them.
+let _pinsInfo = null;
+async function regenerateEnrolCode() {
+  if (!confirm('Create a new enrolment code? The old code will stop working for new PINs.')) return;
+  try { await api('regenerate_enrol_code', { method: 'POST' }); showToast('New enrolment code created', 'success'); } catch (e) { showToast('Could not change code: ' + e.message, 'error'); }
+  renderPinTable();
 }
-function saveAdminPins(pins) {
-  localStorage.setItem('gc_staff_pins', JSON.stringify(pins));
-}
-
-function renderPinTable() {
+async function renderPinTable() {
   const wrap = document.getElementById('pinTableWrap');
   if (!wrap) return;
-  const pins = getAdminPins();
-
+  wrap.innerHTML = '<p style="color:var(--text3);padding:1rem">Loading…</p>';
+  let pins = [];
+  try { _pinsInfo = await api('pins'); pins = _pinsInfo.pins || []; }
+  catch (e) { wrap.innerHTML = `<p style="color:#f87171;padding:1rem">Could not load PINs: ${esc(e.message)}</p>`; return; }
+  const byName = Object.fromEntries(pins.map(p => [p.staffName, p]));
+  const enrol = _pinsInfo?.enrolCode ? `<div class="card" style="margin-bottom:1rem;font-size:.85rem">
+      <div style="font-weight:700;margin-bottom:.25rem">Enrolment code: <span style="font-family:monospace;font-size:1.15rem;letter-spacing:.2em;color:var(--teal)">${esc(_pinsInfo.enrolCode)}</span></div>
+      <div style="color:var(--text2)">Staff need this code once, when they create their first PIN. Tell staff in person or put it up in the staff room. Don't send it by email or message. Changing it doesn't affect PINs already set.</div>
+      <button class="btn btn-ghost" style="margin-top:.6rem" onclick="regenerateEnrolCode()">↻ New code</button></div>` : '';
   let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
     '<th style="text-align:left;padding:.6rem .75rem">Staff member</th>' +
-    '<th style="text-align:center;padding:.6rem .75rem">Current PIN</th>' +
+    '<th style="text-align:center;padding:.6rem .75rem">PIN</th>' +
     '<th style="padding:.6rem .75rem;text-align:right">Actions</th></tr></thead><tbody>';
-
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach((name, i) => {
-    const pin = pins[name] || '0000';
-    const isDefault = pin === '0000';
+  STAFF.forEach((name, i) => {
+    const p = byName[name];
     const fill = i % 2 === 0 ? 'var(--bg2)' : 'var(--card2)';
+    const status = !p?.hasPin ? '<span style="color:#fbbf24">Not set — creates one at first login</span>'
+      : p.locked ? '<span style="color:#f87171">Locked (too many attempts)</span>'
+      : `<span style="color:#86efac">Set ${fmtDate(p.setAt)}${p.setBy === 'admin' ? ' by admin' : ''}</span>`;
+    const n = esc(JSON.stringify(name));
     html += `<tr style="background:${fill}">
-      <td style="padding:.6rem .75rem;font-weight:600">${name}</td>
-      <td style="text-align:center;padding:.6rem .75rem">
-        <span style="font-family:monospace;font-size:1rem;letter-spacing:.15em;color:${isDefault?'#e57373':'var(--gc-green)'}">${pin}</span>
-        ${isDefault ? '<span style="font-size:.7rem;color:#e57373;margin-left:.4rem">(default)</span>' : ''}
-      </td>
+      <td style="padding:.6rem .75rem;font-weight:600">${esc(name)}</td>
+      <td style="text-align:center;padding:.6rem .75rem;font-size:.8rem">${status}</td>
       <td style="text-align:right;padding:.6rem .75rem">
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem"
-          onclick="adminSetPin('${name.replace(/'/g,"\'")}')">Set PIN</button>
-        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem"
-          onclick="adminResetPin('${name.replace(/'/g,"\'")}')">Reset to 0000</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem" onclick="adminSetPin(${n})">Set temporary PIN</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .7rem;margin-left:.3rem" onclick="adminResetPin(${n})">Reset</button>
       </td>
     </tr>`;
   });
   html += '</tbody></table>';
-  wrap.innerHTML = html;
+  wrap.innerHTML = enrol + html;
 }
 
-function adminSetPin(name) {
-  const p1 = prompt(`Set new 4-digit PIN for ${name}:`);
+async function adminSetPin(name) {
+  const p1 = prompt(`Set a temporary 4-digit PIN for ${name} (tell them in person; they can change it after logging in):`);
   if (p1 === null) return;
   if (!/^\d{4}$/.test(p1)) { showToast('PIN must be exactly 4 digits', 'error'); return; }
   const p2 = prompt(`Confirm PIN for ${name}:`);
   if (p1 !== p2) { showToast('PINs did not match — not saved', 'error'); return; }
-  const pins = getAdminPins();
-  pins[name] = p1;
-  saveAdminPins(pins);
-  showToast(`PIN updated for ${name}`, 'success');
+  try { await api('set_pin', { method: 'POST', body: { staffName: name, pin: p1 } }); showToast(`PIN set for ${name}`, 'success'); }
+  catch (e) { showToast('PIN not saved: ' + e.message, 'error'); }
   renderPinTable();
 }
 
-function adminResetPin(name) {
-  if (!confirm(`Reset ${name}'s PIN to 0000?`)) return;
-  const pins = getAdminPins();
-  pins[name] = '0000';
-  saveAdminPins(pins);
-  showToast(`PIN reset for ${name}`, 'success');
+async function adminResetPin(name) {
+  if (!confirm(`Reset ${name}'s PIN? They will create a new PIN the next time they log in.`)) return;
+  try { await api('reset_pin', { method: 'POST', body: { staffName: name } }); showToast(`PIN reset for ${name}`, 'success'); }
+  catch (e) { showToast('Reset failed: ' + e.message, 'error'); }
   renderPinTable();
 }
 
-function resetAllPins() {
-  if (!confirm('Reset ALL staff PINs to 0000? Staff will be prompted to set a new PIN on next login.')) return;
-  const pins = {};
-  const staffList = typeof STAFF !== 'undefined' ? STAFF : DEFAULT_STAFF;
-  staffList.forEach(n => pins[n] = '0000');
-  saveAdminPins(pins);
-  showToast('All PINs reset to 0000', 'success');
+async function resetAllPins() {
+  if (!confirm('Reset ALL staff PINs? Everyone will create a new PIN at their next login.')) return;
+  let failed = 0;
+  for (const name of STAFF) { try { await api('reset_pin', { method: 'POST', body: { staffName: name } }); } catch (e) { failed++; } }
+  showToast(failed ? `${failed} PIN resets failed` : 'All PINs reset', failed ? 'error' : 'success');
   renderPinTable();
+}
+
+async function loadAiStatus() {
+  const el = document.getElementById('aiStatus');
+  if (!el) return;
+  try {
+    const s = await fetch('/api/ai?action=status').then(r => r.json());
+    el.innerHTML = s.ok ? `AI assistant: <span style="color:#86efac">working</span> — models: ${esc((s.models || []).join(' → '))}`
+      : `AI assistant: <span style="color:#f87171">${esc(s.message || 'not working')}</span>`;
+  } catch (e) { el.textContent = 'AI assistant status: could not check'; }
 }
 
 </script>

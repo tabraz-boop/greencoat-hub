@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light" data-size="normal">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Greencoat Nursery — Policy Hub</title>
 <meta name="theme-color" content="#2B6B3A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -875,10 +875,10 @@ body {
     transform: translateX(-50%);
     z-index: 10000;
     pointer-events: none;
-    animation: slideUp 0.3s ease;
+    animation: celebrateIn 0.3s ease;
 }
 
-@keyframes slideUp {
+@keyframes celebrateIn {
     from { opacity: 0; transform: translateX(-50%) translateY(20px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
@@ -1048,6 +1048,21 @@ body {
     opacity:0;pointer-events:none;transition:opacity .25s;
   }
   #pinOverlay.show { opacity:1;pointer-events:all; }
+  #pinOverlay { overflow-y:auto; -webkit-overflow-scrolling:touch; padding:max(.75rem, env(safe-area-inset-top)) .75rem max(.75rem, env(safe-area-inset-bottom)); }
+  #pinOverlay .pin-box { margin:auto; }
+  .pin-enrol { margin:.6rem 0 .2rem; text-align:left; }
+  .pin-enrol label { display:block; font-size:.78rem; color:var(--text3,#888); margin-bottom:.3rem; }
+  .pin-enrol input { width:100%; padding:.65rem .8rem; border-radius:10px; background:var(--bg3,#222); border:1px solid rgba(255,255,255,.18); color:var(--text,#fff); font-size:16px; letter-spacing:.15em; text-transform:uppercase; font-family:inherit; }
+  @media (max-height: 560px) {
+    .pin-box { padding:1rem 1.25rem; }
+    .pin-box h2 { font-size:1rem; }
+    .pin-sub { margin-bottom:.6rem; }
+    .pin-name-select { margin-bottom:.6rem; padding:.45rem .8rem; }
+    .pin-dots { margin-bottom:.6rem; }
+    .pin-pad { grid-template-columns:repeat(6,1fr); max-width:360px; gap:.4rem; margin-bottom:.5rem; }
+    .pin-key { aspect-ratio:auto; min-height:44px !important; font-size:1.1rem; }
+    .pin-key.zero { grid-column:auto; }
+  }
   .pin-box {
     background:var(--bg2,#1a1a1a);border:1px solid rgba(255,255,255,.12);
     border-radius:20px;padding:2rem 2.5rem;width:min(380px,92vw);
@@ -1108,13 +1123,138 @@ body {
     transition:background .15s;font-family:inherit;
   }
   .topbar-logout:hover { background:rgba(255,255,255,.14); }
+
+/* ── POLICY UPDATE BADGES ── */
+.update-badge { background: var(--gc-yellow-pale, #fef3c7); color: #92400e; font-size: .6rem; font-weight: 800; padding: .1rem .4rem; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.update-badge.due { background: #fee2e2; color: var(--t1); }
+.reader-update-note { position: relative; flex-basis: 100%; margin-top: .35rem; padding: .45rem .7rem; border-radius: var(--r-sm); background: var(--gc-yellow-pale, #fef3c7); color: #78350f; font-size: .78rem; line-height: 1.45; }
+.reader-update-note summary { cursor: pointer; }
+.reader-update-note .run-body { margin-top: .3rem; max-height: 22vh; overflow-y: auto; white-space: pre-line; }
+/* ── MOBILE & TABLET (touch-first: most staff use phones/tablets) ─────────── */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.app { height: 100vh; height: 100dvh; }
+.nav-mobile-only { display: none; }
+.ofsted-close { margin-left: .25rem; }
+@media (min-width: 769px) { .ofsted-close { display: none; } }
+.sidebar-scrim { display: none; }
+@media (max-width: 768px) {
+  /* The top bar must fit the screen: when it didn't, phones laid the page out ~650px wide and
+     zoomed out, which put every fixed overlay (reader, quiz) partly off-screen. */
+  .topbar { gap: .35rem; padding: .4rem .55rem; padding-top: max(.4rem, env(safe-area-inset-top)); }
+  .topbar-logo .logo-words, .topbar-divider { display: none; }
+  .topbar-search { min-width: 0; padding-left: .7rem; padding-right: .5rem; }
+  .topbar-search input { min-width: 0; width: 100%; }
+  .topbar-right { gap: .25rem; }
+  .topbar-right .queue-toggle, .topbar-right .ai-btn { display: none !important; } /* both are in the bottom nav */
+  .topbar-logout .tb-label { display: none; }
+  .nav-mobile-only { display: block; }
+  .sidebar { height: 100dvh; overflow-y: auto; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .sidebar-scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 440; }
+
+  /* iOS Safari zooms into any focused field with text under 16px */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* Reader: full-screen sheet that respects the notch / home bar */
+  .reader-overlay { align-items: stretch; }
+  .reader-modal { height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; min-width: 0; }
+  .reader-head { padding-top: max(.75rem, env(safe-area-inset-top)); }
+  .reader-body { overflow-wrap: anywhere; }
+  .reader-body table { width: 100% !important; table-layout: fixed; }
+  .reader-body td, .reader-body th { overflow-wrap: anywhere; word-break: break-word; }
+  .reader-body img { max-width: 100%; height: auto; }
+  .reader-foot { padding-bottom: max(.6rem, env(safe-area-inset-bottom)); }
+
+  /* Quiz: bottom sheet */
+  .quiz-overlay { padding: 0; align-items: flex-end; }
+  .quiz-modal { max-width: 100%; min-width: 0; max-height: 92dvh; border-radius: var(--r-xl) var(--r-xl) 0 0; padding-bottom: env(safe-area-inset-bottom); }
+  .quiz-opt { font-size: .9rem; padding: .7rem .85rem; }
+
+  /* AI assistant: full screen above the bottom nav */
+  .ai-panel:not(.closed) { position: fixed; inset: 0; z-index: 520; width: 100%; height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
+  /* The base .mob-nav{display:none} rule came after the old mobile rule, so the bottom nav never showed */
+  .mob-nav { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .policy-list, .main { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  #footerFontCtrl { display: none !important; } /* duplicate of the reader toolbar control */
+  .settings-panel { right: .5rem; left: .5rem; width: auto !important; top: calc(56px + env(safe-area-inset-top)); max-height: calc(100dvh - 80px); overflow-y: auto; }
+  /* Ofsted readiness: full-screen, opaque, closable, with the bottom nav still visible */
+  .ofsted-panel.show { z-index: 390; background: var(--bg2) !important; padding-top: env(safe-area-inset-top); padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .ofsted-head { flex-wrap: wrap; }
+  .ob-label { width: 46%; }
+  /* Small print readable on phones */
+  .card-cat, .card-site, .card-req, .read-time, .card-time { font-size: .7rem !important; }
+  .mn-btn { font-size: .66rem; }
+  .ack-info, .ack-date, .progress-sub, .nav-count { font-size: .76rem; }
+  .toast { bottom: calc(74px + env(safe-area-inset-bottom)); }
+}
+/* Short screens (phones in landscape): compact reader chrome so the policy text gets the space */
+@media (max-height: 520px) {
+  .reader-head { padding: .35rem .75rem .3rem !important; gap: .25rem !important; }
+  .reader-top { min-height: 0; }
+  .reader-title { font-size: .95rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #readerMeta { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  #readerMeta::-webkit-scrollbar { display: none; }
+  #readerMeta .reader-tag { flex-shrink: 0; }
+  #readerMeta .reader-update-note { flex-basis: auto; flex-shrink: 0; margin-top: 0; padding: .15rem .5rem; }
+  #readerMeta .reader-update-note[open] { position: absolute; left: .75rem; right: .75rem; z-index: 5; box-shadow: var(--shadow-md); }
+  .reader-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .reader-toolbar::-webkit-scrollbar { display: none; }
+  .reader-toolbar > * { flex-shrink: 0; }
+  .reader-foot { padding-top: .3rem !important; padding-bottom: max(.3rem, env(safe-area-inset-bottom)) !important; flex-wrap: nowrap !important; }
+  .reader-foot > div:first-child { display: none; }
+  .ack-btn { min-height: 40px; }
+}
+/* Hidden toast stays out of sight wherever it is anchored */
+.toast:not(.show) { opacity: 0; visibility: hidden; }
+.toast.show { visibility: visible; opacity: 1; }
+/* Phone top bar on touch screens */
+@media (pointer: coarse) and (max-width: 768px) {
+  .topbar-menu-btn, .mic-btn, .search-clear.show { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .topbar-search { min-height: 44px; }
+  .topbar-search input { align-self: stretch; }
+  .topbar-logo .logo-icon { min-width: 40px; min-height: 40px; }
+}
+/* Tablets / landscape phones (desktop top bar): keep it within the screen width */
+@media (min-width: 769px) and (max-width: 1240px) {
+  .topbar { gap: .45rem; padding-left: .75rem; padding-right: .75rem; }
+  .topbar-logo .logo-words, .topbar-divider, .topbar-logout .tb-label { display: none; }
+  .topbar-search { min-width: 0; }
+  .topbar-search input { min-width: 0; width: 100%; }
+  .topbar-right { gap: .25rem; }
+  .topbar-right .tb-btn[title="Keyboard shortcuts"] { display: none; }
+  .tb-btn, .queue-toggle { padding-left: .55rem; padding-right: .55rem; }
+}
+@media (pointer: coarse) and (min-width: 769px) {
+  .topbar-right .tb-btn[title="Keyboard shortcuts"] { display: none; }
+  .tb-btn, .queue-toggle { font-size: .78rem !important; }
+}
+/* Comfortable touch targets (44px, Apple/Google guidance) on touch screens of any size */
+@media (pointer: coarse) {
+  .tb-btn, .queue-toggle, .topbar-logout, .ca-btn, .mob-site-pill, .mob-tier-pill, .nav-item, .th-btn, .sz-btn,
+  .ack-btn, .quiz-opt, .mn-btn, .ai-suggestions > *, .pin-btn-confirm, .staff-select { min-height: 44px; }
+  .reader-close, .ai-send-btn, .font-size-ctrl button, .modal-close { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .mob-site-pill, .mob-tier-pill, .ca-btn, .tb-btn { display: inline-flex; align-items: center; }
+  .pin-key { min-height: 56px; }
+  .search-clear:not(.show) { display: none !important; }
+  .recent-chip, .ai-close-btn { min-height: 40px; display: inline-flex; align-items: center; }
+  .ai-close-btn { min-width: 44px; justify-content: center; }
+  .reader-body a { display: inline-block; padding: .3rem 0; }
+  input, select, textarea { font-size: 16px !important; } /* iPad: no zoom on focus */
+  /* Readable card text on phones/tablets (rem keeps the staff member's chosen text size) */
+  .card-desc { font-size: .95rem; line-height: 1.5; }
+  .ca-btn { font-size: .88rem; }
+  .card-site, .card-cat, .card-tags > * { font-size: .78rem !important; }
+  .nav-group-label, .nav-count, .tier-badge, .tier-meta, .staff-label, .logo-sub, .sug-chip { font-size: .78rem; }
+  .tb-btn, .queue-toggle { font-size: .85rem; }
+  .ring-word { font-size: .6rem; }
+}
 </style>
 </head>
 <body>
 
 <div class="app">
   <header class="topbar">
-    <button id="menuBtn" class="topbar-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+    <button id="menuBtn" class="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <a class="topbar-logo" href="#">
       <div class="logo-icon">🌿</div>
       <div class="logo-words"><div class="logo-name" id="logoName">Greencoat Nursery</div><div class="logo-sub">Policy Hub</div></div>
@@ -1126,7 +1266,7 @@ body {
       <button class="mic-btn" id="micBtn" onclick="toggleVoiceSearch()" title="Voice search">🎙</button>
       <span class="search-clear" id="searchClear" onclick="clearSearch()">✕</span>
     </div>
-    <button class="topbar-logout" id="logoutBtn" onclick="logoutStaff()" style="display:none" title="Log out and lock">🔒 Lock</button>
+    <button class="topbar-logout" id="logoutBtn" onclick="logoutStaff()" style="display:none" title="Log out and lock" aria-label="Log out and lock">🔒<span class="tb-label"> Lock</span></button>
     <div class="topbar-right">
       <button class="queue-toggle" id="queueToggleBtn" onclick="toggleQueueMode()" style="display:none">📋 My Queue</button>
       <button class="tb-btn" id="ofstedBtn" onclick="toggleOfstedMode()">🏫 Ofsted</button>
@@ -1153,10 +1293,11 @@ body {
   </div>
 
   <div class="main">
+    <div class="sidebar-scrim" id="sidebarScrim" onclick="toggleSidebar(false)"></div>
     <aside class="sidebar" id="sidebar">
       <div class="staff-box">
         <div class="staff-label">Staff member</div>
-        <select class="staff-select" id="staffSelect" onchange="loginStaff(this.value)">
+        <select class="staff-select" id="staffSelect" onchange="requestStaffPinOrSwitch(this.value)">
   <option value="">Select staff member...</option>
 </select>
       </div>
@@ -1186,6 +1327,14 @@ body {
         <div class="nav-item" onclick="setSite('billesley',this)" id="nav-ba"><span class="nav-icon">📍</span> Billesley Ark</div>
         <div class="nav-group-label" style="margin-top:.4rem">By Category</div>
         <div id="catNav"></div>
+        <div class="nav-mobile-only">
+          <div class="nav-group-label" style="margin-top:.4rem">More</div>
+          <div class="nav-item" onclick="toggleSidebar(false);toggleSettings()"><span class="nav-icon">⚙</span> Display &amp; text size</div>
+          <div class="nav-item" onclick="toggleSidebar(false);toggleOfstedMode()"><span class="nav-icon">🏫</span> Ofsted readiness</div>
+          <div class="nav-item" onclick="toggleSidebar(false);showChangePinFlow()"><span class="nav-icon">🔑</span> Change my PIN</div>
+          <div class="nav-item" onclick="toggleSidebar(false);logoutStaff()"><span class="nav-icon">🔒</span> Log out</div>
+          <a class="nav-item" href="admin.html" style="text-decoration:none"><span class="nav-icon">👩‍💼</span> Admin console</a>
+        </div>
       </nav>
     </aside>
 
@@ -1205,6 +1354,7 @@ body {
             <div class="ofsted-info"><h3>Ofsted Readiness — Tier 1</h3><p id="ofstedSub">Select your name to see your readiness</p></div>
             <div class="ofsted-score-num" id="ofstedScoreNum">—</div>
             <button class="ca-btn" onclick="printOfstedReport()">🖨 Print</button>
+            <button class="ca-btn ofsted-close" onclick="toggleOfstedMode()" aria-label="Close Ofsted readiness">✕</button>
           </div>
           <div class="ofsted-bars" id="ofstedBars"></div>
         </div>
@@ -1287,10 +1437,6 @@ body {
       </div>
       <button class="ack-btn" id="ackBtn" onclick="ackCurrent().catch(e=>{showToast('Error processing acknowledgement','err');console.error(e)})">☐ Acknowledge</button>
     </div>
-    <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
-      <div class="settings-group-label">Account</div>
-      <button class="th-btn" style="width:100%;justify-content:flex-start;gap:.4rem" onclick="closeSettings();showChangePinFlow()">🔑 Change my PIN</button>
-    </div>
   </div>
 </div>
 
@@ -1307,6 +1453,10 @@ body {
     <div class="settings-title">Display Settings</div>
     <div class="settings-group"><div class="settings-group-label">Theme</div><div class="theme-btns"><button class="th-btn active" id="th-light" onclick="setTheme('light',this)">☀ Light</button><button class="th-btn" id="th-dark" onclick="setTheme('dark',this)">🌙 Dark</button></div></div>
     <div class="settings-group"><div class="settings-group-label">Text Size</div><div class="size-btns"><button class="sz-btn" id="sz-small" onclick="setSize('small',this)">A–</button><button class="sz-btn active" id="sz-normal" onclick="setSize('normal',this)">A</button><button class="sz-btn" id="sz-large" onclick="setSize('large',this)">A+</button><button class="sz-btn" id="sz-xlarge" onclick="setSize('xlarge',this)">A⁺⁺</button></div></div>
+    <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+      <div class="settings-group-label">Account</div>
+      <button class="th-btn" style="width:100%;justify-content:flex-start;gap:.4rem" onclick="closeSettings();showChangePinFlow()">🔑 Change my PIN</button>
+    </div>
   </div>
 </div>
 
@@ -1873,16 +2023,7 @@ let filterTier = null, filterCat = null, searchQ = '';
 let filterSite = localStorage.getItem('gc_lastSite') || null;
 
 // ─── AUTHENTICATION ──────────────────────────────────────────────────────
-function loginStaff(name) {
-  if (!name || typeof name !== 'string') return;
-  currentStaff = name.trim();
-  loadAcknowledged();
-  loadChatHistory(name);
-  updateCounts();
-  render();
-  showToast(`Welcome, ${name}!`, 'ok');
-}
-
+// Login is handled by the PIN overlay (server-verified) → pinSuccess() → onStaffChange().
 function loadAcknowledged() {
   if (!currentStaff) { acknowledged = new Set(); return; }
   try {
@@ -1895,12 +2036,71 @@ function loadAcknowledged() {
   }
 }
 
+// ── Policy updates: the admin can require staff to re-read a new version ──
+// gc_ack_at_<id>_<staffKey> holds the exact ack time (older records only have gc_ack_date_, a dd/mm/yyyy date).
+function ackTime(id) {
+  const sk = currentStaff.replace(/\s+/g,'_');
+  const iso = localStorage.getItem(`gc_ack_at_${id}_${sk}`);
+  if (iso) return Date.parse(iso);
+  const m = (localStorage.getItem(`gc_ack_date_${id}_${sk}`) || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return m ? new Date(+m[3], +m[2] - 1, +m[1], 23, 59, 59).getTime() : null;
+}
+let reackDue = new Set(); // policies this person acknowledged before the latest required update
+// Same rule as the admin console: after a "staff must re-read" update, an acknowledgement only counts
+// if it was made after that update AND was for the current version. Unknown time → must re-read.
+function ackIsCurrent(p) {
+  if (!p.reackRequiredFrom) return true;
+  const t = ackTime(p.id);
+  if (t === null || t < Date.parse(p.reackRequiredFrom)) return false;
+  const v = parseInt(localStorage.getItem(`gc_ack_ver_${p.id}_${currentStaff.replace(/\s+/g,'_')}`) || '');
+  return isNaN(v) || v >= (parseInt(p.reackVersion) || parseInt(p.version) || 1);
+}
+function applyReackRules() {
+  reackDue = new Set();
+  if (!currentStaff) return;
+  let changed = false;
+  for (const p of POLICIES) {
+    if (!p.reackRequiredFrom || !acknowledged.has(p.id)) continue;
+    if (!ackIsCurrent(p)) {
+      reackDue.add(p.id);
+      acknowledged.delete(p.id); changed = true;
+    }
+  }
+  if (changed) saveAcknowledged();
+}
+// Re-fetch the admin-managed policy list (e.g. a tablet left open all day) and re-apply re-read rules.
+let _lastConfigCheck = 0;
+async function refreshLiveConfig() {
+  _lastConfigCheck = Date.now();
+  await fetchLiveConfig();
+  buildCatNav(); updateCounts(); updateProgressUI(); renderPriorityBanner(); render();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Date.now() - _lastConfigCheck > 120000) refreshLiveConfig();
+});
+// Before acknowledging: make sure the person read the version that is current right now.
+async function policyChangedSinceOpen(p) {
+  const before = { version: parseInt(p.version) || 1, file: p.file };
+  await refreshLiveConfig();
+  const now = POLICIES.find(x => x.id === p.id);
+  if (!now) { showToast('This policy has been removed from the library', 'info'); closeReader(); return true; }
+  if ((parseInt(now.version) || 1) !== before.version || now.file !== before.file) {
+    showToast('This policy has just been updated — please read the new version', 'info');
+    openReader(p.id);
+    return true;
+  }
+  return false;
+}
+function dlPolicy(id) {
+  const p = POLICIES.find(x => x.id === id); if (!p) return;
+  dlFile(p.file, p.fileName || (p.file || '').split('/').pop());
+}
+
 function saveAcknowledged() {
   if (!currentStaff) return;
   try {
     const ackKey = `gc_acks_${currentStaff.replace(/\s+/g,'_')}`;
     localStorage.setItem(ackKey, JSON.stringify([...acknowledged]));
-    syncAcksToServer();
   } catch(e) { console.warn('saveAcknowledged failed:', e); }
 }
 
@@ -1910,6 +2110,7 @@ let guidedMode = false;
 let queueMode = false;
 let quizCache = {};
 let preloadedQuiz = null;   // questions ready for the currently-open policy
+let preloadedQuizOffline = false; // true when questions came from the offline fallback bank
 let preloadedQuizForId = null; // policy ID these questions belong to — guards against race condition
 let aiController       = null; // AbortController for AI requests (module-scoped for cancel)
 let _loadDocController = null; // AbortController for the active loadDoc fetch
@@ -1929,10 +2130,9 @@ async function fetchLiveConfig() {
     const json = await res.json();
     if (json.ok && json.data) {
       if (Array.isArray(json.data.policies) && json.data.policies.length > 0) {
-        // Only override if server has more policies than our default (prevents accidental wipe)
-        if (json.data.policies.length >= DEFAULT_POLICIES.length) {
-          POLICIES = json.data.policies;
-        }
+        // The admin console manages the list (adds, removals, new versions); the server refuses empty lists.
+        POLICIES = json.data.policies;
+        applyReackRules();
       }
       if (Array.isArray(json.data.staff) && json.data.staff.length > 0) {
         STAFF = json.data.staff;
@@ -1965,26 +2165,75 @@ async function trackActivity(storeName, key, value) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 // ── SERVER SYNC (fire-and-forget — never blocks UI) ──────────────────────
-function syncAcksToServer() {
-  if (!currentStaff) return;
-  const acks = [...acknowledged];
-  fetch('/api/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'sync_acks', staffName: currentStaff, data: { acks } })
-  }).catch(() => {}); // silent fail — localStorage is source of truth
+// Writes are queued in a per-staff outbox (localStorage) and sent one at a time, so nothing is lost
+// offline or when the session token has expired — the queue flushes after the next login.
+const outboxKey = name => `gc_outbox_${name.replace(/\s+/g,'_')}`;
+let _flushing = false;
+function queueServerWrite(action, data, name = currentStaff) {
+  if (!name) return;
+  try {
+    let box = JSON.parse(localStorage.getItem(outboxKey(name)) || '[]');
+    box.push({ action, data, queuedAt: new Date().toISOString() });
+    // Cap the queue by dropping the oldest activity-log entries only — acknowledgements are never dropped.
+    while (box.length > 400) {
+      const i = box.findIndex(x => x.action === 'log_activity');
+      if (i < 0) break;
+      box.splice(i, 1);
+    }
+    localStorage.setItem(outboxKey(name), JSON.stringify(box));
+  } catch(e) { console.warn('queueServerWrite failed:', e); }
+  if (name === currentStaff) flushOutbox();
+}
+async function flushOutbox() {
+  const session = getPinSession();
+  if (_flushing || !currentStaff || !session?.token || session.name !== currentStaff) return;
+  _flushing = true;
+  const key = outboxKey(currentStaff);
+  try {
+    while (true) {
+      const box = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!box.length) break;
+      const item = box[0];
+      let res;
+      try {
+        res = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: item.action, token: session.token, data: item.data }) });
+      } catch(e) { break; } // offline — retry later
+      if (res.status === 401) { markSessionNeedsLogin(); break; }
+      if (!res.ok && res.status >= 500) break; // server trouble — retry later
+      const fresh = JSON.parse(localStorage.getItem(key) || '[]'); fresh.shift();
+      localStorage.setItem(key, JSON.stringify(fresh));
+    }
+  } catch(e) { console.warn('flushOutbox failed:', e); }
+  _flushing = false;
+}
+window.addEventListener('online', () => flushOutbox());
+setInterval(() => flushOutbox(), 60000);
+
+// Upload every ack held on this device (merge-only on the server), with the device's dates.
+function syncAcksToServer(name = currentStaff, ids = acknowledged) {
+  if (!name || !ids.size) return;
+  const sk = name.replace(/\s+/g,'_');
+  const dates = {}, titles = {};
+  for (const id of ids) {
+    const d = localStorage.getItem(`gc_ack_date_${id}_${sk}`); if (d) dates[id] = d;
+    const p = POLICIES.find(x => x.id === id); if (p) titles[id] = p.title;
+  }
+  queueServerWrite('sync_acks', { acks: [...ids], dates, titles }, name);
+}
+
+function recordAckOnServer(p, method, score, total) {
+  const sk = currentStaff.replace(/\s+/g,'_'), at = new Date().toISOString(), version = parseInt(p.version) || 1;
+  try { localStorage.setItem(`gc_ack_at_${p.id}_${sk}`, at); localStorage.setItem(`gc_ack_ver_${p.id}_${sk}`, String(version)); } catch(e) {}
+  reackDue.delete(p.id);
+  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, policyVersion: version, ackedAt: at, method, score, total });
 }
 
 function logActivityToServer(activityType, key, value, policyId, policyTitle) {
-  if (!currentStaff) return;
-  fetch('/api/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'log_activity', staffName: currentStaff, data: {
-      activityType, key: key || null, value: value || null,
-      policyId: policyId || null, policyTitle: policyTitle || null
-    }})
-  }).catch(() => {}); // silent fail
+  queueServerWrite('log_activity', {
+    activityType, key: key || null, value: value || null,
+    policyId: policyId || null, policyTitle: policyTitle || null
+  });
 }
 
 async function init() {
@@ -2013,8 +2262,9 @@ async function init() {
     // PIN keyboard support
     const pinVisible = document.getElementById('pinOverlay')?.classList.contains('show');
     if (pinVisible) {
-      if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
-      if (e.key === 'Backspace')  { e.preventDefault(); pinDel(); return; }
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') { /* typing in a field */ }
+      else if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
+      if (e.key === 'Backspace' && e.target.tagName !== 'INPUT') { e.preventDefault(); pinDel(); return; }
       if (e.key === 'Escape')     { return; } // don't close overlay with Escape
     }
     if ((e.metaKey||e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); }
@@ -2136,7 +2386,7 @@ function onStaffChange(name) {
   currentStaff = name; localStorage.setItem('gc_lastStaff', name);
   // Exit queue mode if staff changes
   if (queueMode) exitQueueMode();
-  loadAcks(); updateProgressUI(); renderPriorityBanner(); render(); renderRecent();
+  loadAcks(); applyReackRules(); updateProgressUI(); renderPriorityBanner(); render(); renderRecent();
   if (ofstedMode) renderOfstedPanel();
   const qBtn = document.getElementById('queueToggleBtn');
   if (name) {
@@ -2158,23 +2408,48 @@ async function syncAcksFromServer(name) {
   // Start with localStorage (source of truth)
   const localStored = JSON.parse(localStorage.getItem(localKey) || '[]');
   let merged = new Set(localStored);
-  // Best-effort fetch from server to merge any acks from other devices
-  try {
-    const res = await fetch('/api/track', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_acks', staffName: name })
-    });
-    if (res.ok) {
-      const d = await res.json();
-      if (Array.isArray(d.acks)) d.acks.forEach(id => merged.add(id));
-    }
-  } catch(e) { /* offline — local only */ }
+  // Best-effort fetch from server to merge acks from other devices; then upload any this device
+  // recorded that the server doesn't have yet (e.g. acks made before server sync worked).
+  const session = getPinSession();
+  if (session?.token && session.name === name) {
+    try {
+      const res = await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_acks', token: session.token })
+      });
+      if (res.status === 401) markSessionNeedsLogin();
+      if (res.ok) {
+        const d = await res.json();
+        if (name !== currentStaff) return false; // someone else logged in meanwhile
+        const serverIds = new Set(Array.isArray(d.acks) ? d.acks.filter(id => !d.records?.[id]?.stale) : []);
+        serverIds.forEach(id => merged.add(id));
+        const sk = name.replace(/\s+/g,'_');
+        for (const [id, rec] of Object.entries(d.records || {})) {
+          const k = `gc_ack_date_${id}_${sk}`;
+          if (rec?.at && !rec.stale && !localStorage.getItem(k)) localStorage.setItem(k, new Date(rec.at).toLocaleDateString('en-GB'));
+          const ka = `gc_ack_at_${id}_${sk}`, localAt = localStorage.getItem(ka);
+          if (rec?.at && !rec.legacy && !rec.stale && (!localAt || localAt < rec.at)) {
+            localStorage.setItem(ka, rec.at);
+            if (rec.policyVersion) localStorage.setItem(`gc_ack_ver_${id}_${sk}`, String(rec.policyVersion));
+          }
+        }
+        const missing = new Set(localStored.filter(id => !serverIds.has(id)));
+        if (missing.size) syncAcksToServer(name, missing);
+      }
+    } catch(e) { /* offline — local only */ }
+    if (name !== currentStaff) return false;
+    flushOutbox();
+  }
+  if (name !== currentStaff) return false;
   // Save merged result back to localStorage
   acknowledged = merged;
+  if (name === currentStaff) applyReackRules();
   localStorage.setItem(localKey, JSON.stringify([...acknowledged]));
   updateProgressUI();
   renderPriorityBanner();
+  render();
+  if (readerOpen) updateReaderAckBtn();
   if (queueMode) renderQueueList();
   return true;
 }
@@ -2269,13 +2544,16 @@ function renderCard(p) {
   const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
   const siteHtml = pSites.includes('all') ? '<span class="card-site site-sparkhill">All sites</span>' : pSites.map(s => `<span class="card-site ${s==='sparkhill'?'site-sparkhill':s==='bearwood'?'site-bearwood':'site-billesley'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`).join('');
   const titleHtml = searchQ ? (p.title||'').replace(new RegExp(`(${searchQ.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark style="background:var(--gc-yellow);color:#1a1a1a;border-radius:2px">$1</mark>') : (p.title||'');
-  const urgentBadge = p.tier === 1 && !acked ? '<span style="background:#fee2e2;color:var(--t1);font-size:.58rem;font-weight:800;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em">Required</span>' : '';
+  const urgentBadge = reackDue.has(p.id)
+    ? '<span class="update-badge due">Updated — re-read</span>'
+    : (p.tier === 1 && !acked ? '<span style="background:#fee2e2;color:var(--t1);font-size:.58rem;font-weight:800;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em">Required</span>' : '')
+      + (p.updatedAt && Date.now() - Date.parse(p.updatedAt) < 30 * 864e5 ? '<span class="update-badge">Updated</span>' : '');
   const estTime = p.desc ? Math.max(3, Math.ceil((p.desc.split(' ').length * 12) / 200)) + ' min' : '';
   return `<div class="policy-card ${acked?'acked':''}" onclick="openReader('${p.id}')">
     <div class="card-top"><div class="card-ack-icon">${acked ? '✓' : ''}</div><div class="card-title">${titleHtml}</div></div>
     <div class="card-tags"><span class="card-cat">${p.cat||'General'}</span>${siteHtml}${urgentBadge}${estTime ? `<span style="margin-left:auto;font-size:.6rem;color:var(--text3)">~${estTime}</span>` : ''}</div>
     ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
-    <div class="card-actions"><button class="ca-btn primary" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button><button class="ca-btn" onclick="event.stopPropagation();dlFile('${p.file}')">⬇ Download</button><button class="ca-btn" onclick="event.stopPropagation();askAIAbout('${p.id}')">🤖 Ask AI</button><button class="ca-btn yellow" onclick="event.stopPropagation();quickSummary('${p.id}',this)">⚡ Summary</button></div>
+    <div class="card-actions"><button class="ca-btn primary" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button><button class="ca-btn" onclick="event.stopPropagation();dlPolicy('${p.id}')">⬇ Download</button><button class="ca-btn" onclick="event.stopPropagation();askAIAbout('${p.id}')">🤖 Ask AI</button><button class="ca-btn yellow" onclick="event.stopPropagation();quickSummary('${p.id}',this)">⚡ Summary</button></div>
   </div>`;
 }
 
@@ -2311,7 +2589,8 @@ function openReader(id) {
   isPreloadingQuiz = false;
   document.getElementById('readerOverlay').classList.add('open');
   const tierCls = ['t1b','t2b','t3b'][p.tier-1];
-  document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}`;
+  document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}${p.version > 1 ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Version ${p.version}</span>` : ''}`
+    + ((p.changeNote || reackDue.has(p.id)) ? `<details class="reader-update-note"${reackDue.has(p.id) && window.innerHeight > 600 ? ' open' : ''}><summary>🆕 <strong>Updated${p.updatedAt ? ' ' + new Date(p.updatedAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : ''}</strong>${reackDue.has(p.id) ? ' — please read it again and re-acknowledge' : ''}${p.changeNote ? ' · what changed' : ''}</summary>${p.changeNote ? `<div class="run-body">${String(p.changeNote).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</div>` : ''}</details>` : '');
   updateReaderAckBtn(); closeDocSearch(); loadDoc(p);
 }
 
@@ -2392,7 +2671,7 @@ async function loadDoc(p) {
   }
 }
 
-function dlCurrent() { if (currentPolicy) dlFile(currentPolicy.file); }
+function dlCurrent() { if (currentPolicy) dlPolicy(currentPolicy.id); }
 function shareCurrentPolicy() {
   if (!currentPolicy) return;
   const url = `${location.origin}${location.pathname}?policy=${currentPolicy.id}`;
@@ -2402,7 +2681,19 @@ function shareCurrentPolicy() {
     prompt('Copy this link:', url);
   }
 }
-function dlFile(file) { const a = document.createElement('a'); a.href = file; a.download = file; a.click(); }
+function dlFile(file, name) { const a = document.createElement('a'); a.href = file; a.download = name || file.split('/').pop(); a.click(); }
+const isPhoneLayout = () => window.matchMedia('(max-width: 768px)').matches;
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const show = typeof open === 'boolean' ? open : !sb.classList.contains('open');
+  sb.classList.toggle('open', show);
+  document.getElementById('sidebarScrim')?.classList.toggle('show', show);
+  if (show && aiOpen && isPhoneLayout()) toggleAI(); // one panel at a time on phones
+}
+// On phones the sidebar is an overlay: close it as soon as a filter/category is chosen.
+document.getElementById('sidebar')?.addEventListener('click', e => {
+  if (isPhoneLayout() && e.target.closest('.nav-item')) setTimeout(() => toggleSidebar(false), 120);
+});
 
 // ─── IN-DOC SEARCH ────────────────────────────────────────────────────────
 function openDocSearch() { document.getElementById('docSearchBar').style.display = 'flex'; document.getElementById('docSearchInput').focus(); }
@@ -2449,6 +2740,7 @@ function docSearchPrev() { if (docSearchMatches.length) { docSearchIndex = (docS
 // ─── AI PANEL ─────────────────────────────────────────────────────────────
 function toggleAI() {
   aiOpen = !aiOpen;
+  if (aiOpen && isPhoneLayout()) toggleSidebar(false);
   document.getElementById('aiPanel').classList.toggle('closed', !aiOpen);
   if (aiOpen) { document.getElementById('aiInput').focus(); updateAISuggestions(); }
 }
@@ -2537,7 +2829,12 @@ async function sendAI() {
     window._contextPolicy = null;
     const data = await res.json();
     document.getElementById('aiTyping').classList.remove('show');
-    const reply = data.reply || 'Sorry, I could not get a response. Please try again.';
+    if (!data.reply) {
+      chatHistory.pop(); // don't send an unanswered question as context next time
+      addAIMessage('bot', data.error || 'Sorry, I could not get a response. Please try again.');
+      return;
+    }
+    const reply = data.reply;
     chatHistory.push({ role: 'assistant', content: reply });
     addAIMessage('bot', reply);
     const replySnippet = reply.slice(0, 500);
@@ -2646,6 +2943,7 @@ async function preloadQuiz(policy, isRetry) {
       }
       if (valid.length >= 3) {
         preloadedQuiz = valid.slice(0, 3);
+        preloadedQuizOffline = false;
         preloadedQuizForId = policy.id;
       }
     }
@@ -2664,6 +2962,7 @@ async function ackCurrent() {
 
   // Already acknowledged — just confirm
   if (acknowledged.has(p.id)) { showToast('Already acknowledged ✓', 'ok'); return; }
+  if (await policyChangedSinceOpen(p)) return;
 
   // Not yet acknowledged — gate with quiz
   if (preloadedQuiz && preloadedQuiz.length >= 3 && preloadedQuizForId === p.id) {
@@ -2689,6 +2988,7 @@ async function ackCurrent() {
       }));
       if (fallback.length >= 3) {
         preloadedQuiz = fallback;
+        preloadedQuizOffline = true;
         preloadedQuizForId = p.id;
         openQuizForAck(p);
         showToast('Using offline knowledge check', 'info');
@@ -2795,6 +3095,7 @@ function doDirectAcknowledge(p) {
   acknowledged.add(p.id);
   saveAcknowledged();
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+  recordAckOnServer(p, 'direct', null, null);
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
   if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
   render();
@@ -2808,11 +3109,13 @@ function doDirectAcknowledge(p) {
 async function doAcknowledge() {
   if (!quizPolicy) return;
   const p = quizPolicy;
-  closeQuiz();
+  const score = quizScore, total = quizQuestions.length, offline = preloadedQuizOffline;
+  closeQuiz(); // resets quizScore — capture it first
 
   acknowledged.add(p.id);
   saveAcknowledged();
   localStorage.setItem(`gc_ack_date_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toLocaleDateString('en-GB'));
+  recordAckOnServer(p, offline ? 'offline_quiz' : 'quiz', score, total);
 
   updateReaderAckBtn(); updateProgressUI(); renderPriorityBanner();
   if (typeof ofstedMode !== 'undefined' && ofstedMode) renderOfstedPanel();
@@ -2857,7 +3160,7 @@ function printOfstedReport() { const t1 = POLICIES.filter(p => p.tier === 1); co
 // ─── MISC ─────────────────────────────────────────────────────────────────
 function showCelebration(title, msg) { document.getElementById('celebTitle').textContent = title; document.getElementById('celebMsg').textContent = msg; document.getElementById('celebWrap').style.display = 'flex'; document.getElementById('confettiCanvas').style.display = 'block'; launchConfetti(); setTimeout(() => { document.getElementById('celebWrap').style.display = 'none'; document.getElementById('confettiCanvas').style.display = 'none'; }, 5000); }
 function launchConfetti() { const canvas = document.getElementById('confettiCanvas'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; const ctx = canvas.getContext('2d'); const colors = ['#2B6B3A','#F5C518','#4CAF6A','#ffffff','#a8d5b5']; const pieces = Array.from({length:120}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height, r: Math.random()*6+4, d: Math.random()*100+40, color: colors[Math.floor(Math.random()*colors.length)], tilt: Math.random()*10-10, ta: 0, tai: Math.random()*.07+.05 })); let angle = 0; function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); angle += .01; pieces.forEach(p => { p.ta += p.tai; p.y += (Math.cos(angle+p.d)+3+p.r/2)*.85; p.x += Math.sin(angle)*1.5; p.tilt = Math.sin(p.ta)*15; ctx.beginPath(); ctx.lineWidth = p.r/2; ctx.strokeStyle = p.color; ctx.moveTo(p.x+p.tilt+p.r/4, p.y); ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4); ctx.stroke(); }); if (pieces.some(p => p.y < canvas.height)) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height); } draw(); }
-function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
+function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab !== 'progress' && ofstedMode) toggleOfstedMode(); if (tab !== 'ai' && aiOpen) toggleAI(); if (tab === 'progress' && ofstedMode) { toggleOfstedMode(); el.classList.remove('active'); document.getElementById('mn-browse')?.classList.add('active'); return; } if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
 let toastTimer; function showToast(msg, type='') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show${type?' '+type:''}`; clearTimeout(toastTimer); const dur = msg.length > 60 ? 5000 : 3000; toastTimer = setTimeout(() => t.classList.remove('show'), dur); }
 function mobSetSite(site, el) { filterSite = site; const map = {null:'nav-all-s', sparkhill:'nav-sh', bearwood:'nav-bw', billesley:'nav-ba'}; document.querySelectorAll('[id^="nav-all-s"],[id="nav-sh"],[id="nav-bw"],[id="nav-ba"]').forEach(n => n.classList.remove('active')); const sideEl = document.getElementById(map[site]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-site-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
 function mobSetTier(tier, el) { filterTier = tier; filterCat = null; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); const map = {null:'nav-all', 1:'nav-t1', 2:'nav-t2', 3:'nav-t3'}; const sideEl = document.getElementById(map[tier]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-tier-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
@@ -3079,8 +3382,8 @@ function getPinSession() {
   } catch(e) { return null; }
 }
 
-function setPinSession(name) {
-  try { localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name, ts: Date.now() })); }
+function setPinSession(name, token) {
+  try { localStorage.setItem(PIN_SESSION_KEY, JSON.stringify({ name, ts: Date.now(), token: token || null })); }
   catch(e) { console.warn('setPinSession failed (private browsing?)', e); }
 }
 
@@ -3121,34 +3424,58 @@ function renderPinDots() {
   }
 }
 
-function onPinNameChange(name) {
+async function pinApi(action, body) {
+  const res = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...body }) });
+  return { status: res.status, data: await res.json().catch(() => ({})) };
+}
+// Offline fallback: a salted hash of the last PIN that the server accepted on this device.
+async function pinHash(name, pin) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`gc|${name}|${pin}`));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const pinHashKey = name => 'gc_pinhash_' + name.replace(/\s+/g,'_');
+function setPinMsg(t) { document.getElementById('pinMsg').textContent = t; }
+function showEnrolRow(msg) {
+  const row = document.getElementById('pinEnrolRow');
+  row.style.display = 'block';
+  document.getElementById('pinConfirmRow').style.display = 'flex';
+  if (msg) setPinMsg(msg);
+  setTimeout(() => document.getElementById('pinEnrolCode').focus(), 50);
+}
+function enterSetupPhase(name) {
+  pinPhase = 'setup'; pinBuffer = ''; renderPinDots();
+  document.getElementById('pinSetupNote').style.display = 'block';
+  document.getElementById('pinConfirmRow').style.display = 'none';
+  document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+}
+
+async function onPinNameChange(name) {
   pinBuffer = '';
   pinPhase = 'enter';
-  pinAttempts = 0;
   renderPinDots();
-  document.getElementById('pinMsg').textContent = '';
+  setPinMsg('');
   document.getElementById('pinPad').style.pointerEvents = '';
   document.getElementById('pinNameSelect').disabled = false;
   document.getElementById('pinSetupNote').style.display = 'none';
   document.getElementById('pinConfirmRow').style.display = 'none';
+  document.getElementById('pinEnrolRow').style.display = 'none';
   if (!name) return;
-  // Check admin-set PIN first, then self-set
-  let hasPin = false;
-  try { const ap = JSON.parse(localStorage.getItem('gc_staff_pins')||'{}'); if(ap[name]) hasPin=true; } catch(e){}
-  if (!hasPin) hasPin = !!localStorage.getItem(getPinKey(name));
-  if (hasPin) {
-    document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
-  } else {
-    pinPhase = 'setup';
-    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
-    document.getElementById('pinSetupNote').style.display = 'block';
-  }
+  document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
+  let hasPin = !!localStorage.getItem(getPinKey(name)) || !!localStorage.getItem(pinHashKey(name));
+  try {
+    const { status, data } = await pinApi('pin_status', { staffName: name });
+    if (document.getElementById('pinNameSelect').value !== name) return; // changed meanwhile
+    if (status === 403) { setPinMsg(data.error); document.getElementById('pinPad').style.pointerEvents = 'none'; return; }
+    if (status === 200) hasPin = data.hasPin || !!localStorage.getItem(getPinKey(name)); // legacy device PIN migrates on entry
+    if (data.lockedUntil) setPinMsg(`⚠ Too many attempts. Try again after ${new Date(data.lockedUntil).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})}.`);
+  } catch(e) { /* offline — decide from this device */ }
+  if (!hasPin) enterSetupPhase(name);
 }
 
 function pinKey(digit) {
   if (pinBuffer.length >= 4) return;
   const name = document.getElementById('pinNameSelect').value;
-  if (!name) { document.getElementById('pinMsg').textContent = 'Please select your name first.'; return; }
+  if (!name) { setPinMsg('Please select your name first.'); return; }
   pinBuffer += digit;
   renderPinDots();
   if (pinBuffer.length === 4) {
@@ -3159,73 +3486,11 @@ function pinKey(digit) {
 function pinDel() {
   pinBuffer = pinBuffer.slice(0, -1);
   renderPinDots();
-  document.getElementById('pinMsg').textContent = '';
+  setPinMsg('');
 }
 
-function processPinEntry(name) {
-  // Check admin-set PIN first (gc_staff_pins), then self-set (gc_pin_[name])
-  function getEffectivePin(n) {
-    try {
-      const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
-      if (adminPins[n]) return adminPins[n];
-    } catch(e) {}
-    return localStorage.getItem(getPinKey(n)) || null;
-  }
-  const storedPin = getEffectivePin(name);
-
-  // Check for active lockout (survives page refresh via sessionStorage)
-  const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
-  const lockedUntil = parseInt(sessionStorage.getItem(lockoutKey) || '0');
-  if (lockedUntil > Date.now()) {
-    const secsLeft = Math.ceil((lockedUntil - Date.now()) / 1000);
-    document.getElementById('pinMsg').textContent = `⚠ Too many attempts. Try again in ${secsLeft}s.`;
-    document.getElementById('pinPad').style.pointerEvents = 'none';
-    return;
-  }
-
-  if (pinPhase === 'enter') {
-    if (!storedPin) { // no PIN set — shouldn't reach here but handle gracefully
-      pinPhase = 'setup';
-      pinBuffer = '';
-      renderPinDots();
-      document.getElementById('pinSetupNote').style.display = 'block';
-      document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
-      return;
-    }
-    if (pinBuffer === storedPin) {
-      pinAttempts = 0;
-      pinSuccess(name);
-    } else {
-      pinAttempts++;
-      pinBuffer = '';
-      renderPinDots();
-      if (pinAttempts >= 5) {
-        document.getElementById('pinPad').style.pointerEvents = 'none';
-        // Keep name select ENABLED — another user on shared device must still be able to log in
-        const lockoutKey = `gc_pin_lockout_${name.replace(/\s+/g,'_')}`;
-        const lockoutUntil = Date.now() + 30000;
-        sessionStorage.setItem(lockoutKey, lockoutUntil); // survives F5, clears on tab close
-        let secs = 30;
-        const msgEl = document.getElementById('pinMsg');
-        msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
-        const countdown = setInterval(() => {
-          secs--;
-          if (secs <= 0) {
-            clearInterval(countdown);
-            pinAttempts = 0;
-            sessionStorage.removeItem(lockoutKey);
-            document.getElementById('pinPad').style.pointerEvents = '';
-            msgEl.textContent = '';
-          } else {
-            msgEl.textContent = `⚠ Too many attempts. Try again in ${secs}s, or select a different name.`;
-          }
-        }, 1000);
-      } else {
-        document.getElementById('pinMsg').textContent = `Incorrect PIN. ${5 - pinAttempts} attempt${5 - pinAttempts !== 1 ? 's' : ''} remaining.`;
-      }
-    }
-  } else if (pinPhase === 'setup') {
-    // First entry — move to confirm
+async function processPinEntry(name) {
+  if (pinPhase === 'setup') {
     pinFirst = pinBuffer;
     pinBuffer = '';
     renderPinDots();
@@ -3233,31 +3498,84 @@ function processPinEntry(name) {
     document.getElementById('pinSetupNote').style.display = 'none';
     document.getElementById('pinConfirmRow').style.display = 'flex';
     document.getElementById('pinSub').textContent = 'Enter your PIN again to confirm';
-    document.getElementById('pinMsg').textContent = '';
-  } else if (pinPhase === 'confirm') {
-    // 4th digit entered — show Set PIN button (user taps to commit)
-    document.getElementById('pinConfirmRow').style.display = 'flex';
+    setPinMsg('');
+    if (!getPinSession()?.token) document.getElementById('pinEnrolRow').style.display = 'block';
+    return;
+  }
+  if (pinPhase === 'confirm') { document.getElementById('pinConfirmRow').style.display = 'flex'; return; }
+
+  const pin = pinBuffer;
+  const pad = document.getElementById('pinPad');
+  pad.style.pointerEvents = 'none';
+  setPinMsg('Checking…');
+  try {
+    let { status, data } = await pinApi('login', { staffName: name, pin });
+    if (status === 409 && data.needsSetup) {
+      // No PIN on the server yet. If this device has the person's old PIN, move it to the server.
+      const legacy = localStorage.getItem(getPinKey(name));
+      if (legacy && legacy === pin) {
+        // Their old device PIN is right: keep it, but the first PIN on the server needs the enrolment code.
+        pad.style.pointerEvents = '';
+        pinFirst = pin; pinPhase = 'confirm';
+        document.getElementById('pinSub').textContent = 'Welcome to the new system — one-time setup';
+        showEnrolRow('Enter the enrolment code from your manager, then tap Set PIN to keep this PIN.');
+        return;
+      }
+      pad.style.pointerEvents = ''; setPinMsg(''); enterSetupPhase(name); return;
+    }
+    pad.style.pointerEvents = '';
+    if (status === 200 && data.token) { await pinSuccess(name, data.token, pin); return; }
+    pinBuffer = ''; renderPinDots();
+    if (status === 429) {
+      pad.style.pointerEvents = 'none';
+      const until = data.lockedUntil ? new Date(data.lockedUntil).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) : 'a few minutes';
+      setPinMsg(`⚠ Too many attempts. Try again after ${until}, or select a different name. Your manager can reset your PIN.`);
+      setTimeout(() => { pad.style.pointerEvents = ''; }, 30000);
+    } else if (status === 401) {
+      setPinMsg(`Incorrect PIN. ${data.attemptsLeft ?? ''} attempt${data.attemptsLeft === 1 ? '' : 's'} remaining.`.replace('  ', ' '));
+    } else {
+      setPinMsg(data.error || 'Could not log in — please try again.');
+    }
+  } catch(e) {
+    // Offline: accept the PIN this device last verified with the server.
+    pad.style.pointerEvents = '';
+    const stored = localStorage.getItem(pinHashKey(name));
+    const legacy = localStorage.getItem(getPinKey(name));
+    if ((stored && stored === await pinHash(name, pin)) || (legacy && legacy === pin)) {
+      await pinSuccess(name, null, pin);
+      showToast("Offline — your progress is saved on this phone. You'll be asked for your PIN when you're back online so it can sync.", 'info');
+    } else {
+      pinBuffer = ''; renderPinDots();
+      setPinMsg(stored || legacy ? 'Incorrect PIN.' : 'No connection — you need to be online to log in the first time.');
+    }
   }
 }
 
-function pinConfirmNew() {
+async function pinConfirmNew() {
   const name = document.getElementById('pinNameSelect').value;
-  if (pinBuffer.length < 4) { document.getElementById('pinMsg').textContent = 'Please enter all 4 digits first.'; return; }
+  if (pinBuffer.length < 4) { setPinMsg('Please enter all 4 digits first.'); return; }
   if (pinBuffer !== pinFirst) {
-    document.getElementById('pinMsg').textContent = "PINs don't match. Try again.";
-    pinBuffer = ''; pinFirst = ''; pinPhase = 'setup';
-    renderPinDots();
-    document.getElementById('pinConfirmRow').style.display = 'none';
-    document.getElementById('pinSetupNote').style.display = 'block';
-    document.getElementById('pinSub').textContent = `Create a PIN for ${name.split(' ')[0]}`;
+    setPinMsg("PINs don't match. Try again.");
+    pinFirst = '';
+    enterSetupPhase(name);
     return;
   }
-  localStorage.setItem(getPinKey(name), pinBuffer);
-  pinSuccess(name);
+  const session = getPinSession();
+  const enrolCode = (document.getElementById('pinEnrolCode')?.value || '').trim();
+  try {
+    const { status, data } = await pinApi('set_pin', { staffName: name, pin: pinBuffer, enrolCode: enrolCode || undefined, token: session?.name === name ? session.token : undefined });
+    if (status === 200 && data.token) { await pinSuccess(name, data.token, pinBuffer); showToast('PIN saved ✓', 'ok'); return; }
+    if (status === 403 && data.needsEnrolCode) { showEnrolRow(data.error); return; }
+    setPinMsg(data.error || 'Could not save PIN — please try again.');
+    if (status === 401 || status === 409) { pinPhase = 'enter'; pinBuffer = ''; renderPinDots(); document.getElementById('pinConfirmRow').style.display = 'none'; document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`; }
+  } catch(e) {
+    setPinMsg('No connection — you need to be online to set a PIN.');
+  }
 }
 
 function showChangePinFlow() {
   if (!currentStaff) { showToast('Please log in first', 'err'); return; }
+  if (!getPinSession()?.token) { showToast('Go online and log in again to change your PIN', 'err'); return; }
   showPinOverlay();
   // Pre-select the current user and put into setup mode
   setTimeout(() => {
@@ -3268,7 +3586,7 @@ function showChangePinFlow() {
     renderPinDots();
     document.getElementById('pinSetupNote').style.display = 'block';
     document.getElementById('pinConfirmRow').style.display = 'none';
-    document.getElementById('pinMsg').textContent = '';
+    setPinMsg('');
     document.getElementById('pinSub').textContent = `Set a new PIN for ${currentStaff.split(' ')[0]}`;
     document.getElementById('pinTitle').textContent = 'Change your PIN';
     // Disable name select — they can only change their own PIN here
@@ -3276,13 +3594,13 @@ function showChangePinFlow() {
   }, 60);
 }
 
-function pinSuccess(name) {
-  // If admin has set a PIN, remove any stale self-set PIN to avoid ghost fallback
+async function pinSuccess(name, token, pin) {
   try {
-    const adminPins = JSON.parse(localStorage.getItem('gc_staff_pins') || '{}');
-    if (adminPins[name]) localStorage.removeItem(getPinKey(name));
+    localStorage.removeItem(getPinKey(name)); // retire the old plain-text device PIN
+    if (pin && token) localStorage.setItem(pinHashKey(name), await pinHash(name, pin));
   } catch(e) {}
-  setPinSession(name);
+  setPinSession(name, token);
+  _needsLoginNotified = false;
   hidePinOverlay();
   // Set the staff dropdown to match
   const sel = document.getElementById('staffSelect');
@@ -3291,6 +3609,25 @@ function pinSuccess(name) {
   // Show logout button
   document.getElementById('logoutBtn').style.display = 'inline-flex';
 }
+
+// Server rejected our token (expired, or PIN reset by admin): keep working locally, ask to re-login.
+let _needsLoginNotified = false;
+function markSessionNeedsLogin() {
+  const s = getPinSession();
+  if (s?.token) setPinSession(s.name, null);
+  promptReauth('Your session has ended — enter your PIN to keep saving your progress');
+}
+// Ask the current person for their PIN again (e.g. after logging in offline) so queued progress syncs.
+function promptReauth(message) {
+  if (!currentStaff || _needsLoginNotified || document.getElementById('pinOverlay').classList.contains('show')) return;
+  _needsLoginNotified = true;
+  const name = currentStaff;
+  showPinOverlay();
+  const sel = document.getElementById('pinNameSelect');
+  sel.value = name;
+  onPinNameChange(name).then(() => { document.getElementById('pinSub').textContent = message; });
+}
+window.addEventListener('online', () => { if (currentStaff && !getPinSession()?.token) promptReauth('Back online — enter your PIN so your progress syncs'); });
 
 function logoutStaff() {
   clearPinSession();
@@ -3308,9 +3645,11 @@ function logoutStaff() {
 }
 
 // ── On page load: check session ──────────────────────────────────────
-(function initPinAuth() {
+// Runs after the DOM is parsed: the PIN overlay markup sits after this <script>, so calling
+// showPinOverlay() during parsing crashed and the login gate never appeared.
+function initPinAuth() {
   const session = getPinSession();
-  if (session && STAFF.includes(session.name)) {
+  if (session && STAFF.includes(session.name) && ('token' in session) && (session.token || !navigator.onLine)) {
     // Valid session — auto-login
     setTimeout(() => {
       const sel = document.getElementById('staffSelect');
@@ -3321,7 +3660,8 @@ function logoutStaff() {
   } else {
     showPinOverlay();
   }
-})();
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPinAuth); else initPinAuth();
 
 // ── Session expiry: check every 30 min ─────────────────────────
 setInterval(() => {
@@ -3361,8 +3701,12 @@ setInterval(() => {
       <button class="pin-key del" onclick="pinDel()">⌫</button>
     </div>
     <div class="pin-msg" id="pinMsg"></div>
+    <div class="pin-enrol" id="pinEnrolRow" style="display:none">
+      <label for="pinEnrolCode">Enrolment code from your manager</label>
+      <input id="pinEnrolCode" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" placeholder="e.g. K7M2QX">
+    </div>
     <div id="pinSetupNote" class="pin-setup-note" style="display:none">
-      First time? Create a 4-digit PIN you'll remember — it keeps your progress private.
+      First time? Create a 4-digit PIN you'll remember — it keeps your progress private. You'll also need the enrolment code from your manager (just once).
     </div>
     <div class="pin-confirm-row" id="pinConfirmRow" style="display:none">
       <button class="pin-btn-confirm" onclick="pinConfirmNew()">Set PIN</button>

@@ -43,9 +43,9 @@ netlify.toml      — publish=public, functions=netlify/functions
 
 ### Rules that must never be broken
 
-1. **No build step. No bundler. No package.json.** Files in `public/` deploy as-is. Do not introduce npm, Vite, webpack, Rollup, or any compile step.  
+1. **No build step. No bundler.** Files in `public/` deploy as-is. Do not introduce Vite, webpack, Rollup, or any compile step. `package.json` exists **only** to declare `@netlify/blobs` for the functions (Netlify installs it automatically; there is no build command).  
      
-2. **Functions are ES modules (`.mjs`).** Use `import`/`export`. The only external import is `@netlify/blobs` — available in the Netlify runtime without installation. Do not add other npm dependencies.  
+2. **Functions are ES modules (`.mjs`).** Use `import`/`export`. The only external import is `@netlify/blobs`, declared in `package.json`. It is **not** provided by the Netlify runtime — without `package.json` every Blobs function crashes with `Cannot find package '@netlify/blobs'` (this broke all tracking until Oct 2026). Do not add other npm dependencies. Shared server code lives in `netlify/lib/` (outside `netlify/functions/` so it is not deployed as an endpoint).  
      
 3. **No frontend framework.** The UI is plain HTML/CSS/JS. Do not introduce React, Vue, Svelte, Alpine, or any other framework.  
      
@@ -55,7 +55,7 @@ netlify.toml      — publish=public, functions=netlify/functions
      
 6. **Always use `/api/*` paths in frontend code**, never `/.netlify/functions/*` directly. The `netlify.toml` redirect handles translation.  
      
-7. **Do not touch the Gemini model waterfall in `ai.mjs`** unless specifically asked. The model priority order is intentional.  
+7. **Do not touch the Gemini model waterfall in `ai.mjs`** unless specifically asked. `MODEL_PREFERENCE` is intersected at runtime with the models the key can use (ListModels), so retired models are skipped automatically. Override with the `GEMINI_MODELS` env var (comma-separated).  
      
 8. **Do not modify the God Prompt** in `ai.mjs` unless specifically asked. It encodes legally binding EYFS ratio rules and nursery-specific compliance logic that is non-trivial to restore if broken.
 
@@ -87,7 +87,9 @@ The staff portal intentionally uses `localStorage` as primary storage. Netlify B
 | Store | Key pattern | Contents | Consistency |
 | :---- | :---- | :---- | :---- |
 | `gc_portal_config` | `portal_data` | Live policy list \+ portal settings | strong |
-| `gc_acks` | `<staffKey>` | `{ staffName, acks[], updatedAt }` | eventual |
+| `gc_acks` | `<staffKey>` | `{ staffName, acks[], records{ <policyId>: { at, method, score, total, policyTitle, legacy? } }, updatedAt }` — `at` is the server timestamp; `legacy` = date came from the staff device | strong |
+| `gc_policy_files` | `<policyId>/<timestamp>-<name>.docx` | uploaded policy documents (metadata: name, size, uploadedAt) | strong |
+| `gc_pins` | `<staffKey>` | `{ staffName, hash, salt, setAt, setBy, failCount, lockedUntil }` — scrypt-hashed PIN, never the PIN | strong |
 | `gc_activity` | `<staffKey>` | `{ staffName, entries[], updatedAt }` (max 500\) | eventual |
 
 Use **site-scoped** stores (`getStore`), not deploy-scoped, so data survives deploys. Use `consistency: 'strong'` when reading data that was just written (e.g. after adding a new staff member in the admin console).
@@ -213,7 +215,14 @@ Policies are defined as `DEFAULT_POLICIES` in `index.html` — a hardcoded array
 
 }
 
-The admin console can override `DEFAULT_POLICIES` via the `gc_portal_config` Blob. If the loaded config has `policies.length >= DEFAULT_POLICIES.length`, the Blobs version wins. This is intentional — editing policies should always go through the admin console, never by directly editing `index.html`.
+The admin console overrides `DEFAULT_POLICIES` via the `gc_portal_config` Blob. Whenever the saved config has a non-empty `policies` list it wins (the server refuses to save an empty list) — so additions, removals and new versions made in the admin console reach staff. Editing policies should always go through the admin console, never by directly editing `index.html`.
+
+### Updating policy documents (admin console)
+
+- **New version of one policy:** Policies tab → `⬆ New version` → choose/drop the `.docx`. **Bulk:** `⬆ Upload updated documents` → pick many files; each is matched to a policy by its name (dates like `Mar2026` and words like Greencoat/Policy are ignored) and the admin confirms the matches.
+- Uploads go to the `gc_policy_files` Blob store (`<policyId>/<timestamp>-<name>.docx`, max 5 MB, must be a real .docx) and are served by `netlify/functions/policy-file.mjs` at `/api/policy-file?key=…` (immutable, cacheable). Every uploaded version is kept; the editor lists them.
+- Extra policy fields: `version` (int), `updatedAt` (ISO), `fileName`, `changeNote` (shown to staff at the top of the reader), `reackRequiredFrom` (ISO). When `reackRequiredFrom` is set, an acknowledgement only counts if it was made at/after that time — staff see "Updated — re-read", and the admin compliance views/CSV list them as needing a re-read. Re-acknowledging keeps earlier acks in `records[id].history`.
+- Staff portal stores the exact ack time in `gc_ack_at_<policyId>_<staffKey>` (ISO) for this check; older data only has `gc_ack_date_…` (dd/mm/yyyy, treated as end of that day).
 
 ### Policy tiers
 
@@ -305,6 +314,16 @@ Light and dark mode via `data-theme="light|dark"` on `<html>`. Text size via `da
 
 ---
 
+## Staff identity & tracking (Oct 2026)
+
+- Staff log in with a 4-digit PIN verified by `track.mjs` (`login` / `set_pin`), which returns a signed session token (24h). Ack/activity writes require the token. 5 wrong PINs → 5-minute lock. Admin can reset or set a temporary PIN (Staff PINs tab).
+- Creating a **first** PIN needs the **enrolment code** (6 characters, generated by the server, stored in `gc_portal_config/enrol_code`, shown and regenerated in the admin Staff PINs tab). This stops someone who only knows a colleague's name from claiming their account and forging their records.
+- If a person logged in offline (no token), they are asked for their PIN again when back online, so queued progress syncs. The outbox never drops `ack`/`sync_acks` items.
+- Acknowledgements carry `policyVersion` + `ackedAt`. The server marks an ack of an out-of-date version as `stale` (never replacing a current ack). "Current" = not stale, made at/after `reackRequiredFrom`, and `policyVersion >= reackVersion` — the same rule in `admin.html` (`isCurrentAck`) and `index.html` (`ackIsCurrent`). Before acknowledging, the staff portal re-fetches the policy list and reopens the reader if the policy changed. Policy ids are never reused (`slugify` adds a unique suffix).
+- Staff-portal server writes go through a persistent outbox (`gc_outbox_<staffKey>`), flushed sequentially after login, when back online, and every minute. localStorage remains the source of truth for the staff UI.
+- Each acknowledgement sends `action: 'ack'` with `method` (`quiz` | `offline_quiz` | `direct`) and the quiz score. On login, acks held only on the device are uploaded via merge-only `sync_acks` (keeping the device's `gc_ack_date_*` date, flagged `legacy`).
+- Admin auth is checked by the server (`?action=login`); the password is no longer in `admin.html`. `ADMIN_PASSWORD` (env) always works; a password changed in Settings is stored hashed in `gc_portal_config/admin_auth`. Optional env: `SESSION_SECRET` (otherwise generated once and kept in Blobs).
+
 ## Known Issues to Fix (Prioritised)
 
 1. **`admin.html` is broken** — cannot add staff, compliance overview non-functional. Needs a full rebuild. See the admin spec below.  
@@ -313,7 +332,14 @@ Light and dark mode via `data-theme="light|dark"` on `<html>`. Text size via `da
      
 3. **God Prompt needs Sept 2025 EYFS update** — Annex C, new safeguarding standards, professional-references-only rule, 2-hour absence follow-up. Do not change the EYFS ratios — those are already correct.  
      
-4. **Policy reader is too narrow on mobile** — the document viewer needs a full-screen overlay mode on viewports below 768px, not a constrained panel.
+4. ~~Policy reader is too narrow on mobile~~ — done (Oct 2026): full-screen reader/quiz/AI on phones.
+
+### Mobile-first rules (staff use phones/tablets; desktop is mainly admins)
+
+- Nothing may make the page wider than the screen: if any element forces a wider layout, mobile browsers zoom the whole page out and fixed overlays end up off-screen. Check at 360px and 390px.
+- Form fields are 16px on phones/touch screens (otherwise iOS zooms in on focus). Touch targets are at least 44px under `@media (pointer: coarse)`.
+- Use `100dvh` (with a `100vh` fallback) and `env(safe-area-inset-*)` for full-height sheets and bottom bars.
+- The phone top bar is icon-only; Display/Ofsted/Change PIN/Log out/Admin live in the sidebar's "More" section and the bottom nav.
 
 ---
 
@@ -353,7 +379,7 @@ A full cross-audit of frontend calls vs function expectations was completed. The
 
 | Area | Status | Notes |
 | :---- | :---- | :---- |
-| `ai.mjs` model waterfall | ✅ Correct | Gemini 3.1 → 2.5-flash → 2.5-pro, intentional |
+| `ai.mjs` model waterfall | ✅ Updated Oct 2026 | Preferred order filtered by ListModels; invalid key returns `AI_KEY_INVALID` |
 | `ai.mjs` JSON schema enforcement | ✅ Correct | `correct` coerced to int, min 3 questions validated |
 | `ai.mjs` CORS \+ timeout | ✅ Correct | 26s timeout, CORS headers present |
 | `admin-data.mjs` auth guard | ✅ Correct | Bearer token on all write actions |
@@ -371,7 +397,7 @@ A full cross-audit of frontend calls vs function expectations was completed. The
 ## What Agent Runs Should Never Do
 
 - Add a build step, package manager, or bundler  
-- Install npm packages or add a `package.json`  
+- Add npm dependencies beyond `@netlify/blobs`, or remove `package.json`  
 - Introduce a frontend framework (React, Vue, etc.)  
 - Split `index.html` or `admin.html` into multiple files  
 - Change the `gc_acks_<staffKey>` localStorage key pattern  
