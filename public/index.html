@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light" data-size="normal">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Greencoat Nursery — Policy Hub</title>
 <meta name="theme-color" content="#2B6B3A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -875,10 +875,10 @@ body {
     transform: translateX(-50%);
     z-index: 10000;
     pointer-events: none;
-    animation: slideUp 0.3s ease;
+    animation: celebrateIn 0.3s ease;
 }
 
-@keyframes slideUp {
+@keyframes celebrateIn {
     from { opacity: 0; transform: translateX(-50%) translateY(20px); }
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
@@ -1108,13 +1108,91 @@ body {
     transition:background .15s;font-family:inherit;
   }
   .topbar-logout:hover { background:rgba(255,255,255,.14); }
+
+/* ── MOBILE & TABLET (touch-first: most staff use phones/tablets) ─────────── */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.app { height: 100vh; height: 100dvh; }
+.nav-mobile-only { display: none; }
+.sidebar-scrim { display: none; }
+@media (max-width: 768px) {
+  /* The top bar must fit the screen: when it didn't, phones laid the page out ~650px wide and
+     zoomed out, which put every fixed overlay (reader, quiz) partly off-screen. */
+  .topbar { gap: .35rem; padding: .4rem .55rem; padding-top: max(.4rem, env(safe-area-inset-top)); }
+  .topbar-logo .logo-words, .topbar-divider { display: none; }
+  .topbar-search { min-width: 0; padding-left: .7rem; padding-right: .5rem; }
+  .topbar-search input { min-width: 0; width: 100%; }
+  .topbar-right { gap: .25rem; }
+  .topbar-right .queue-toggle, .topbar-right .ai-btn { display: none !important; } /* both are in the bottom nav */
+  .topbar-logout .tb-label { display: none; }
+  .nav-mobile-only { display: block; }
+  .sidebar { height: 100dvh; overflow-y: auto; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .sidebar-scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 440; }
+
+  /* iOS Safari zooms into any focused field with text under 16px */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* Reader: full-screen sheet that respects the notch / home bar */
+  .reader-overlay { align-items: stretch; }
+  .reader-modal { height: 100dvh; max-height: 100dvh; border-radius: 0; border: none; min-width: 0; }
+  .reader-head { padding-top: max(.75rem, env(safe-area-inset-top)); }
+  .reader-body { overflow-wrap: anywhere; }
+  .reader-body table { width: 100% !important; table-layout: fixed; }
+  .reader-body td, .reader-body th { overflow-wrap: anywhere; word-break: break-word; }
+  .reader-body img { max-width: 100%; height: auto; }
+  .reader-foot { padding-bottom: max(.6rem, env(safe-area-inset-bottom)); }
+
+  /* Quiz: bottom sheet */
+  .quiz-overlay { padding: 0; align-items: flex-end; }
+  .quiz-modal { max-width: 100%; min-width: 0; max-height: 92dvh; border-radius: var(--r-xl) var(--r-xl) 0 0; padding-bottom: env(safe-area-inset-bottom); }
+  .quiz-opt { font-size: .9rem; padding: .7rem .85rem; }
+
+  /* AI assistant: full screen above the bottom nav */
+  .ai-panel:not(.closed) { position: fixed; inset: 0; z-index: 520; width: 100%; height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+
+  /* The base .mob-nav{display:none} rule came after the old mobile rule, so the bottom nav never showed */
+  .mob-nav { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .policy-list, .main { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  #footerFontCtrl { display: none !important; } /* duplicate of the reader toolbar control */
+  .settings-panel { right: .5rem; left: .5rem; width: auto !important; top: calc(56px + env(safe-area-inset-top)); max-height: calc(100dvh - 80px); overflow-y: auto; }
+  /* Small print readable on phones */
+  .card-cat, .card-site, .card-req, .read-time, .card-time { font-size: .7rem !important; }
+  .mn-btn { font-size: .66rem; }
+  .ack-info, .ack-date, .progress-sub, .nav-count { font-size: .76rem; }
+  .toast { bottom: calc(74px + env(safe-area-inset-bottom)); }
+}
+/* Hidden toast stays out of sight wherever it is anchored */
+.toast:not(.show) { opacity: 0; visibility: hidden; }
+.toast.show { visibility: visible; opacity: 1; }
+/* Comfortable touch targets (44px, Apple/Google guidance) on touch screens of any size */
+@media (pointer: coarse) {
+  .tb-btn, .queue-toggle, .topbar-logout, .ca-btn, .mob-site-pill, .mob-tier-pill, .nav-item, .th-btn, .sz-btn,
+  .ack-btn, .quiz-opt, .mn-btn, .ai-suggestions > *, .pin-btn-confirm, .staff-select { min-height: 44px; }
+  .topbar-menu-btn, .mic-btn, .search-clear, .reader-close, .ai-send-btn, .font-size-ctrl button, .modal-close { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .mob-site-pill, .mob-tier-pill, .ca-btn, .tb-btn { display: inline-flex; align-items: center; }
+  .pin-key { min-height: 56px; }
+  .topbar-search { min-height: 44px; }
+  .search-clear:not(.show) { display: none !important; }
+  .topbar-search input { align-self: stretch; }
+  .topbar-logo .logo-icon { min-width: 40px; min-height: 40px; }
+  .recent-chip, .ai-close-btn { min-height: 40px; display: inline-flex; align-items: center; }
+  .ai-close-btn { min-width: 44px; justify-content: center; }
+  .reader-body a { display: inline-block; padding: .3rem 0; }
+  input, select, textarea { font-size: 16px !important; } /* iPad: no zoom on focus */
+  /* Readable card text on phones/tablets (rem keeps the staff member's chosen text size) */
+  .card-desc { font-size: .95rem; line-height: 1.5; }
+  .ca-btn { font-size: .88rem; }
+  .card-site, .card-cat, .card-tags > * { font-size: .78rem !important; }
+  .nav-group-label, .nav-count, .tier-badge, .tier-meta, .staff-label, .logo-sub, .sug-chip { font-size: .78rem; }
+  .tb-btn, .queue-toggle { font-size: .85rem; }
+  .ring-word { font-size: .6rem; }
+}
 </style>
 </head>
 <body>
 
 <div class="app">
   <header class="topbar">
-    <button id="menuBtn" class="topbar-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">☰</button>
+    <button id="menuBtn" class="topbar-menu-btn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <a class="topbar-logo" href="#">
       <div class="logo-icon">🌿</div>
       <div class="logo-words"><div class="logo-name" id="logoName">Greencoat Nursery</div><div class="logo-sub">Policy Hub</div></div>
@@ -1126,7 +1204,7 @@ body {
       <button class="mic-btn" id="micBtn" onclick="toggleVoiceSearch()" title="Voice search">🎙</button>
       <span class="search-clear" id="searchClear" onclick="clearSearch()">✕</span>
     </div>
-    <button class="topbar-logout" id="logoutBtn" onclick="logoutStaff()" style="display:none" title="Log out and lock">🔒 Lock</button>
+    <button class="topbar-logout" id="logoutBtn" onclick="logoutStaff()" style="display:none" title="Log out and lock" aria-label="Log out and lock">🔒<span class="tb-label"> Lock</span></button>
     <div class="topbar-right">
       <button class="queue-toggle" id="queueToggleBtn" onclick="toggleQueueMode()" style="display:none">📋 My Queue</button>
       <button class="tb-btn" id="ofstedBtn" onclick="toggleOfstedMode()">🏫 Ofsted</button>
@@ -1153,6 +1231,7 @@ body {
   </div>
 
   <div class="main">
+    <div class="sidebar-scrim" id="sidebarScrim" onclick="toggleSidebar(false)"></div>
     <aside class="sidebar" id="sidebar">
       <div class="staff-box">
         <div class="staff-label">Staff member</div>
@@ -1186,6 +1265,14 @@ body {
         <div class="nav-item" onclick="setSite('billesley',this)" id="nav-ba"><span class="nav-icon">📍</span> Billesley Ark</div>
         <div class="nav-group-label" style="margin-top:.4rem">By Category</div>
         <div id="catNav"></div>
+        <div class="nav-mobile-only">
+          <div class="nav-group-label" style="margin-top:.4rem">More</div>
+          <div class="nav-item" onclick="toggleSidebar(false);toggleSettings()"><span class="nav-icon">⚙</span> Display &amp; text size</div>
+          <div class="nav-item" onclick="toggleSidebar(false);toggleOfstedMode()"><span class="nav-icon">🏫</span> Ofsted readiness</div>
+          <div class="nav-item" onclick="toggleSidebar(false);showChangePinFlow()"><span class="nav-icon">🔑</span> Change my PIN</div>
+          <div class="nav-item" onclick="toggleSidebar(false);logoutStaff()"><span class="nav-icon">🔒</span> Log out</div>
+          <a class="nav-item" href="admin.html" style="text-decoration:none"><span class="nav-icon">👩‍💼</span> Admin console</a>
+        </div>
       </nav>
     </aside>
 
@@ -1287,10 +1374,6 @@ body {
       </div>
       <button class="ack-btn" id="ackBtn" onclick="ackCurrent().catch(e=>{showToast('Error processing acknowledgement','err');console.error(e)})">☐ Acknowledge</button>
     </div>
-    <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
-      <div class="settings-group-label">Account</div>
-      <button class="th-btn" style="width:100%;justify-content:flex-start;gap:.4rem" onclick="closeSettings();showChangePinFlow()">🔑 Change my PIN</button>
-    </div>
   </div>
 </div>
 
@@ -1307,6 +1390,10 @@ body {
     <div class="settings-title">Display Settings</div>
     <div class="settings-group"><div class="settings-group-label">Theme</div><div class="theme-btns"><button class="th-btn active" id="th-light" onclick="setTheme('light',this)">☀ Light</button><button class="th-btn" id="th-dark" onclick="setTheme('dark',this)">🌙 Dark</button></div></div>
     <div class="settings-group"><div class="settings-group-label">Text Size</div><div class="size-btns"><button class="sz-btn" id="sz-small" onclick="setSize('small',this)">A–</button><button class="sz-btn active" id="sz-normal" onclick="setSize('normal',this)">A</button><button class="sz-btn" id="sz-large" onclick="setSize('large',this)">A+</button><button class="sz-btn" id="sz-xlarge" onclick="setSize('xlarge',this)">A⁺⁺</button></div></div>
+    <div class="settings-group" style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+      <div class="settings-group-label">Account</div>
+      <button class="th-btn" style="width:100%;justify-content:flex-start;gap:.4rem" onclick="closeSettings();showChangePinFlow()">🔑 Change my PIN</button>
+    </div>
   </div>
 </div>
 
@@ -2446,7 +2533,13 @@ function shareCurrentPolicy() {
     prompt('Copy this link:', url);
   }
 }
-function dlFile(file) { const a = document.createElement('a'); a.href = file; a.download = file; a.click(); }
+function dlFile(file, name) { const a = document.createElement('a'); a.href = file; a.download = name || file.split('/').pop(); a.click(); }
+function toggleSidebar(open) {
+  const sb = document.getElementById('sidebar');
+  const show = typeof open === 'boolean' ? open : !sb.classList.contains('open');
+  sb.classList.toggle('open', show);
+  document.getElementById('sidebarScrim')?.classList.toggle('show', show);
+}
 
 // ─── IN-DOC SEARCH ────────────────────────────────────────────────────────
 function openDocSearch() { document.getElementById('docSearchBar').style.display = 'flex'; document.getElementById('docSearchInput').focus(); }
