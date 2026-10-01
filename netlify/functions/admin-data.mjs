@@ -6,7 +6,8 @@
  * POST /api/admin-data?action=change_password— store a new admin password, hashed (admin)
  * GET  /api/admin-data?action=overview       — every staff member's acks + per-policy records (admin)
  * GET  /api/admin-data?action=staff-detail&staff=<staffKey> — one staff member's full record (admin)
- * GET  /api/admin-data?action=pins           — which staff have a PIN set (never the PIN itself) (admin)
+ * GET  /api/admin-data?action=pins           — which staff have a PIN set (never the PIN itself) + enrolment code (admin)
+ * POST /api/admin-data?action=regenerate_enrol_code — new enrolment code for first-time PIN setup (admin)
  * POST /api/admin-data?action=reset_pin      — { staffName } clear a PIN so they create a new one (admin)
  * POST /api/admin-data?action=set_pin        — { staffName, pin } set a temporary PIN (admin)
  * POST /api/admin-data?action=upload_policy_file&id=<policyId>&name=<file.docx> — raw .docx body (admin)
@@ -15,7 +16,7 @@
  * Admin actions need `Authorization: Bearer <admin password>`.
  */
 import { STORES, store, staffKeyOf, readJSON, updateJSON, json, cors } from "../lib/store.mjs";
-import { checkAdminPassword, hashSecret, bearer } from "../lib/auth.mjs";
+import { checkAdminPassword, hashSecret, bearer, getEnrolCode } from "../lib/auth.mjs";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // Netlify function request bodies are capped at 6 MB
 
@@ -110,10 +111,17 @@ export default async (req) => {
       }));
     }
 
+    if (req.method === "POST" && action === "regenerate_enrol_code") {
+      const rec = await getEnrolCode({ regenerate: true });
+      return cors(json({ ok: true, enrolCode: rec.code, enrolCodeCreatedAt: rec.createdAt }));
+    }
+
     if (action === "pins") {
-      const pinMap = await readAll(STORES.pins);
+      const [pinMap, enrol] = await Promise.all([readAll(STORES.pins), getEnrolCode()]);
       return cors(json({
         ok: true,
+        enrolCode: enrol.code,
+        enrolCodeCreatedAt: enrol.createdAt,
         pins: Object.entries(pinMap).map(([staffKey, p]) => ({
           staffKey, staffName: p?.staffName || staffKey.replace(/_/g, " "), hasPin: !!p?.hash, setAt: p?.setAt || null, setBy: p?.setBy || null,
           locked: !!(p?.lockedUntil && Date.parse(p.lockedUntil) > Date.now()),

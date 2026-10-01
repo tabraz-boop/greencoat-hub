@@ -1048,6 +1048,21 @@ body {
     opacity:0;pointer-events:none;transition:opacity .25s;
   }
   #pinOverlay.show { opacity:1;pointer-events:all; }
+  #pinOverlay { overflow-y:auto; -webkit-overflow-scrolling:touch; padding:max(.75rem, env(safe-area-inset-top)) .75rem max(.75rem, env(safe-area-inset-bottom)); }
+  #pinOverlay .pin-box { margin:auto; }
+  .pin-enrol { margin:.6rem 0 .2rem; text-align:left; }
+  .pin-enrol label { display:block; font-size:.78rem; color:var(--text3,#888); margin-bottom:.3rem; }
+  .pin-enrol input { width:100%; padding:.65rem .8rem; border-radius:10px; background:var(--bg3,#222); border:1px solid rgba(255,255,255,.18); color:var(--text,#fff); font-size:16px; letter-spacing:.15em; text-transform:uppercase; font-family:inherit; }
+  @media (max-height: 560px) {
+    .pin-box { padding:1rem 1.25rem; }
+    .pin-box h2 { font-size:1rem; }
+    .pin-sub { margin-bottom:.6rem; }
+    .pin-name-select { margin-bottom:.6rem; padding:.45rem .8rem; }
+    .pin-dots { margin-bottom:.6rem; }
+    .pin-pad { grid-template-columns:repeat(6,1fr); max-width:360px; gap:.4rem; margin-bottom:.5rem; }
+    .pin-key { aspect-ratio:auto; min-height:44px !important; font-size:1.1rem; }
+    .pin-key.zero { grid-column:auto; }
+  }
   .pin-box {
     background:var(--bg2,#1a1a1a);border:1px solid rgba(255,255,255,.12);
     border-radius:20px;padding:2rem 2.5rem;width:min(380px,92vw);
@@ -1112,11 +1127,15 @@ body {
 /* ── POLICY UPDATE BADGES ── */
 .update-badge { background: var(--gc-yellow-pale, #fef3c7); color: #92400e; font-size: .6rem; font-weight: 800; padding: .1rem .4rem; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
 .update-badge.due { background: #fee2e2; color: var(--t1); }
-.reader-update-note { flex-basis: 100%; margin-top: .35rem; padding: .5rem .7rem; border-radius: var(--r-sm); background: var(--gc-yellow-pale, #fef3c7); color: #78350f; font-size: .78rem; line-height: 1.45; }
+.reader-update-note { position: relative; flex-basis: 100%; margin-top: .35rem; padding: .45rem .7rem; border-radius: var(--r-sm); background: var(--gc-yellow-pale, #fef3c7); color: #78350f; font-size: .78rem; line-height: 1.45; }
+.reader-update-note summary { cursor: pointer; }
+.reader-update-note .run-body { margin-top: .3rem; max-height: 22vh; overflow-y: auto; white-space: pre-line; }
 /* ── MOBILE & TABLET (touch-first: most staff use phones/tablets) ─────────── */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .app { height: 100vh; height: 100dvh; }
 .nav-mobile-only { display: none; }
+.ofsted-close { margin-left: .25rem; }
+@media (min-width: 769px) { .ofsted-close { display: none; } }
 .sidebar-scrim { display: none; }
 @media (max-width: 768px) {
   /* The top bar must fit the screen: when it didn't, phones laid the page out ~650px wide and
@@ -1158,26 +1177,65 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .policy-list, .main { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
   #footerFontCtrl { display: none !important; } /* duplicate of the reader toolbar control */
   .settings-panel { right: .5rem; left: .5rem; width: auto !important; top: calc(56px + env(safe-area-inset-top)); max-height: calc(100dvh - 80px); overflow-y: auto; }
+  /* Ofsted readiness: full-screen, opaque, closable, with the bottom nav still visible */
+  .ofsted-panel.show { z-index: 390; background: var(--bg2) !important; padding-top: env(safe-area-inset-top); padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .ofsted-head { flex-wrap: wrap; }
+  .ob-label { width: 46%; }
   /* Small print readable on phones */
   .card-cat, .card-site, .card-req, .read-time, .card-time { font-size: .7rem !important; }
   .mn-btn { font-size: .66rem; }
   .ack-info, .ack-date, .progress-sub, .nav-count { font-size: .76rem; }
   .toast { bottom: calc(74px + env(safe-area-inset-bottom)); }
 }
+/* Short screens (phones in landscape): compact reader chrome so the policy text gets the space */
+@media (max-height: 520px) {
+  .reader-head { padding: .35rem .75rem .3rem !important; gap: .25rem !important; }
+  .reader-top { min-height: 0; }
+  .reader-title { font-size: .95rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #readerMeta { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  #readerMeta::-webkit-scrollbar { display: none; }
+  #readerMeta .reader-tag { flex-shrink: 0; }
+  #readerMeta .reader-update-note { flex-basis: auto; flex-shrink: 0; margin-top: 0; padding: .15rem .5rem; }
+  #readerMeta .reader-update-note[open] { position: absolute; left: .75rem; right: .75rem; z-index: 5; box-shadow: var(--shadow-md); }
+  .reader-toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .reader-toolbar::-webkit-scrollbar { display: none; }
+  .reader-toolbar > * { flex-shrink: 0; }
+  .reader-foot { padding-top: .3rem !important; padding-bottom: max(.3rem, env(safe-area-inset-bottom)) !important; flex-wrap: nowrap !important; }
+  .reader-foot > div:first-child { display: none; }
+  .ack-btn { min-height: 40px; }
+}
 /* Hidden toast stays out of sight wherever it is anchored */
 .toast:not(.show) { opacity: 0; visibility: hidden; }
 .toast.show { visibility: visible; opacity: 1; }
+/* Phone top bar on touch screens */
+@media (pointer: coarse) and (max-width: 768px) {
+  .topbar-menu-btn, .mic-btn, .search-clear.show { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .topbar-search { min-height: 44px; }
+  .topbar-search input { align-self: stretch; }
+  .topbar-logo .logo-icon { min-width: 40px; min-height: 40px; }
+}
+/* Tablets / landscape phones (desktop top bar): keep it within the screen width */
+@media (min-width: 769px) and (max-width: 1240px) {
+  .topbar { gap: .45rem; padding-left: .75rem; padding-right: .75rem; }
+  .topbar-logo .logo-words, .topbar-divider, .topbar-logout .tb-label { display: none; }
+  .topbar-search { min-width: 0; }
+  .topbar-search input { min-width: 0; width: 100%; }
+  .topbar-right { gap: .25rem; }
+  .topbar-right .tb-btn[title="Keyboard shortcuts"] { display: none; }
+  .tb-btn, .queue-toggle { padding-left: .55rem; padding-right: .55rem; }
+}
+@media (pointer: coarse) and (min-width: 769px) {
+  .topbar-right .tb-btn[title="Keyboard shortcuts"] { display: none; }
+  .tb-btn, .queue-toggle { font-size: .78rem !important; }
+}
 /* Comfortable touch targets (44px, Apple/Google guidance) on touch screens of any size */
 @media (pointer: coarse) {
   .tb-btn, .queue-toggle, .topbar-logout, .ca-btn, .mob-site-pill, .mob-tier-pill, .nav-item, .th-btn, .sz-btn,
   .ack-btn, .quiz-opt, .mn-btn, .ai-suggestions > *, .pin-btn-confirm, .staff-select { min-height: 44px; }
-  .topbar-menu-btn, .mic-btn, .search-clear, .reader-close, .ai-send-btn, .font-size-ctrl button, .modal-close { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .reader-close, .ai-send-btn, .font-size-ctrl button, .modal-close { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
   .mob-site-pill, .mob-tier-pill, .ca-btn, .tb-btn { display: inline-flex; align-items: center; }
   .pin-key { min-height: 56px; }
-  .topbar-search { min-height: 44px; }
   .search-clear:not(.show) { display: none !important; }
-  .topbar-search input { align-self: stretch; }
-  .topbar-logo .logo-icon { min-width: 40px; min-height: 40px; }
   .recent-chip, .ai-close-btn { min-height: 40px; display: inline-flex; align-items: center; }
   .ai-close-btn { min-width: 44px; justify-content: center; }
   .reader-body a { display: inline-block; padding: .3rem 0; }
@@ -1296,6 +1354,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
             <div class="ofsted-info"><h3>Ofsted Readiness — Tier 1</h3><p id="ofstedSub">Select your name to see your readiness</p></div>
             <div class="ofsted-score-num" id="ofstedScoreNum">—</div>
             <button class="ca-btn" onclick="printOfstedReport()">🖨 Print</button>
+            <button class="ca-btn ofsted-close" onclick="toggleOfstedMode()" aria-label="Close Ofsted readiness">✕</button>
           </div>
           <div class="ofsted-bars" id="ofstedBars"></div>
         </div>
@@ -1987,19 +2046,50 @@ function ackTime(id) {
   return m ? new Date(+m[3], +m[2] - 1, +m[1], 23, 59, 59).getTime() : null;
 }
 let reackDue = new Set(); // policies this person acknowledged before the latest required update
+// Same rule as the admin console: after a "staff must re-read" update, an acknowledgement only counts
+// if it was made after that update AND was for the current version. Unknown time → must re-read.
+function ackIsCurrent(p) {
+  if (!p.reackRequiredFrom) return true;
+  const t = ackTime(p.id);
+  if (t === null || t < Date.parse(p.reackRequiredFrom)) return false;
+  const v = parseInt(localStorage.getItem(`gc_ack_ver_${p.id}_${currentStaff.replace(/\s+/g,'_')}`) || '');
+  return isNaN(v) || v >= (parseInt(p.reackVersion) || parseInt(p.version) || 1);
+}
 function applyReackRules() {
   reackDue = new Set();
   if (!currentStaff) return;
   let changed = false;
   for (const p of POLICIES) {
-    if (!p.reackRequiredFrom) continue;
-    const t = ackTime(p.id);
-    if (t !== null && t < Date.parse(p.reackRequiredFrom)) {
+    if (!p.reackRequiredFrom || !acknowledged.has(p.id)) continue;
+    if (!ackIsCurrent(p)) {
       reackDue.add(p.id);
-      if (acknowledged.delete(p.id)) changed = true;
+      acknowledged.delete(p.id); changed = true;
     }
   }
   if (changed) saveAcknowledged();
+}
+// Re-fetch the admin-managed policy list (e.g. a tablet left open all day) and re-apply re-read rules.
+let _lastConfigCheck = 0;
+async function refreshLiveConfig() {
+  _lastConfigCheck = Date.now();
+  await fetchLiveConfig();
+  buildCatNav(); updateCounts(); updateProgressUI(); renderPriorityBanner(); render();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Date.now() - _lastConfigCheck > 120000) refreshLiveConfig();
+});
+// Before acknowledging: make sure the person read the version that is current right now.
+async function policyChangedSinceOpen(p) {
+  const before = { version: parseInt(p.version) || 1, file: p.file };
+  await refreshLiveConfig();
+  const now = POLICIES.find(x => x.id === p.id);
+  if (!now) { showToast('This policy has been removed from the library', 'info'); closeReader(); return true; }
+  if ((parseInt(now.version) || 1) !== before.version || now.file !== before.file) {
+    showToast('This policy has just been updated — please read the new version', 'info');
+    openReader(p.id);
+    return true;
+  }
+  return false;
 }
 function dlPolicy(id) {
   const p = POLICIES.find(x => x.id === id); if (!p) return;
@@ -2079,14 +2169,20 @@ async function trackActivity(storeName, key, value) {
 // offline or when the session token has expired — the queue flushes after the next login.
 const outboxKey = name => `gc_outbox_${name.replace(/\s+/g,'_')}`;
 let _flushing = false;
-function queueServerWrite(action, data) {
-  if (!currentStaff) return;
+function queueServerWrite(action, data, name = currentStaff) {
+  if (!name) return;
   try {
-    const box = JSON.parse(localStorage.getItem(outboxKey(currentStaff)) || '[]');
+    let box = JSON.parse(localStorage.getItem(outboxKey(name)) || '[]');
     box.push({ action, data, queuedAt: new Date().toISOString() });
-    localStorage.setItem(outboxKey(currentStaff), JSON.stringify(box.slice(-300)));
+    // Cap the queue by dropping the oldest activity-log entries only — acknowledgements are never dropped.
+    while (box.length > 400) {
+      const i = box.findIndex(x => x.action === 'log_activity');
+      if (i < 0) break;
+      box.splice(i, 1);
+    }
+    localStorage.setItem(outboxKey(name), JSON.stringify(box));
   } catch(e) { console.warn('queueServerWrite failed:', e); }
-  flushOutbox();
+  if (name === currentStaff) flushOutbox();
 }
 async function flushOutbox() {
   const session = getPinSession();
@@ -2115,21 +2211,22 @@ window.addEventListener('online', () => flushOutbox());
 setInterval(() => flushOutbox(), 60000);
 
 // Upload every ack held on this device (merge-only on the server), with the device's dates.
-function syncAcksToServer() {
-  if (!currentStaff || !acknowledged.size) return;
-  const sk = currentStaff.replace(/\s+/g,'_');
+function syncAcksToServer(name = currentStaff, ids = acknowledged) {
+  if (!name || !ids.size) return;
+  const sk = name.replace(/\s+/g,'_');
   const dates = {}, titles = {};
-  for (const id of acknowledged) {
+  for (const id of ids) {
     const d = localStorage.getItem(`gc_ack_date_${id}_${sk}`); if (d) dates[id] = d;
     const p = POLICIES.find(x => x.id === id); if (p) titles[id] = p.title;
   }
-  queueServerWrite('sync_acks', { acks: [...acknowledged], dates, titles });
+  queueServerWrite('sync_acks', { acks: [...ids], dates, titles }, name);
 }
 
 function recordAckOnServer(p, method, score, total) {
-  try { localStorage.setItem(`gc_ack_at_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toISOString()); } catch(e) {}
+  const sk = currentStaff.replace(/\s+/g,'_'), at = new Date().toISOString(), version = parseInt(p.version) || 1;
+  try { localStorage.setItem(`gc_ack_at_${p.id}_${sk}`, at); localStorage.setItem(`gc_ack_ver_${p.id}_${sk}`, String(version)); } catch(e) {}
   reackDue.delete(p.id);
-  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, policyVersion: p.version || null, method, score, total });
+  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, policyVersion: version, ackedAt: at, method, score, total });
 }
 
 function logActivityToServer(activityType, key, value, policyId, policyTitle) {
@@ -2165,8 +2262,9 @@ async function init() {
     // PIN keyboard support
     const pinVisible = document.getElementById('pinOverlay')?.classList.contains('show');
     if (pinVisible) {
-      if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
-      if (e.key === 'Backspace')  { e.preventDefault(); pinDel(); return; }
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') { /* typing in a field */ }
+      else if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinKey(e.key); return; }
+      if (e.key === 'Backspace' && e.target.tagName !== 'INPUT') { e.preventDefault(); pinDel(); return; }
       if (e.key === 'Escape')     { return; } // don't close overlay with Escape
     }
     if ((e.metaKey||e.ctrlKey) && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); }
@@ -2323,20 +2421,27 @@ async function syncAcksFromServer(name) {
       if (res.status === 401) markSessionNeedsLogin();
       if (res.ok) {
         const d = await res.json();
-        const serverIds = new Set(Array.isArray(d.acks) ? d.acks : []);
+        if (name !== currentStaff) return false; // someone else logged in meanwhile
+        const serverIds = new Set(Array.isArray(d.acks) ? d.acks.filter(id => !d.records?.[id]?.stale) : []);
         serverIds.forEach(id => merged.add(id));
         const sk = name.replace(/\s+/g,'_');
         for (const [id, rec] of Object.entries(d.records || {})) {
           const k = `gc_ack_date_${id}_${sk}`;
-          if (rec?.at && !localStorage.getItem(k)) localStorage.setItem(k, new Date(rec.at).toLocaleDateString('en-GB'));
+          if (rec?.at && !rec.stale && !localStorage.getItem(k)) localStorage.setItem(k, new Date(rec.at).toLocaleDateString('en-GB'));
           const ka = `gc_ack_at_${id}_${sk}`, localAt = localStorage.getItem(ka);
-          if (rec?.at && !rec.legacy && (!localAt || localAt < rec.at)) localStorage.setItem(ka, rec.at);
+          if (rec?.at && !rec.legacy && !rec.stale && (!localAt || localAt < rec.at)) {
+            localStorage.setItem(ka, rec.at);
+            if (rec.policyVersion) localStorage.setItem(`gc_ack_ver_${id}_${sk}`, String(rec.policyVersion));
+          }
         }
-        if (localStored.some(id => !serverIds.has(id))) setTimeout(syncAcksToServer, 0);
+        const missing = new Set(localStored.filter(id => !serverIds.has(id)));
+        if (missing.size) syncAcksToServer(name, missing);
       }
     } catch(e) { /* offline — local only */ }
+    if (name !== currentStaff) return false;
     flushOutbox();
   }
+  if (name !== currentStaff) return false;
   // Save merged result back to localStorage
   acknowledged = merged;
   if (name === currentStaff) applyReackRules();
@@ -2485,7 +2590,7 @@ function openReader(id) {
   document.getElementById('readerOverlay').classList.add('open');
   const tierCls = ['t1b','t2b','t3b'][p.tier-1];
   document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}${p.version > 1 ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Version ${p.version}</span>` : ''}`
-    + ((p.changeNote || reackDue.has(p.id)) ? `<div class="reader-update-note">🆕 <strong>Updated${p.updatedAt ? ' ' + new Date(p.updatedAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : ''}</strong>${reackDue.has(p.id) ? ' — please read it again and re-acknowledge.' : ''}${p.changeNote ? `<div style="margin-top:.2rem">${String(p.changeNote).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</div>` : ''}</div>` : '');
+    + ((p.changeNote || reackDue.has(p.id)) ? `<details class="reader-update-note"${reackDue.has(p.id) && window.innerHeight > 600 ? ' open' : ''}><summary>🆕 <strong>Updated${p.updatedAt ? ' ' + new Date(p.updatedAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : ''}</strong>${reackDue.has(p.id) ? ' — please read it again and re-acknowledge' : ''}${p.changeNote ? ' · what changed' : ''}</summary>${p.changeNote ? `<div class="run-body">${String(p.changeNote).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</div>` : ''}</details>` : '');
   updateReaderAckBtn(); closeDocSearch(); loadDoc(p);
 }
 
@@ -2857,6 +2962,7 @@ async function ackCurrent() {
 
   // Already acknowledged — just confirm
   if (acknowledged.has(p.id)) { showToast('Already acknowledged ✓', 'ok'); return; }
+  if (await policyChangedSinceOpen(p)) return;
 
   // Not yet acknowledged — gate with quiz
   if (preloadedQuiz && preloadedQuiz.length >= 3 && preloadedQuizForId === p.id) {
@@ -3054,7 +3160,7 @@ function printOfstedReport() { const t1 = POLICIES.filter(p => p.tier === 1); co
 // ─── MISC ─────────────────────────────────────────────────────────────────
 function showCelebration(title, msg) { document.getElementById('celebTitle').textContent = title; document.getElementById('celebMsg').textContent = msg; document.getElementById('celebWrap').style.display = 'flex'; document.getElementById('confettiCanvas').style.display = 'block'; launchConfetti(); setTimeout(() => { document.getElementById('celebWrap').style.display = 'none'; document.getElementById('confettiCanvas').style.display = 'none'; }, 5000); }
 function launchConfetti() { const canvas = document.getElementById('confettiCanvas'); canvas.width = window.innerWidth; canvas.height = window.innerHeight; const ctx = canvas.getContext('2d'); const colors = ['#2B6B3A','#F5C518','#4CAF6A','#ffffff','#a8d5b5']; const pieces = Array.from({length:120}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height, r: Math.random()*6+4, d: Math.random()*100+40, color: colors[Math.floor(Math.random()*colors.length)], tilt: Math.random()*10-10, ta: 0, tai: Math.random()*.07+.05 })); let angle = 0; function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); angle += .01; pieces.forEach(p => { p.ta += p.tai; p.y += (Math.cos(angle+p.d)+3+p.r/2)*.85; p.x += Math.sin(angle)*1.5; p.tilt = Math.sin(p.ta)*15; ctx.beginPath(); ctx.lineWidth = p.r/2; ctx.strokeStyle = p.color; ctx.moveTo(p.x+p.tilt+p.r/4, p.y); ctx.lineTo(p.x+p.tilt, p.y+p.tilt+p.r/4); ctx.stroke(); }); if (pieces.some(p => p.y < canvas.height)) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height); } draw(); }
-function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
+function mobileNav(tab, el) { document.querySelectorAll('.mn-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); if (tab !== 'progress' && ofstedMode) toggleOfstedMode(); if (tab !== 'ai' && aiOpen) toggleAI(); if (tab === 'progress' && ofstedMode) { toggleOfstedMode(); el.classList.remove('active'); document.getElementById('mn-browse')?.classList.add('active'); return; } if (tab==='queue') { if (!queueMode) enterQueueMode(); } else if (tab==='browse') { if (queueMode) exitQueueMode(); document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); } else if (tab==='search') { if (queueMode) exitQueueMode(); document.getElementById('searchInput').focus(); } else if (tab==='ai') { if (!aiOpen) toggleAI(); } else if (tab==='progress') { if (!ofstedMode) toggleOfstedMode(); document.getElementById('ofstedPanel').scrollIntoView({behavior:'smooth'}); } else document.getElementById('policyContent').scrollIntoView({behavior:'smooth'}); }
 let toastTimer; function showToast(msg, type='') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast show${type?' '+type:''}`; clearTimeout(toastTimer); const dur = msg.length > 60 ? 5000 : 3000; toastTimer = setTimeout(() => t.classList.remove('show'), dur); }
 function mobSetSite(site, el) { filterSite = site; const map = {null:'nav-all-s', sparkhill:'nav-sh', bearwood:'nav-bw', billesley:'nav-ba'}; document.querySelectorAll('[id^="nav-all-s"],[id="nav-sh"],[id="nav-bw"],[id="nav-ba"]').forEach(n => n.classList.remove('active')); const sideEl = document.getElementById(map[site]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-site-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
 function mobSetTier(tier, el) { filterTier = tier; filterCat = null; document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); const map = {null:'nav-all', 1:'nav-t1', 2:'nav-t2', 3:'nav-t3'}; const sideEl = document.getElementById(map[tier]); if (sideEl) sideEl.classList.add('active'); document.querySelectorAll('.mob-tier-pill').forEach(b => b.classList.remove('active')); el.classList.add('active'); render(); }
@@ -3329,6 +3435,13 @@ async function pinHash(name, pin) {
 }
 const pinHashKey = name => 'gc_pinhash_' + name.replace(/\s+/g,'_');
 function setPinMsg(t) { document.getElementById('pinMsg').textContent = t; }
+function showEnrolRow(msg) {
+  const row = document.getElementById('pinEnrolRow');
+  row.style.display = 'block';
+  document.getElementById('pinConfirmRow').style.display = 'flex';
+  if (msg) setPinMsg(msg);
+  setTimeout(() => document.getElementById('pinEnrolCode').focus(), 50);
+}
 function enterSetupPhase(name) {
   pinPhase = 'setup'; pinBuffer = ''; renderPinDots();
   document.getElementById('pinSetupNote').style.display = 'block';
@@ -3345,6 +3458,7 @@ async function onPinNameChange(name) {
   document.getElementById('pinNameSelect').disabled = false;
   document.getElementById('pinSetupNote').style.display = 'none';
   document.getElementById('pinConfirmRow').style.display = 'none';
+  document.getElementById('pinEnrolRow').style.display = 'none';
   if (!name) return;
   document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`;
   let hasPin = !!localStorage.getItem(getPinKey(name)) || !!localStorage.getItem(pinHashKey(name));
@@ -3385,6 +3499,7 @@ async function processPinEntry(name) {
     document.getElementById('pinConfirmRow').style.display = 'flex';
     document.getElementById('pinSub').textContent = 'Enter your PIN again to confirm';
     setPinMsg('');
+    if (!getPinSession()?.token) document.getElementById('pinEnrolRow').style.display = 'block';
     return;
   }
   if (pinPhase === 'confirm') { document.getElementById('pinConfirmRow').style.display = 'flex'; return; }
@@ -3398,8 +3513,15 @@ async function processPinEntry(name) {
     if (status === 409 && data.needsSetup) {
       // No PIN on the server yet. If this device has the person's old PIN, move it to the server.
       const legacy = localStorage.getItem(getPinKey(name));
-      if (legacy && legacy === pin) ({ status, data } = await pinApi('set_pin', { staffName: name, pin }));
-      else { pad.style.pointerEvents = ''; setPinMsg(''); enterSetupPhase(name); return; }
+      if (legacy && legacy === pin) {
+        // Their old device PIN is right: keep it, but the first PIN on the server needs the enrolment code.
+        pad.style.pointerEvents = '';
+        pinFirst = pin; pinPhase = 'confirm';
+        document.getElementById('pinSub').textContent = 'Welcome to the new system — one-time setup';
+        showEnrolRow('Enter the enrolment code from your manager, then tap Set PIN to keep this PIN.');
+        return;
+      }
+      pad.style.pointerEvents = ''; setPinMsg(''); enterSetupPhase(name); return;
     }
     pad.style.pointerEvents = '';
     if (status === 200 && data.token) { await pinSuccess(name, data.token, pin); return; }
@@ -3421,7 +3543,7 @@ async function processPinEntry(name) {
     const legacy = localStorage.getItem(getPinKey(name));
     if ((stored && stored === await pinHash(name, pin)) || (legacy && legacy === pin)) {
       await pinSuccess(name, null, pin);
-      showToast('Offline — your progress will sync when you reconnect', 'info');
+      showToast("Offline — your progress is saved on this phone. You'll be asked for your PIN when you're back online so it can sync.", 'info');
     } else {
       pinBuffer = ''; renderPinDots();
       setPinMsg(stored || legacy ? 'Incorrect PIN.' : 'No connection — you need to be online to log in the first time.');
@@ -3439,9 +3561,11 @@ async function pinConfirmNew() {
     return;
   }
   const session = getPinSession();
+  const enrolCode = (document.getElementById('pinEnrolCode')?.value || '').trim();
   try {
-    const { status, data } = await pinApi('set_pin', { staffName: name, pin: pinBuffer, token: session?.name === name ? session.token : undefined });
+    const { status, data } = await pinApi('set_pin', { staffName: name, pin: pinBuffer, enrolCode: enrolCode || undefined, token: session?.name === name ? session.token : undefined });
     if (status === 200 && data.token) { await pinSuccess(name, data.token, pinBuffer); showToast('PIN saved ✓', 'ok'); return; }
+    if (status === 403 && data.needsEnrolCode) { showEnrolRow(data.error); return; }
     setPinMsg(data.error || 'Could not save PIN — please try again.');
     if (status === 401 || status === 409) { pinPhase = 'enter'; pinBuffer = ''; renderPinDots(); document.getElementById('pinConfirmRow').style.display = 'none'; document.getElementById('pinSub').textContent = `Enter your PIN for ${name.split(' ')[0]}`; }
   } catch(e) {
@@ -3491,8 +3615,19 @@ let _needsLoginNotified = false;
 function markSessionNeedsLogin() {
   const s = getPinSession();
   if (s?.token) setPinSession(s.name, null);
-  if (!_needsLoginNotified) { _needsLoginNotified = true; showToast('Please log out and back in with your PIN so your progress syncs', 'info'); }
+  promptReauth('Your session has ended — enter your PIN to keep saving your progress');
 }
+// Ask the current person for their PIN again (e.g. after logging in offline) so queued progress syncs.
+function promptReauth(message) {
+  if (!currentStaff || _needsLoginNotified || document.getElementById('pinOverlay').classList.contains('show')) return;
+  _needsLoginNotified = true;
+  const name = currentStaff;
+  showPinOverlay();
+  const sel = document.getElementById('pinNameSelect');
+  sel.value = name;
+  onPinNameChange(name).then(() => { document.getElementById('pinSub').textContent = message; });
+}
+window.addEventListener('online', () => { if (currentStaff && !getPinSession()?.token) promptReauth('Back online — enter your PIN so your progress syncs'); });
 
 function logoutStaff() {
   clearPinSession();
@@ -3514,7 +3649,7 @@ function logoutStaff() {
 // showPinOverlay() during parsing crashed and the login gate never appeared.
 function initPinAuth() {
   const session = getPinSession();
-  if (session && STAFF.includes(session.name) && ('token' in session)) {
+  if (session && STAFF.includes(session.name) && ('token' in session) && (session.token || !navigator.onLine)) {
     // Valid session — auto-login
     setTimeout(() => {
       const sel = document.getElementById('staffSelect');
@@ -3566,8 +3701,12 @@ setInterval(() => {
       <button class="pin-key del" onclick="pinDel()">⌫</button>
     </div>
     <div class="pin-msg" id="pinMsg"></div>
+    <div class="pin-enrol" id="pinEnrolRow" style="display:none">
+      <label for="pinEnrolCode">Enrolment code from your manager</label>
+      <input id="pinEnrolCode" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10" placeholder="e.g. K7M2QX">
+    </div>
     <div id="pinSetupNote" class="pin-setup-note" style="display:none">
-      First time? Create a 4-digit PIN you'll remember — it keeps your progress private.
+      First time? Create a 4-digit PIN you'll remember — it keeps your progress private. You'll also need the enrolment code from your manager (just once).
     </div>
     <div class="pin-confirm-row" id="pinConfirmRow" style="display:none">
       <button class="pin-btn-confirm" onclick="pinConfirmNew()">Set PIN</button>

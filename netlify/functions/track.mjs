@@ -5,7 +5,8 @@
  * Public actions:
  *   pin_status   — { staffName } → { hasPin, lockedUntil }
  *   login        — { staffName, pin } → { token }
- *   set_pin      — { staffName, pin, token? } create first PIN, or change PIN (needs token)
+ *   set_pin      — { staffName, pin, enrolCode | token } create first PIN (needs the enrolment code
+ *                  from the admin console) or change PIN (needs a valid session token)
  *
  * Staff actions (require a valid session token from login/set_pin):
  *   ack          — record one policy acknowledgement with server timestamp + quiz result
@@ -14,7 +15,7 @@
  *   get_acks     — read back acks + per-policy records (for a new device)
  */
 import { STORES, staffKeyOf, readJSON, updateJSON, getConfiguredStaff, json, cors } from "../lib/store.mjs";
-import { hashSecret, verifySecret, signStaffToken, verifyStaffToken } from "../lib/auth.mjs";
+import { hashSecret, verifySecret, signStaffToken, verifyStaffToken, checkEnrolCode } from "../lib/auth.mjs";
 
 const MAX_FAILS = 5;
 const LOCK_MS = 5 * 60 * 1000;
@@ -72,6 +73,8 @@ export default async (req) => {
       if (pinRec?.hash) {
         const session = await verifyStaffToken(body.token);
         if (!session || session.staffKey !== staffKey) return reply({ error: "Please log in with your current PIN first" }, 401);
+      } else if (!(await checkEnrolCode(body.enrolCode))) {
+        return reply({ error: body.enrolCode ? "That enrolment code isn't right — please check it with your manager." : "Enter the enrolment code from your manager to create your PIN.", needsEnrolCode: true }, 403);
       }
       const setAt = new Date().toISOString();
       const saved = await updateJSON(STORES.pins, staffKey, (cur) => {
@@ -95,9 +98,20 @@ export default async (req) => {
       const policyId = str(data.policyId, 64);
       if (!policyId) return reply({ error: "Missing policyId" }, 400);
       const method = ACK_METHODS.has(data.method) ? data.method : "direct";
+      // Is this an acknowledgement of an out-of-date version (e.g. a tab opened before the admin
+      // published a new version that staff must re-read)? Then record it as stale.
+      const portal = await readJSON(STORES.config, "portal_data");
+      const pol = Array.isArray(portal?.policies) ? portal.policies.find((p) => p && p.id === policyId) : null;
+      const curVer = pol ? int(pol.version) || 1 : null;
+      const reqVer = pol?.reackRequiredFrom ? int(pol.reackVersion) || curVer : null;
+      const ackVer = int(data.policyVersion) || 1;
+      const stale = reqVer !== null && ackVer < reqVer;
+      const clientAt = typeof data.ackedAt === "string" && !isNaN(Date.parse(data.ackedAt)) && Date.parse(data.ackedAt) <= Date.now() + 300000 ? new Date(data.ackedAt).toISOString() : null;
       const saved = await updateJSON(STORES.acks, staffKey, (cur) => {
         const next = normaliseAcks(cur, staffName);
         const prev = next.records[policyId];
+        // Never let a stale acknowledgement replace a current one
+        if (stale && prev && !prev.legacy && !prev.stale && (int(prev.policyVersion) || 1) >= reqVer) return undefined;
         // Re-acknowledgement (e.g. after the policy was updated): keep the earlier record in history.
         // Ignore an immediate duplicate (an outbox retry of a request the server already processed).
         const duplicate = prev && !prev.legacy && (prev.policyVersion ?? null) === int(data.policyVersion) && Date.now() - Date.parse(prev.at || 0) < 120000;
@@ -110,7 +124,9 @@ export default async (req) => {
             total: int(data.total),
             policyTitle: str(data.policyTitle, 200),
             policyAdopted: str(data.policyAdopted, 40),
-            policyVersion: int(data.policyVersion),
+            policyVersion: ackVer,
+            ...(clientAt ? { deviceAt: clientAt } : {}),
+            ...(stale ? { stale: true } : {}),
             ...(prev?.legacy ? { deviceDate: prev.at } : {}),
             ...(history?.length ? { history } : {}),
           };
@@ -119,7 +135,7 @@ export default async (req) => {
         next.updatedAt = now;
         return next;
       });
-      return reply({ ok: true, record: saved.records[policyId] });
+      return reply({ ok: true, record: saved.records[policyId], stale, currentVersion: curVer });
     }
 
     if (action === "sync_acks") {
@@ -158,7 +174,7 @@ export default async (req) => {
         entries.push({
           type,
           key: str(data.key, 200),
-          value: str(data.value, 1000),
+          value: type === "quiz" ? quizValue(data.value) : str(data.value, 1000),
           policyId: str(data.policyId, 64),
           policyTitle: str(data.policyTitle, 200),
           timestamp: now,
@@ -183,6 +199,16 @@ function lockedUntil(pinRec) {
   return pinRec?.lockedUntil && Date.parse(pinRec.lockedUntil) > Date.now() ? pinRec.lockedUntil : null;
 }
 
+/** Quiz results are rendered in the admin console: keep only numbers/booleans. */
+function quizValue(v) {
+  let o = null;
+  try { o = typeof v === "string" ? JSON.parse(v) : v; } catch { return null; }
+  if (!o || typeof o !== "object") return null;
+  const score = int(o.score), total = int(o.total);
+  if (score === null || total === null) return null;
+  return JSON.stringify({ score, total, pct: int(o.pct) ?? (total ? Math.round((score / total) * 100) : 0), passed: o.passed === true });
+}
+
 /** Accepts the legacy { staffName, acks[], updatedAt } shape and adds per-policy records. */
 function normaliseAcks(cur, staffName) {
   const acks = Array.isArray(cur?.acks) ? [...cur.acks] : [];
@@ -195,7 +221,7 @@ function normaliseAcks(cur, staffName) {
 function parseDeviceDate(v) {
   const m = typeof v === "string" && v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!m) return null;
-  const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], 12));
+  const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1], 23, 59, 59));
   return isNaN(d) ? null : d.toISOString();
 }
 

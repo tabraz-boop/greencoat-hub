@@ -83,6 +83,33 @@ export async function checkAdminPassword(password) {
   return { ok: false };
 }
 
+// ── Enrolment code ───────────────────────────────────────────────────
+// Needed once, when a staff member creates their first PIN, so that someone who only knows a
+// colleague's name can't claim their account. Generated on first use; shown in the admin console.
+const ENROL_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
+function newEnrolCode() {
+  return Array.from(crypto.randomBytes(6), (b) => ENROL_ALPHABET[b % ENROL_ALPHABET.length]).join("");
+}
+export async function getEnrolCode({ regenerate = false } = {}) {
+  const s = store(STORES.config);
+  let rec = regenerate ? null : await s.get("enrol_code", { type: "json" }).catch(() => null);
+  if (!rec?.code) {
+    rec = { code: newEnrolCode(), createdAt: new Date().toISOString() };
+    if (regenerate) await s.setJSON("enrol_code", rec);
+    else {
+      await s.setJSON("enrol_code", rec, { onlyIfNew: true });
+      rec = (await s.get("enrol_code", { type: "json" })) || rec;
+    }
+  }
+  return rec;
+}
+export async function checkEnrolCode(input) {
+  const typed = String(input || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!typed) return false;
+  const { code } = await getEnrolCode();
+  return safeEqual(typed, code);
+}
+
 export function bearer(req) {
   return (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
 }

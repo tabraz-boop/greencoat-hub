@@ -509,6 +509,7 @@ body {
   .table-controls > * { flex: 1 1 160px; }
 }
 @media (max-width: 640px) {
+  .toast { white-space: normal !important; max-width: calc(100vw - 2rem); text-align: center; }
   .panels { padding: .75rem !important; }
   .form-row { grid-template-columns: 1fr; }
   .modal-overlay { padding: 0 !important; align-items: stretch !important; }
@@ -676,7 +677,7 @@ body {
   
 <div class="panel" id="panel-pins">
   <div class="section-hd">
-    <div><h2>Staff PIN Management</h2><p>Set or reset 4-digit PINs for each staff member. Default PIN is <strong>0000</strong>.</p></div>
+    <div><h2>Staff PIN Management</h2><p>Staff create their own 4-digit PIN the first time they log in (with the enrolment code below). PINs are stored securely — you can't see them, but you can reset one or set a temporary PIN.</p></div>
     <button class="btn btn-ghost" onclick="resetAllPins()">Reset all PINs</button>
   </div>
   <div id="pinTableWrap"></div>
@@ -802,9 +803,12 @@ async function fetchOverview(force) {
 }
 // An acknowledgement counts only if it was made after the policy's latest "staff must re-read" update.
 function isCurrentAck(p, rec) {
-  if (!rec) return false;
+  if (!rec || rec.stale) return false;
   if (!p?.reackRequiredFrom) return true;
-  return !!rec.at && Date.parse(rec.at) >= Date.parse(p.reackRequiredFrom);
+  // After a "staff must re-read" update: made after the update AND for the version it applies to
+  if (!rec.at || Date.parse(rec.at) < Date.parse(p.reackRequiredFrom)) return false;
+  const need = parseInt(p.reackVersion) || parseInt(p.version) || 1;
+  return rec.policyVersion == null || (parseInt(rec.policyVersion) || 1) >= need;
 }
 function annotateAcks(s) {
   const policies = POLICIES.length ? POLICIES : DEFAULT_POLICIES;
@@ -936,7 +940,7 @@ const DEFAULT_POLICIES = [
 ];
 
 let STAFF = [...DEFAULT_STAFF];
-let POLICIES = [...DEFAULT_POLICIES];
+let POLICIES = structuredClone(DEFAULT_POLICIES);
 let CONFIG = { orgName: 'Greencoat Nursery CIC', adoptedDate: 'March 2026', reviewDate: 'March 2027' };
 
 async function saveGlobalConfig() {
@@ -990,7 +994,7 @@ async function loadGlobalConfig() {
 
 async function restoreDefaults() {
   if (!confirm("Are you entirely sure? This will wipe any custom edits and restore the original 118 Greencoat policies and default staff list.")) return;
-  POLICIES = [...DEFAULT_POLICIES];
+  POLICIES = structuredClone(DEFAULT_POLICIES);
   STAFF = [...DEFAULT_STAFF];
   await saveGlobalConfig();
   renderPolicyTable();
@@ -1059,14 +1063,18 @@ function renderPolicyTable() {
 
 // ── Policy editor ─────────────────────────────────────────────────────
 let pendingFile = null;
+let pendingUpload = null; // { id, file, up } — kept so a retry after a failed save doesn't upload again
 const monthYear = () => new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 function titleFromFilename(name) {
   return String(name || '').replace(/\.docx$/i, '').replace(/^Greencoat(_Nursery)?(_CIC)?_/i, '')
     .replace(/_(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*_?\d{4}$/i, '').replace(/[_-]+/g, ' ').trim();
 }
+// Ids are never reused: acknowledgements are keyed by id and kept when a policy is deleted, so a new
+// policy must not inherit a deleted policy's id (staff would be credited with reading it).
 function slugify(title) {
-  let base = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40) || 'policy';
-  let id = base, n = 2; while (POLICIES.some(p => p.id === id)) id = `${base}_${n++}`;
+  const base = String(title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 36) || 'policy';
+  let id;
+  do { id = `${base}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`; } while (POLICIES.some(p => p.id === id));
   return id;
 }
 function setupDropzone() {
@@ -1079,7 +1087,7 @@ function pickPolicyFile(file) {
   if (!file) return;
   if (!/\.docx$/i.test(file.name)) { showToast('Please choose a Word .docx file', 'error'); return; }
   if (file.size > 5 * 1024 * 1024) { showToast('File is larger than 5 MB', 'error'); return; }
-  pendingFile = file;
+  pendingFile = file; pendingUpload = null;
   document.getElementById('dzFile').textContent = `${file.name} (${Math.round(file.size / 1024)} KB) — will be uploaded when you save`;
   const editing = !!document.getElementById('editId').value;
   if (!document.getElementById('editTitle').value.trim()) document.getElementById('editTitle').value = titleFromFilename(file.name);
@@ -1091,15 +1099,25 @@ function resetPolicyForm() {
   ['editId','editTitle','editFile','editAdopted','editDesc','editChangeNote'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('editReack').checked = false;
   document.getElementById('dzFile').textContent = '';
+  document.getElementById('editFileInput').value = '';
+  pendingUpload = null;
   document.getElementById('docCurrent').innerHTML = '';
   document.getElementById('saveProgress').textContent = '';
   document.getElementById('verHistory').style.display = 'none';
   setupDropzone();
 }
+function fillCategoryOptions(current) {
+  const sel = document.getElementById('editCat');
+  const base = ['Safeguarding','Health & Safety','Health & Care','Health & Wellbeing','Child Safety','Child Development','Children & Families','Staffing','Governance','GDPR & Information','EYFS & Curriculum','Premises & Environment'];
+  const cats = [...new Set([...base, ...POLICIES.map(p => p.cat).filter(Boolean), current].filter(Boolean))].sort();
+  sel.innerHTML = cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  sel.value = current || 'Governance';
+}
 function openAddModal() {
   resetPolicyForm();
+  fillCategoryOptions('Governance');
   document.getElementById('modalTitle').textContent = 'Add policy';
-  document.getElementById('editTier').value = '3'; document.getElementById('editCat').value = 'Governance';
+  document.getElementById('editTier').value = '3';
   document.getElementById('editAdopted').value = monthYear();
   ['siteAll','siteSh','siteBw','siteBa'].forEach(id => document.getElementById(id).checked = false); document.getElementById('siteAll').checked = true;
   document.getElementById('reackBox').style.display = 'none';
@@ -1111,7 +1129,7 @@ async function openEditModal(id, newVersion) {
   const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
   document.getElementById('modalTitle').textContent = newVersion ? 'Upload a new version' : 'Edit policy';
   document.getElementById('editId').value = p.id; document.getElementById('editTitle').value = p.title||''; document.getElementById('editTier').value = p.tier||3;
-  document.getElementById('editCat').value = p.cat||'Governance'; document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
+  fillCategoryOptions(p.cat || 'Governance'); document.getElementById('editAdopted').value = p.adopted||''; document.getElementById('editDesc').value = p.desc||'';
   document.getElementById('editFile').value = /^\/api\//.test(p.file || '') ? '' : (p.file || '');
   document.getElementById('editChangeNote').value = p.changeNote || '';
   // Reflect an existing requirement, so saving other edits doesn't silently cancel it
@@ -1145,7 +1163,7 @@ function applyNewVersion(p, upload, { reack, note, adopted }) {
   p.version = (parseInt(p.version) || 1) + 1;
   p.updatedAt = now;
   if (adopted) p.adopted = adopted;
-  if (reack) p.reackRequiredFrom = now;
+  if (reack) { p.reackRequiredFrom = now; p.reackVersion = p.version; }
   p.changeNote = note || '';
 }
 
@@ -1155,31 +1173,37 @@ async function savePolicy() {
   const title = document.getElementById('editTitle').value.trim();
   const typedFile = document.getElementById('editFile').value.trim();
   const existing = id ? POLICIES.find(p => p.id === id) : null;
+  const cat = document.getElementById('editCat').value || existing?.cat || 'Governance';
   if (!title) { showToast('Policy title is required', 'error'); return; }
   if (!pendingFile && !typedFile && !existing?.file) { showToast('Add the policy document (.docx)', 'error'); return; }
   const btn = document.getElementById('savePolicyBtn'), prog = document.getElementById('saveProgress');
   btn.disabled = true;
   try {
-    const data = existing ? { ...existing } : { id: slugify(title), version: 1 };
-    Object.assign(data, { tier: parseInt(document.getElementById('editTier').value), title, cat: document.getElementById('editCat').value, sites: sites.length ? sites : ['all'], adopted: document.getElementById('editAdopted').value.trim(), desc: document.getElementById('editDesc').value.trim() });
+    const data = existing ? structuredClone(existing) : { id: pendingUpload?.id || slugify(title), version: 1 };
+    Object.assign(data, { tier: parseInt(document.getElementById('editTier').value), title, cat, sites: sites.length ? sites : ['all'], adopted: document.getElementById('editAdopted').value.trim(), desc: document.getElementById('editDesc').value.trim() });
     const reack = !!existing && document.getElementById('editReack').checked;
     const note = document.getElementById('editChangeNote').value.trim();
     if (pendingFile) {
-      prog.textContent = 'Uploading document…';
-      const up = await uploadPolicyFile(data.id, pendingFile);
+      if (!pendingUpload || pendingUpload.file !== pendingFile || pendingUpload.id !== data.id) {
+        prog.textContent = 'Uploading document…';
+        pendingUpload = { id: data.id, file: pendingFile, up: await uploadPolicyFile(data.id, pendingFile) };
+      }
+      const up = pendingUpload.up;
       if (existing) applyNewVersion(data, up, { reack, note });
       else { data.file = up.url; data.fileName = up.name; data.updatedAt = new Date().toISOString(); }
     } else {
       if (typedFile && typedFile !== existing?.file) data.file = typedFile;
       if (existing) {
-        if (reack && !existing.reackRequiredFrom) { data.reackRequiredFrom = new Date().toISOString(); data.updatedAt = data.reackRequiredFrom; }
-        if (!reack) delete data.reackRequiredFrom;
+        if (reack && !existing.reackRequiredFrom) { data.reackRequiredFrom = new Date().toISOString(); data.reackVersion = parseInt(data.version) || 1; data.updatedAt = data.reackRequiredFrom; }
+        if (!reack) { delete data.reackRequiredFrom; delete data.reackVersion; }
         data.changeNote = note;
       }
     }
-    if (existing) POLICIES[POLICIES.findIndex(p => p.id === id)] = data; else POLICIES.push(data);
+    const next = existing ? POLICIES.map(p => p.id === id ? data : p) : [...POLICIES, data];
     prog.textContent = 'Saving…';
-    if (!(await saveGlobalConfig())) throw new Error('the live portal could not be updated — try again');
+    const before = POLICIES;
+    POLICIES = next;
+    if (!(await saveGlobalConfig())) { POLICIES = before; throw new Error('the live portal could not be updated — try again'); }
     closeModal(); renderPolicyTable(); buildCatFilter();
   } catch (e) {
     showToast('Not saved: ' + e.message, 'error');
@@ -1190,29 +1214,40 @@ function deletePolicy(id) { const p = POLICIES.find(x => x.id === id); if (!conf
 
 // ── Bulk upload: match each file to a policy by name ──────────────────
 const STOP = new Set(['greencoat','nursery','cic','policy','policies','the','and','of','for','a','to','docx','jan','feb','mar','apr','may','jun','jul','aug','sep','sept','oct','nov','dec','january','february','march','april','june','july','august','september','october','november','december']);
-const tokens = str => new Set(String(str || '').toLowerCase().replace(/\.docx$/, '').split(/[^a-z0-9]+/).filter(t => t && !STOP.has(t) && !/^(19|20)\d\d$/.test(t) && !/^[a-z]{3}\d{4}$/.test(t)));
+const stem = t => t.length > 4 && t.endsWith('ies') ? t.slice(0, -3) + 'y' : t.length > 3 && t.endsWith('s') && !t.endsWith('ss') ? t.slice(0, -1) : t;
+const tokens = str => new Set(String(str || '').toLowerCase().replace(/\.docx$/, '').split(/[^a-z0-9]+/).filter(t => t && !STOP.has(t) && !/^(19|20)\d\d$/.test(t) && !/^[a-z]{3,9}\d{4}$/.test(t) && !/^v\d+$/.test(t)).map(stem));
+const fileStem = name => [...tokens(name)].sort().join(' ');
+// Returns { policy, confident }. Weak or tied matches are flagged for the admin to check.
 function matchPolicy(fileName) {
-  const ft = tokens(fileName); let best = null, bestScore = 0;
-  for (const p of POLICIES) {
+  const ft = tokens(fileName), fs = fileStem(fileName);
+  const exact = POLICIES.filter(p => fileStem(p.fileName || (p.file || '').split('/').pop()) === fs);
+  if (exact.length === 1) return { policy: exact[0], confident: true };
+  const scored = POLICIES.map(p => {
+    let best = 0;
     for (const cand of [tokens(p.fileName || (p.file || '').split('/').pop()), tokens(p.title)]) {
       const inter = [...ft].filter(t => cand.has(t)).length;
-      const score = inter / Math.max(1, new Set([...ft, ...cand]).size);
-      if (score > bestScore) { bestScore = score; best = p; }
+      best = Math.max(best, inter / Math.max(1, new Set([...ft, ...cand]).size));
     }
-  }
-  return bestScore >= 0.5 ? best : null;
+    return { p, score: best };
+  }).sort((a, b) => b.score - a.score);
+  const [first, second] = scored;
+  if (!first || first.score < 0.5) return { policy: null, confident: false };
+  if (second && first.score - second.score < 0.1) return { policy: null, confident: false, ambiguous: true }; // too close to call
+  return { policy: first.p, confident: first.score >= 0.6 };
 }
 let bulkFiles = [];
 function openBulkUpload(fileList) {
   bulkFiles = [...(fileList || [])].filter(f => /\.docx$/i.test(f.name));
   if (!bulkFiles.length) { showToast('Choose one or more .docx files', 'error'); return; }
   const opts = POLICIES.slice().sort((a, b) => a.title.localeCompare(b.title)).map(p => `<option value="${esc(p.id)}">${esc(p.title)}</option>`).join('');
+  const matches = bulkFiles.map(f => matchPolicy(f.name));
   document.getElementById('bulkRows').innerHTML = bulkFiles.map((f, i) => {
-    const m = matchPolicy(f.name);
-    return `<div class="bulk-row"><div><div class="bf">${esc(f.name)}</div><div class="bm">${Math.round(f.size / 1024)} KB${f.size > 5 * 1024 * 1024 ? ' — too large (max 5 MB)' : ''}</div></div>
+    const m = matches[i];
+    const hint = f.size > 5 * 1024 * 1024 ? ' — too large (max 5 MB)' : m.ambiguous ? ' — ⚠ matches more than one policy: choose which one' : !m.policy ? ' — no matching policy: will be added as a new policy' : !m.confident ? ' — ⚠ please check this match' : '';
+    return `<div class="bulk-row" id="bulkRow${i}"><div><div class="bf">${esc(f.name)}</div><div class="bm"${hint ? ' style="color:#fbbf24"' : ''}>${Math.round(f.size / 1024)} KB${hint}</div></div>
       <select class="filter-sel" id="bulkSel${i}"><option value="">— Skip this file —</option><option value="__new">➕ New policy: ${esc(titleFromFilename(f.name))}</option>${opts}</select></div>`;
   }).join('');
-  bulkFiles.forEach((f, i) => { const m = matchPolicy(f.name); document.getElementById('bulkSel' + i).value = f.size > 5 * 1024 * 1024 ? '' : (m ? m.id : '__new'); });
+  bulkFiles.forEach((f, i) => { const m = matches[i]; document.getElementById('bulkSel' + i).value = f.size > 5 * 1024 * 1024 || m.ambiguous ? '' : m.policy ? m.policy.id : '__new'; });
   document.getElementById('bulkProgress').textContent = '';
   document.getElementById('bulkModal').classList.add('open');
 }
@@ -1220,38 +1255,48 @@ function closeBulk() { document.getElementById('bulkModal').classList.remove('op
 async function applyBulkUpload() {
   const btn = document.getElementById('bulkApplyBtn'), prog = document.getElementById('bulkProgress');
   const reack = document.getElementById('bulkReack').checked, note = document.getElementById('bulkNote').value.trim();
-  const jobs = bulkFiles.map((f, i) => ({ f, target: document.getElementById('bulkSel' + i).value })).filter(j => j.target);
+  const jobs = bulkFiles.map((f, i) => ({ f, i, target: document.getElementById('bulkSel' + i)?.value })).filter(j => j.f && j.target);
   if (!jobs.length) { showToast('Nothing selected to upload', 'error'); return; }
   const dupes = jobs.map(j => j.target).filter((t, i, a) => t !== '__new' && a.indexOf(t) !== i);
   if (dupes.length) { showToast('Two files are matched to the same policy — fix the matches first', 'error'); return; }
-  btn.disabled = true; let done = 0, failed = [];
+  btn.disabled = true;
+  const next = structuredClone(POLICIES), doneIdx = [], failed = [];
   for (const j of jobs) {
-    prog.textContent = `Uploading ${done + 1} of ${jobs.length}…`;
+    prog.textContent = `Uploading ${doneIdx.length + failed.length + 1} of ${jobs.length}…`;
     try {
       if (j.target === '__new') {
         const title = titleFromFilename(j.f.name), id = slugify(title);
         const up = await uploadPolicyFile(id, j.f);
-        POLICIES.push({ id, tier: 3, title, cat: 'Governance', sites: ['all'], file: up.url, fileName: up.name, adopted: monthYear(), desc: '', version: 1, updatedAt: up.uploadedAt });
+        next.push({ id, tier: 3, title, cat: 'Governance', sites: ['all'], file: up.url, fileName: up.name, adopted: monthYear(), desc: '', version: 1, updatedAt: up.uploadedAt });
       } else {
-        const p = POLICIES.find(x => x.id === j.target);
+        const p = next.find(x => x.id === j.target);
         const up = await uploadPolicyFile(p.id, j.f);
         applyNewVersion(p, up, { reack, note, adopted: monthYear() });
       }
-      done++;
+      doneIdx.push(j.i);
     } catch (e) { failed.push(`${j.f.name}: ${e.message}`); }
   }
-  prog.textContent = 'Saving…';
-  if (done) await saveGlobalConfig();
+  let saved = !doneIdx.length;
+  if (doneIdx.length) {
+    prog.textContent = 'Saving…';
+    const before = POLICIES;
+    POLICIES = next;
+    saved = await saveGlobalConfig();
+    if (!saved) POLICIES = before;
+  }
   btn.disabled = false; prog.textContent = '';
   renderPolicyTable(); buildCatFilter();
-  if (failed.length) showToast(`${done} updated, ${failed.length} failed — ${failed[0]}`, 'error');
-  else { showToast(`${done} polic${done === 1 ? 'y' : 'ies'} updated ✓`, 'success'); closeBulk(); }
+  if (!saved) { showToast('Documents uploaded but the live portal was NOT updated — press Upload & update again', 'error'); return; }
+  // Uploaded and published: take those rows out so a retry can't upload them twice
+  for (const i of doneIdx) { document.getElementById('bulkRow' + i)?.remove(); bulkFiles[i] = null; }
+  if (failed.length) showToast(`${doneIdx.length} updated, ${failed.length} failed — ${failed[0]}`, 'error');
+  else { showToast(`${doneIdx.length} polic${doneIdx.length === 1 ? 'y' : 'ies'} updated ✓`, 'success'); closeBulk(); }
 }
 
 function renderStaffList() {
   if (!Array.isArray(STAFF)) STAFF = [];
   document.getElementById('staffCount').textContent = `${STAFF.length} staff members`;
-  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${n}<button class="chip-del" onclick="removeStaff('${(n||'').replace(/'/g,"\\'")}')">✕</button></div>`).join('');
+  document.getElementById('staffChips').innerHTML = STAFF.map(n => `<div class="staff-chip">${esc(n)}<button class="chip-del" onclick="removeStaff(${esc(JSON.stringify(n || ''))})" aria-label="Remove ${esc(n)}">✕</button></div>`).join('');
 }
 
 function addStaff() {
@@ -1294,7 +1339,7 @@ async function loadStaffDetail(staffKey) {
     const how = r => r.method === 'quiz' ? `Quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'offline_quiz' ? `Offline quiz ${r.score ?? '?'}/${r.total ?? '?'}` : r.method === 'direct' ? 'Confirmed (quiz unavailable)' : 'Recorded on device';
     const ackRows = recs.map(([id, r]) => `<tr><td style="padding:.25rem .5rem">${esc(byId[id]?.title || r.policyTitle || id)}</td><td style="padding:.25rem .5rem;white-space:nowrap">${fmtDate(r.at)}${r.legacy ? ' <span title="Date taken from the staff member\'s device before server tracking worked" style="color:var(--text3)">(device)</span>' : ''}</td><td style="padding:.25rem .5rem;color:var(--text2)">${esc(how(r))}${byId[id] && !isCurrentAck(byId[id], r) ? ' <span style="color:#fbbf24">· older version — needs re-read</span>' : ''}</td></tr>`).join('');
     const outstanding = policies.filter(p => p.tier === 1 && !isCurrentAck(p, d.records?.[p.id])).map(p => `<li>${esc(p.title)}${d.records?.[p.id] ? ' <span style="color:#fbbf24">(updated — needs re-read)</span>' : ''}</li>`).join('');
-    const quizzes = (d.quizzes || []).slice(-10).reverse().map(q => { let v = {}; try { v = JSON.parse(q.value); } catch (e) {} return `<li>${esc(q.policyTitle || q.key)} — ${v.score ?? '?'}/${v.total ?? '?'} ${v.passed ? '✓ passed' : '✗ not passed'} <span style="color:var(--text3)">${fmtDate(q.timestamp)}</span></li>`; }).join('');
+    const quizzes = (d.quizzes || []).slice(-10).reverse().map(q => { let v = {}; try { v = JSON.parse(q.value); } catch (e) {} return `<li>${esc(q.policyTitle || q.key)} — ${esc(Number.isFinite(+v.score) ? +v.score : '?')}/${esc(Number.isFinite(+v.total) ? +v.total : '?')} ${v.passed === true ? '✓ passed' : '✗ not passed'} <span style="color:var(--text3)">${fmtDate(q.timestamp)}</span></li>`; }).join('');
     if (el) el.innerHTML = `
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin:.5rem 0 .75rem;font-size:.8rem">
         <div><strong>Acknowledged (${recs.length})</strong>
@@ -1514,7 +1559,7 @@ function renderHeatmap(compData) {
   let html = '<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:.72rem;min-width:600px">';
   html += '<thead><tr><th style="text-align:left;padding:.3rem .5rem;position:sticky;left:0;background:var(--bg);z-index:2;min-width:130px;border-bottom:2px solid var(--border2)">Staff</th>';
   t1.forEach(p => {
-    html += `<th title="${p.title}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${p.title.slice(0,20)}</th>`;
+    html += `<th title="${esc(p.title)}" style="writing-mode:vertical-rl;transform:rotate(180deg);padding:.3rem .2rem;max-width:22px;font-weight:500;color:var(--text2);border-bottom:2px solid var(--border2)">${esc(p.title.slice(0,20))}</th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -1554,14 +1599,24 @@ function renderOfstedScore(compData) {
 }
 
 // ── PIN MANAGEMENT (admin) ── PINs live on the server (hashed); the admin never sees them.
+let _pinsInfo = null;
+async function regenerateEnrolCode() {
+  if (!confirm('Create a new enrolment code? The old code will stop working for new PINs.')) return;
+  try { await api('regenerate_enrol_code', { method: 'POST' }); showToast('New enrolment code created', 'success'); } catch (e) { showToast('Could not change code: ' + e.message, 'error'); }
+  renderPinTable();
+}
 async function renderPinTable() {
   const wrap = document.getElementById('pinTableWrap');
   if (!wrap) return;
   wrap.innerHTML = '<p style="color:var(--text3);padding:1rem">Loading…</p>';
   let pins = [];
-  try { pins = (await api('pins')).pins || []; }
+  try { _pinsInfo = await api('pins'); pins = _pinsInfo.pins || []; }
   catch (e) { wrap.innerHTML = `<p style="color:#f87171;padding:1rem">Could not load PINs: ${esc(e.message)}</p>`; return; }
   const byName = Object.fromEntries(pins.map(p => [p.staffName, p]));
+  const enrol = _pinsInfo?.enrolCode ? `<div class="card" style="margin-bottom:1rem;font-size:.85rem">
+      <div style="font-weight:700;margin-bottom:.25rem">Enrolment code: <span style="font-family:monospace;font-size:1.15rem;letter-spacing:.2em;color:var(--teal)">${esc(_pinsInfo.enrolCode)}</span></div>
+      <div style="color:var(--text2)">Staff need this code once, when they create their first PIN. Tell staff in person or put it up in the staff room. Don't send it by email or message. Changing it doesn't affect PINs already set.</div>
+      <button class="btn btn-ghost" style="margin-top:.6rem" onclick="regenerateEnrolCode()">↻ New code</button></div>` : '';
   let html = '<table style="width:100%;border-collapse:collapse;font-size:.88rem">';
   html += '<thead><tr style="border-bottom:2px solid var(--border2)">' +
     '<th style="text-align:left;padding:.6rem .75rem">Staff member</th>' +
@@ -1584,7 +1639,7 @@ async function renderPinTable() {
     </tr>`;
   });
   html += '</tbody></table>';
-  wrap.innerHTML = html;
+  wrap.innerHTML = enrol + html;
 }
 
 async function adminSetPin(name) {
