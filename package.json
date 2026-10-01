@@ -1,0 +1,9 @@
+{
+  "name": "greencoat-hub",
+  "private": true,
+  "description": "Dependency manifest for the Netlify Functions only. There is no build step: Netlify installs these and bundles netlify/functions/*.mjs automatically.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.13"
+  }
+}
