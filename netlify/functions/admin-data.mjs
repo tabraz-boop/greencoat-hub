@@ -9,11 +9,15 @@
  * GET  /api/admin-data?action=pins           — which staff have a PIN set (never the PIN itself) (admin)
  * POST /api/admin-data?action=reset_pin      — { staffName } clear a PIN so they create a new one (admin)
  * POST /api/admin-data?action=set_pin        — { staffName, pin } set a temporary PIN (admin)
+ * POST /api/admin-data?action=upload_policy_file&id=<policyId>&name=<file.docx> — raw .docx body (admin)
+ * GET  /api/admin-data?action=policy_versions&id=<policyId> — uploaded versions of one policy (admin)
  *
  * Admin actions need `Authorization: Bearer <admin password>`.
  */
 import { STORES, store, staffKeyOf, readJSON, updateJSON, json, cors } from "../lib/store.mjs";
 import { checkAdminPassword, hashSecret, bearer } from "../lib/auth.mjs";
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // Netlify function request bodies are capped at 6 MB
 
 export default async (req) => {
   if (req.method === "OPTIONS") return cors(new Response(null));
@@ -129,6 +133,34 @@ export default async (req) => {
       if (typeof body.pin !== "string" || !/^\d{4}$/.test(body.pin)) return cors(json({ error: "PIN must be exactly 4 digits" }, 400));
       await updateJSON(STORES.pins, staffKey, () => ({ staffName, ...hashSecret(body.pin), setAt: new Date().toISOString(), setBy: "admin", failCount: 0, lockedUntil: null }));
       return cors(json({ ok: true }));
+    }
+
+    if (req.method === "POST" && action === "upload_policy_file") {
+      const policyId = (url.searchParams.get("id") || "").trim();
+      const name = (url.searchParams.get("name") || "policy.docx").replace(/[^\w.\- ()]+/g, "_").slice(-120);
+      if (!/^[\w-]{1,64}$/.test(policyId)) return cors(json({ error: "Invalid policy id" }, 400));
+      const buf = await req.arrayBuffer();
+      if (!buf.byteLength) return cors(json({ error: "Empty file" }, 400));
+      if (buf.byteLength > MAX_FILE_BYTES) return cors(json({ error: "File is too large (max 5 MB)" }, 413));
+      const head = new Uint8Array(buf.slice(0, 4));
+      if (!(head[0] === 0x50 && head[1] === 0x4b)) return cors(json({ error: "That isn't a Word .docx file" }, 400));
+      const uploadedAt = new Date().toISOString();
+      const key = `${policyId}/${uploadedAt.replace(/[:.]/g, "-")}-${name.replace(/\s+/g, "_")}`;
+      await store(STORES.files).set(key, buf, { metadata: { name, size: buf.byteLength, uploadedAt } });
+      return cors(json({ ok: true, key, url: `/api/policy-file?key=${encodeURIComponent(key)}`, name, size: buf.byteLength, uploadedAt }));
+    }
+
+    if (action === "policy_versions") {
+      const policyId = (url.searchParams.get("id") || "").trim();
+      if (!/^[\w-]{1,64}$/.test(policyId)) return cors(json({ error: "Invalid policy id" }, 400));
+      const s = store(STORES.files);
+      const { blobs } = await s.list({ prefix: `${policyId}/` }).catch(() => ({ blobs: [] }));
+      const versions = await Promise.all(blobs.map(async (b) => {
+        const meta = (await s.getMetadata(b.key).catch(() => null))?.metadata || {};
+        return { key: b.key, url: `/api/policy-file?key=${encodeURIComponent(b.key)}`, name: meta.name || b.key.split("/").pop(), size: meta.size || null, uploadedAt: meta.uploadedAt || null };
+      }));
+      versions.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
+      return cors(json({ ok: true, versions }));
     }
 
     return cors(json({ error: "Unknown action" }, 400));

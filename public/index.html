@@ -1109,6 +1109,10 @@ body {
   }
   .topbar-logout:hover { background:rgba(255,255,255,.14); }
 
+/* ── POLICY UPDATE BADGES ── */
+.update-badge { background: var(--gc-yellow-pale, #fef3c7); color: #92400e; font-size: .6rem; font-weight: 800; padding: .1rem .4rem; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.update-badge.due { background: #fee2e2; color: var(--t1); }
+.reader-update-note { flex-basis: 100%; margin-top: .35rem; padding: .5rem .7rem; border-radius: var(--r-sm); background: var(--gc-yellow-pale, #fef3c7); color: #78350f; font-size: .78rem; line-height: 1.45; }
 /* ── MOBILE & TABLET (touch-first: most staff use phones/tablets) ─────────── */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .app { height: 100vh; height: 100dvh; }
@@ -1973,6 +1977,35 @@ function loadAcknowledged() {
   }
 }
 
+// ── Policy updates: the admin can require staff to re-read a new version ──
+// gc_ack_at_<id>_<staffKey> holds the exact ack time (older records only have gc_ack_date_, a dd/mm/yyyy date).
+function ackTime(id) {
+  const sk = currentStaff.replace(/\s+/g,'_');
+  const iso = localStorage.getItem(`gc_ack_at_${id}_${sk}`);
+  if (iso) return Date.parse(iso);
+  const m = (localStorage.getItem(`gc_ack_date_${id}_${sk}`) || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return m ? new Date(+m[3], +m[2] - 1, +m[1], 23, 59, 59).getTime() : null;
+}
+let reackDue = new Set(); // policies this person acknowledged before the latest required update
+function applyReackRules() {
+  reackDue = new Set();
+  if (!currentStaff) return;
+  let changed = false;
+  for (const p of POLICIES) {
+    if (!p.reackRequiredFrom) continue;
+    const t = ackTime(p.id);
+    if (t !== null && t < Date.parse(p.reackRequiredFrom)) {
+      reackDue.add(p.id);
+      if (acknowledged.delete(p.id)) changed = true;
+    }
+  }
+  if (changed) saveAcknowledged();
+}
+function dlPolicy(id) {
+  const p = POLICIES.find(x => x.id === id); if (!p) return;
+  dlFile(p.file, p.fileName || (p.file || '').split('/').pop());
+}
+
 function saveAcknowledged() {
   if (!currentStaff) return;
   try {
@@ -2007,10 +2040,9 @@ async function fetchLiveConfig() {
     const json = await res.json();
     if (json.ok && json.data) {
       if (Array.isArray(json.data.policies) && json.data.policies.length > 0) {
-        // Only override if server has more policies than our default (prevents accidental wipe)
-        if (json.data.policies.length >= DEFAULT_POLICIES.length) {
-          POLICIES = json.data.policies;
-        }
+        // The admin console manages the list (adds, removals, new versions); the server refuses empty lists.
+        POLICIES = json.data.policies;
+        applyReackRules();
       }
       if (Array.isArray(json.data.staff) && json.data.staff.length > 0) {
         STAFF = json.data.staff;
@@ -2095,7 +2127,9 @@ function syncAcksToServer() {
 }
 
 function recordAckOnServer(p, method, score, total) {
-  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, method, score, total });
+  try { localStorage.setItem(`gc_ack_at_${p.id}_${currentStaff.replace(/\s+/g,'_')}`, new Date().toISOString()); } catch(e) {}
+  reackDue.delete(p.id);
+  queueServerWrite('ack', { policyId: p.id, policyTitle: p.title, policyAdopted: p.adopted || null, policyVersion: p.version || null, method, score, total });
 }
 
 function logActivityToServer(activityType, key, value, policyId, policyTitle) {
@@ -2254,7 +2288,7 @@ function onStaffChange(name) {
   currentStaff = name; localStorage.setItem('gc_lastStaff', name);
   // Exit queue mode if staff changes
   if (queueMode) exitQueueMode();
-  loadAcks(); updateProgressUI(); renderPriorityBanner(); render(); renderRecent();
+  loadAcks(); applyReackRules(); updateProgressUI(); renderPriorityBanner(); render(); renderRecent();
   if (ofstedMode) renderOfstedPanel();
   const qBtn = document.getElementById('queueToggleBtn');
   if (name) {
@@ -2295,6 +2329,8 @@ async function syncAcksFromServer(name) {
         for (const [id, rec] of Object.entries(d.records || {})) {
           const k = `gc_ack_date_${id}_${sk}`;
           if (rec?.at && !localStorage.getItem(k)) localStorage.setItem(k, new Date(rec.at).toLocaleDateString('en-GB'));
+          const ka = `gc_ack_at_${id}_${sk}`, localAt = localStorage.getItem(ka);
+          if (rec?.at && !rec.legacy && (!localAt || localAt < rec.at)) localStorage.setItem(ka, rec.at);
         }
         if (localStored.some(id => !serverIds.has(id))) setTimeout(syncAcksToServer, 0);
       }
@@ -2303,9 +2339,12 @@ async function syncAcksFromServer(name) {
   }
   // Save merged result back to localStorage
   acknowledged = merged;
+  if (name === currentStaff) applyReackRules();
   localStorage.setItem(localKey, JSON.stringify([...acknowledged]));
   updateProgressUI();
   renderPriorityBanner();
+  render();
+  if (readerOpen) updateReaderAckBtn();
   if (queueMode) renderQueueList();
   return true;
 }
@@ -2400,13 +2439,16 @@ function renderCard(p) {
   const pSites = Array.isArray(p.sites) ? p.sites : ['all'];
   const siteHtml = pSites.includes('all') ? '<span class="card-site site-sparkhill">All sites</span>' : pSites.map(s => `<span class="card-site ${s==='sparkhill'?'site-sparkhill':s==='bearwood'?'site-bearwood':'site-billesley'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`).join('');
   const titleHtml = searchQ ? (p.title||'').replace(new RegExp(`(${searchQ.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark style="background:var(--gc-yellow);color:#1a1a1a;border-radius:2px">$1</mark>') : (p.title||'');
-  const urgentBadge = p.tier === 1 && !acked ? '<span style="background:#fee2e2;color:var(--t1);font-size:.58rem;font-weight:800;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em">Required</span>' : '';
+  const urgentBadge = reackDue.has(p.id)
+    ? '<span class="update-badge due">Updated — re-read</span>'
+    : (p.tier === 1 && !acked ? '<span style="background:#fee2e2;color:var(--t1);font-size:.58rem;font-weight:800;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em">Required</span>' : '')
+      + (p.updatedAt && Date.now() - Date.parse(p.updatedAt) < 30 * 864e5 ? '<span class="update-badge">Updated</span>' : '');
   const estTime = p.desc ? Math.max(3, Math.ceil((p.desc.split(' ').length * 12) / 200)) + ' min' : '';
   return `<div class="policy-card ${acked?'acked':''}" onclick="openReader('${p.id}')">
     <div class="card-top"><div class="card-ack-icon">${acked ? '✓' : ''}</div><div class="card-title">${titleHtml}</div></div>
     <div class="card-tags"><span class="card-cat">${p.cat||'General'}</span>${siteHtml}${urgentBadge}${estTime ? `<span style="margin-left:auto;font-size:.6rem;color:var(--text3)">~${estTime}</span>` : ''}</div>
     ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
-    <div class="card-actions"><button class="ca-btn primary" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button><button class="ca-btn" onclick="event.stopPropagation();dlFile('${p.file}')">⬇ Download</button><button class="ca-btn" onclick="event.stopPropagation();askAIAbout('${p.id}')">🤖 Ask AI</button><button class="ca-btn yellow" onclick="event.stopPropagation();quickSummary('${p.id}',this)">⚡ Summary</button></div>
+    <div class="card-actions"><button class="ca-btn primary" onclick="event.stopPropagation();openReader('${p.id}')">📖 Read</button><button class="ca-btn" onclick="event.stopPropagation();dlPolicy('${p.id}')">⬇ Download</button><button class="ca-btn" onclick="event.stopPropagation();askAIAbout('${p.id}')">🤖 Ask AI</button><button class="ca-btn yellow" onclick="event.stopPropagation();quickSummary('${p.id}',this)">⚡ Summary</button></div>
   </div>`;
 }
 
@@ -2442,7 +2484,8 @@ function openReader(id) {
   isPreloadingQuiz = false;
   document.getElementById('readerOverlay').classList.add('open');
   const tierCls = ['t1b','t2b','t3b'][p.tier-1];
-  document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}`;
+  document.getElementById('readerMeta').innerHTML = `<span class="reader-tag ${tierCls}">Tier ${p.tier}</span><span class="reader-tag" style="background:var(--bg3);color:var(--text2)">${p.cat}</span>${p.adopted ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Adopted: ${p.adopted}</span>` : ''}${p.version > 1 ? `<span class="reader-tag" style="background:var(--bg3);color:var(--text3)">Version ${p.version}</span>` : ''}`
+    + ((p.changeNote || reackDue.has(p.id)) ? `<div class="reader-update-note">🆕 <strong>Updated${p.updatedAt ? ' ' + new Date(p.updatedAt).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'}) : ''}</strong>${reackDue.has(p.id) ? ' — please read it again and re-acknowledge.' : ''}${p.changeNote ? `<div style="margin-top:.2rem">${String(p.changeNote).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</div>` : ''}</div>` : '');
   updateReaderAckBtn(); closeDocSearch(); loadDoc(p);
 }
 
@@ -2523,7 +2566,7 @@ async function loadDoc(p) {
   }
 }
 
-function dlCurrent() { if (currentPolicy) dlFile(currentPolicy.file); }
+function dlCurrent() { if (currentPolicy) dlPolicy(currentPolicy.id); }
 function shareCurrentPolicy() {
   if (!currentPolicy) return;
   const url = `${location.origin}${location.pathname}?policy=${currentPolicy.id}`;

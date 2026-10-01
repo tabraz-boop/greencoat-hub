@@ -22,7 +22,7 @@ const ACK_METHODS = new Set(["quiz", "offline_quiz", "direct", "device"]);
 const ACTIVITY_TYPES = new Set(["aichat", "quiz", "read", "milestone", "summary"]);
 const isPin = (p) => typeof p === "string" && /^\d{4}$/.test(p);
 const str = (v, max) => (v === undefined || v === null ? null : String(v).slice(0, max));
-const int = (v) => (Number.isFinite(Number(v)) ? Math.round(Number(v)) : null);
+const int = (v) => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Math.round(Number(v)));
 
 export default async (req) => {
   if (req.method === "OPTIONS") return cors(new Response(null), "POST, OPTIONS");
@@ -97,7 +97,12 @@ export default async (req) => {
       const method = ACK_METHODS.has(data.method) ? data.method : "direct";
       const saved = await updateJSON(STORES.acks, staffKey, (cur) => {
         const next = normaliseAcks(cur, staffName);
-        if (!next.records[policyId] || next.records[policyId].legacy) {
+        const prev = next.records[policyId];
+        // Re-acknowledgement (e.g. after the policy was updated): keep the earlier record in history.
+        // Ignore an immediate duplicate (an outbox retry of a request the server already processed).
+        const duplicate = prev && !prev.legacy && (prev.policyVersion ?? null) === int(data.policyVersion) && Date.now() - Date.parse(prev.at || 0) < 120000;
+        if (!duplicate) {
+          const history = prev && !prev.legacy ? [...(prev.history || []), { at: prev.at, method: prev.method, score: prev.score, total: prev.total, policyVersion: prev.policyVersion ?? null }].slice(-10) : prev?.history;
           next.records[policyId] = {
             at: now,
             method,
@@ -105,7 +110,9 @@ export default async (req) => {
             total: int(data.total),
             policyTitle: str(data.policyTitle, 200),
             policyAdopted: str(data.policyAdopted, 40),
-            ...(next.records[policyId]?.legacy ? { deviceDate: next.records[policyId].at } : {}),
+            policyVersion: int(data.policyVersion),
+            ...(prev?.legacy ? { deviceDate: prev.at } : {}),
+            ...(history?.length ? { history } : {}),
           };
         }
         if (!next.acks.includes(policyId)) next.acks.push(policyId);

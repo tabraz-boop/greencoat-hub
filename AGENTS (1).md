@@ -88,6 +88,7 @@ The staff portal intentionally uses `localStorage` as primary storage. Netlify B
 | :---- | :---- | :---- | :---- |
 | `gc_portal_config` | `portal_data` | Live policy list \+ portal settings | strong |
 | `gc_acks` | `<staffKey>` | `{ staffName, acks[], records{ <policyId>: { at, method, score, total, policyTitle, legacy? } }, updatedAt }` — `at` is the server timestamp; `legacy` = date came from the staff device | strong |
+| `gc_policy_files` | `<policyId>/<timestamp>-<name>.docx` | uploaded policy documents (metadata: name, size, uploadedAt) | strong |
 | `gc_pins` | `<staffKey>` | `{ staffName, hash, salt, setAt, setBy, failCount, lockedUntil }` — scrypt-hashed PIN, never the PIN | strong |
 | `gc_activity` | `<staffKey>` | `{ staffName, entries[], updatedAt }` (max 500\) | eventual |
 
@@ -214,7 +215,14 @@ Policies are defined as `DEFAULT_POLICIES` in `index.html` — a hardcoded array
 
 }
 
-The admin console can override `DEFAULT_POLICIES` via the `gc_portal_config` Blob. If the loaded config has `policies.length >= DEFAULT_POLICIES.length`, the Blobs version wins. This is intentional — editing policies should always go through the admin console, never by directly editing `index.html`.
+The admin console overrides `DEFAULT_POLICIES` via the `gc_portal_config` Blob. Whenever the saved config has a non-empty `policies` list it wins (the server refuses to save an empty list) — so additions, removals and new versions made in the admin console reach staff. Editing policies should always go through the admin console, never by directly editing `index.html`.
+
+### Updating policy documents (admin console)
+
+- **New version of one policy:** Policies tab → `⬆ New version` → choose/drop the `.docx`. **Bulk:** `⬆ Upload updated documents` → pick many files; each is matched to a policy by its name (dates like `Mar2026` and words like Greencoat/Policy are ignored) and the admin confirms the matches.
+- Uploads go to the `gc_policy_files` Blob store (`<policyId>/<timestamp>-<name>.docx`, max 5 MB, must be a real .docx) and are served by `netlify/functions/policy-file.mjs` at `/api/policy-file?key=…` (immutable, cacheable). Every uploaded version is kept; the editor lists them.
+- Extra policy fields: `version` (int), `updatedAt` (ISO), `fileName`, `changeNote` (shown to staff at the top of the reader), `reackRequiredFrom` (ISO). When `reackRequiredFrom` is set, an acknowledgement only counts if it was made at/after that time — staff see "Updated — re-read", and the admin compliance views/CSV list them as needing a re-read. Re-acknowledging keeps earlier acks in `records[id].history`.
+- Staff portal stores the exact ack time in `gc_ack_at_<policyId>_<staffKey>` (ISO) for this check; older data only has `gc_ack_date_…` (dd/mm/yyyy, treated as end of that day).
 
 ### Policy tiers
 
@@ -321,7 +329,14 @@ Light and dark mode via `data-theme="light|dark"` on `<html>`. Text size via `da
      
 3. **God Prompt needs Sept 2025 EYFS update** — Annex C, new safeguarding standards, professional-references-only rule, 2-hour absence follow-up. Do not change the EYFS ratios — those are already correct.  
      
-4. **Policy reader is too narrow on mobile** — the document viewer needs a full-screen overlay mode on viewports below 768px, not a constrained panel.
+4. ~~Policy reader is too narrow on mobile~~ — done (Oct 2026): full-screen reader/quiz/AI on phones.
+
+### Mobile-first rules (staff use phones/tablets; desktop is mainly admins)
+
+- Nothing may make the page wider than the screen: if any element forces a wider layout, mobile browsers zoom the whole page out and fixed overlays end up off-screen. Check at 360px and 390px.
+- Form fields are 16px on phones/touch screens (otherwise iOS zooms in on focus). Touch targets are at least 44px under `@media (pointer: coarse)`.
+- Use `100dvh` (with a `100vh` fallback) and `env(safe-area-inset-*)` for full-height sheets and bottom bars.
+- The phone top bar is icon-only; Display/Ofsted/Change PIN/Log out/Admin live in the sidebar's "More" section and the bottom nav.
 
 ---
 

@@ -11,6 +11,7 @@ export const STORES = {
   acks:     "gc_acks",          // <staffKey> → { staffName, acks[], records{}, updatedAt }
   activity: "gc_activity",      // <staffKey> → { staffName, entries[], updatedAt }
   pins:     "gc_pins",          // <staffKey> → { staffName, hash, salt, setAt, setBy, failCount, lockedUntil }
+  files:    "gc_policy_files",  // <policyId>/<timestamp>-<name>.docx → uploaded policy document (metadata: name, size, uploadedAt)
 };
 
 // Same join key as localStorage: gc_acks_<staffKey>
